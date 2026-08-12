@@ -456,7 +456,6 @@ export function HomePage() {
   const [monsterAttackCount, setMonsterAttackCount] = useState(0);
   const [battlePulse, setBattlePulse] = useState(0);
   const [adminCode, setAdminCode] = useState('');
-  const [authOpen, setAuthOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authBusy, setAuthBusy] = useState(false);
@@ -576,7 +575,6 @@ export function HomePage() {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setAuthUser(session?.user ?? null);
       if (session?.user) {
-        setAuthOpen(false);
         setAuthMessage('');
       }
     });
@@ -1008,14 +1006,37 @@ export function HomePage() {
 
     setAuthBusy(true);
     setAuthMessage('');
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: authEmail,
       password: authPassword,
       options: { emailRedirectTo: window.location.origin },
     });
 
-    setAuthMessage(error ? error.message : 'Аккаунт создан. Если Supabase просит подтверждение, проверь почту.');
+    if (error) {
+      setAuthMessage(error.message);
+    } else if (!data.session) {
+      setAuthMessage('Аккаунт создан. Подтверди почту, если Supabase попросит.');
+    }
     setAuthBusy(false);
+  }
+
+  async function signInWithGoogle() {
+    if (!isSupabaseConfigured) {
+      setAuthMessage('Supabase не настроен в .env');
+      return;
+    }
+
+    setAuthBusy(true);
+    setAuthMessage('');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    });
+
+    if (error) {
+      setAuthMessage(error.message);
+      setAuthBusy(false);
+    }
   }
 
   async function logout() {
@@ -1024,47 +1045,66 @@ export function HomePage() {
     setAuthBusy(false);
   }
 
+  if (!authUser) {
+    return (
+      <main className="landing-page">
+        <section className="landing-hero" aria-label="Вход в игру">
+          <div className="landing-copy">
+            <p className="landing-kicker">2D RPG battle game</p>
+            <h1>Меч против сыновей дракона</h1>
+            <p>
+              Спасай города, бей монстров, выбивай оружие и сражайся с драконами,
+              которые становятся сильнее после каждой победы.
+            </p>
+            <div className="landing-features">
+              <span>10 000 монстров в городе</span>
+              <span>Редкое оружие и броня</span>
+              <span>Пещеры, боссы и концовки</span>
+            </div>
+          </div>
+
+          <div className="landing-auth">
+            <h2>Войти в игру</h2>
+            <button className="google-button" onClick={signInWithGoogle} disabled={authBusy} type="button">
+              <span>G</span>
+              Войти через Google
+            </button>
+            <div className="auth-divider">или email</div>
+            <form className="landing-form" onSubmit={submitLogin}>
+              <input
+                aria-label="Email"
+                onChange={(event) => setAuthEmail(event.target.value)}
+                placeholder="email"
+                type="email"
+                value={authEmail}
+                required
+              />
+              <input
+                aria-label="Пароль"
+                minLength={6}
+                onChange={(event) => setAuthPassword(event.target.value)}
+                placeholder="пароль"
+                type="password"
+                value={authPassword}
+                required
+              />
+              <button type="submit" disabled={authBusy}>{authBusy ? '...' : 'Войти'}</button>
+              <button className="secondary" type="button" onClick={createAccount} disabled={authBusy}>
+                Зарегистрироваться
+              </button>
+              {authMessage && <p>{authMessage}</p>}
+            </form>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className={`game ${isWorldPage ? 'world-page' : 'play-page'}`}>
       <div className="auth-panel">
-        {authUser ? (
-          <>
-            <span>{authUser.email}</span>
-            <button className="secondary" onClick={logout} disabled={authBusy}>Выйти</button>
-          </>
-        ) : (
-          <>
-            <button onClick={() => setAuthOpen((open) => !open)}>
-              {authOpen ? 'Закрыть' : 'Войти'}
-            </button>
-            {authOpen && (
-              <form className="login-form" onSubmit={submitLogin}>
-                <input
-                  aria-label="Email"
-                  onChange={(event) => setAuthEmail(event.target.value)}
-                  placeholder="email"
-                  type="email"
-                  value={authEmail}
-                  required
-                />
-                <input
-                  aria-label="Пароль"
-                  minLength={6}
-                  onChange={(event) => setAuthPassword(event.target.value)}
-                  placeholder="пароль"
-                  type="password"
-                  value={authPassword}
-                  required
-                />
-                <button type="submit" disabled={authBusy}>{authBusy ? '...' : 'Войти'}</button>
-                <button className="secondary" type="button" onClick={createAccount} disabled={authBusy}>
-                  Создать
-                </button>
-                {authMessage && <p>{authMessage}</p>}
-              </form>
-            )}
-          </>
-        )}
+        <span>{authUser.email}</span>
+        <button className="secondary" onClick={logout} disabled={authBusy}>Выйти</button>
       </div>
       <section className="stage" aria-label="Поле битвы">
         <Link className="page-switch world-link" href="/world">Пылающий мир</Link>
