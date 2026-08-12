@@ -67,7 +67,7 @@ type Quest = {
 
 type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
 type EndingChoice = 'spare' | 'fight' | 'family' | null;
-type SecretEnding = 'goblinKing' | 'furyKing' | null;
+type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | null;
 
 const firstDragonCities: CityStage[] = [
   { name: 'Игнис', city: 'Алматы', country: 'Казахстан', lair: 'Логово Искры в горах Заилийского Алатау', monsterKind: 'goblin', monsterName: 'гоблины', title: 'сын искры', power: 1_000, color: '#ffb703', attackSpeed: 0.85, reaction: 'бьет очень быстро' },
@@ -181,6 +181,34 @@ const furyKing: CityStage = {
   reaction: 'двигается очень быстро',
 };
 
+const anuarKing: CityStage = {
+  name: 'Ануар',
+  city: 'Город бомб',
+  country: 'Секретный мир',
+  lair: 'Финальная площадь после взрыва',
+  monsterKind: 'magma',
+  monsterName: 'бомба-монстры',
+  title: 'король бомб',
+  power: 999_999_999,
+  color: '#ff5a3d',
+  attackSpeed: 0.48,
+  reaction: 'кидает бомбический удар',
+};
+
+const mansurKing: CityStage = {
+  name: 'Король Мансур',
+  city: 'Секретное подземелье Мансура',
+  country: 'Мир братишки',
+  lair: 'Трон Мансура у горного озера',
+  monsterKind: 'goblin',
+  monsterName: 'монстры Мансура',
+  title: 'король Мансура',
+  power: 999_999_999,
+  color: '#9cff00',
+  attackSpeed: 0.5,
+  reaction: 'атакует как секретный страж',
+};
+
 const worldLocations = [
   'Астана', 'Бишкек', 'Ташкент', 'Дубай', 'Каир', 'Афины', 'Берлин',
   'Мадрид', 'Прага', 'Сеул', 'Пекин', 'Сидней', 'Торонто', 'Мехико',
@@ -191,6 +219,8 @@ const heroMaxHp = 100;
 const monstersPerCity = 10_000;
 const dungeonEnemiesTotal = 10_000;
 const furyDungeonEnemiesTotal = 100_000;
+const anuarBombEnemiesTotal = 100_000;
+const mansurDungeonEnemiesTotal = 100_000;
 const baseMonsterHp = 1_000;
 const baseMonsterDamage = 10;
 const baseDragonHp = 1_000_000;
@@ -198,6 +228,7 @@ const baseDragonDamage = 1_000;
 const adminNukeDamageText = '9'.repeat(4_000);
 const adminHelmetHealthText = '9'.repeat(384);
 const furySwordDamageText = '1' + '0'.repeat(116);
+const mansurBladeDamageText = '99999999999999999999999999999999999999999999999999999999';
 
 const shopItems: ShopItem[] = [
   { id: 'sword', name: 'Меч рассвета', price: 120, bonus: '+100 урона' },
@@ -437,6 +468,17 @@ function createFurySword(): Weapon {
   };
 }
 
+function createMansurBlade(): Weapon {
+  return {
+    id: `mansur-blade-${Date.now()}-${Math.random()}`,
+    name: 'Мансур секретный клинок',
+    rarity: 'Секретное',
+    damage: Number.MAX_SAFE_INTEGER,
+    displayDamage: mansurBladeDamageText,
+    price: 0,
+  };
+}
+
 function createAdminHelmet(): Armor {
   return {
     id: `admin-helmet-${Date.now()}-${Math.random()}`,
@@ -472,6 +514,14 @@ export function HomePage() {
   const [furyMonstersLeft, setFuryMonstersLeft] = useState(furyDungeonEnemiesTotal);
   const [furyChoiceOpen, setFuryChoiceOpen] = useState(false);
   const [furyKingFightStarted, setFuryKingFightStarted] = useState(false);
+  const [anuarGateOpen, setAnuarGateOpen] = useState(false);
+  const [anuarWorldEntered, setAnuarWorldEntered] = useState(false);
+  const [anuarBombsLeft, setAnuarBombsLeft] = useState(anuarBombEnemiesTotal);
+  const [anuarKingFightStarted, setAnuarKingFightStarted] = useState(false);
+  const [mansurGateOpen, setMansurGateOpen] = useState(false);
+  const [mansurDungeonEntered, setMansurDungeonEntered] = useState(false);
+  const [mansurMonstersLeft, setMansurMonstersLeft] = useState(mansurDungeonEnemiesTotal);
+  const [mansurKingFightStarted, setMansurKingFightStarted] = useState(false);
   const [gold, setGold] = useState(0);
   const [dungeon, setDungeon] = useState<Dungeon | null>(null);
   const [relics, setRelics] = useState<string[]>([]);
@@ -521,8 +571,12 @@ export function HomePage() {
   const isFamilyBoss = endingChoice === 'family';
   const isGoblinKingBoss = goblinKingReady && goblinKingFightStarted;
   const isFuryKingBoss = furyKingFightStarted;
+  const isAnuarKingBoss = anuarKingFightStarted;
+  const isMansurKingBoss = mansurKingFightStarted;
   const isFuryDungeon = furyDungeonEntered && !furyChoiceOpen && !furyKingFightStarted;
-  const enemy = isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
+  const isAnuarWorld = anuarWorldEntered && !anuarKingFightStarted;
+  const isMansurDungeon = mansurDungeonEntered && !mansurKingFightStarted;
+  const enemy = isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
   const isDungeon = dungeon?.entered && !dungeon.cleared;
@@ -536,13 +590,13 @@ export function HomePage() {
   const armorBonus = equippedArmor?.defense ?? 0;
   const defenseBonus = upgradePower(items.clothes, shopBasePower.clothes) + upgradePower(items.helmet, shopBasePower.helmet) + upgradePower(items.armor, shopBasePower.armor) + armorBonus;
   const reward = enemy ? 120 + chapter * 110 : 0;
-  const currentMonsters = isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss ? 0 : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
-  const currentMonsterHp = isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
-  const currentMonsterDamage = isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
+  const currentMonsters = isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss ? 0 : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
+  const currentMonsterHp = isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
+  const currentMonsterDamage = isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
-  const currentDragonHp = isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
-  const currentDragonDamage = isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
+  const currentDragonHp = isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
+  const currentDragonDamage = isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const dragonReactionSpeed = enemy?.attackSpeed ?? 1;
   const currentEnemyHealthText = currentMonsters > 0
@@ -551,8 +605,12 @@ export function HomePage() {
   const cityScene = `scene-city-${chapter % 6}`;
   const battleScene = isDungeon
     ? 'scene-dungeon'
-    : isFuryDungeon || isFuryKingBoss
-      ? 'scene-fury'
+    : isMansurDungeon || isMansurKingBoss
+      ? 'scene-mansur'
+      : isAnuarWorld || isAnuarKingBoss
+      ? 'scene-anuar'
+      : isFuryDungeon || isFuryKingBoss
+        ? 'scene-fury'
       : isFamilyBoss
       ? 'scene-family'
       : currentMonsters === 0
@@ -564,6 +622,10 @@ export function HomePage() {
         : cityScene;
   const dragonClass = isFamilyBoss
     ? 'dragon-family'
+    : isMansurKingBoss
+      ? 'dragon-mansur'
+    : isAnuarKingBoss
+      ? 'dragon-anuar'
     : isFuryKingBoss
       ? 'dragon-fury'
     : isGoblinKingBoss
@@ -739,6 +801,22 @@ export function HomePage() {
     setBattlePulse((pulse) => pulse + 1);
 
     if (equippedWeapon?.id.startsWith('admin-nuke-')) {
+      if (isMansurDungeon) {
+        setMansurMonstersLeft(0);
+        setMansurDungeonEntered(false);
+        setMansurKingFightStarted(true);
+        setEnemyHp(currentDragonHp);
+        setMessage('Подземелье Мансура очищено. Король Мансур вышел с короной.');
+        return;
+      }
+      if (isAnuarWorld) {
+        setAnuarBombsLeft(0);
+        setAnuarWorldEntered(false);
+        setAnuarKingFightStarted(true);
+        setEnemyHp(currentDragonHp);
+        setMessage('Бомба-монстры уничтожены. Ануар вышел на финальный бой.');
+        return;
+      }
       if (isFuryDungeon) {
         const furySword = createFurySword();
         setFuryMonstersLeft(0);
@@ -768,12 +846,16 @@ export function HomePage() {
     const nextHeroHp = Math.max(0, heroHp - monsterDamage);
     const monstersPerHit = items.doubleStrike > 0 ? 2 + Math.max(0, shopLevels.doubleStrike - 1) : 1;
     const nextMonsters = Math.max(0, currentMonsters - monstersPerHit);
-    const monsterWeapon = isFuryDungeon ? rollDungeonWeapon(chapter + 10) : isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2, chapter + 1);
-    const monsterArmor = isFuryDungeon ? rollArmor(10, chapter + 10) : isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2, chapter + 1);
+    const monsterWeapon = isMansurDungeon ? rollDungeonWeapon(chapter + 14) : isAnuarWorld ? rollDungeonWeapon(chapter + 12) : isFuryDungeon ? rollDungeonWeapon(chapter + 10) : isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2, chapter + 1);
+    const monsterArmor = isMansurDungeon ? rollArmor(14, chapter + 14) : isAnuarWorld ? rollArmor(12, chapter + 12) : isFuryDungeon ? rollArmor(10, chapter + 10) : isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2, chapter + 1);
     const nextCityMonsters = cityMonsters.map((count, index) => (index === chapter ? nextMonsters : count));
 
     setHeroHp(nextHeroHp);
-    if (isFuryDungeon) {
+    if (isMansurDungeon) {
+      setMansurMonstersLeft(nextMonsters);
+    } else if (isAnuarWorld) {
+      setAnuarBombsLeft(nextMonsters);
+    } else if (isFuryDungeon) {
       setFuryMonstersLeft(nextMonsters);
     } else if (isDungeon && dungeon) {
       setDungeon({ ...dungeon, enemiesLeft: nextMonsters });
@@ -803,13 +885,27 @@ export function HomePage() {
 
     setMessage(
       monsterWeapon
-        ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${monsterWeapon.name} (${monsterWeapon.rarity}).`
+        ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${monsterWeapon.name} (${monsterWeapon.rarity}).`
         : monsterArmor
-          ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
-        : `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Получено золото.`
+          ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
+        : `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Получено золото.`
     );
 
     if (nextMonsters === 0) {
+      if (isMansurDungeon) {
+        setMansurDungeonEntered(false);
+        setMansurKingFightStarted(true);
+        setEnemyHp(currentDragonHp);
+        setMessage('100000 монстров Мансура побеждены. Король Мансур вышел с короной.');
+        return;
+      }
+      if (isAnuarWorld) {
+        setAnuarWorldEntered(false);
+        setAnuarKingFightStarted(true);
+        setEnemyHp(currentDragonHp);
+        setMessage('100000 бомба-монстров побеждены. Ануар вышел с табличкой и начался финальный бой.');
+        return;
+      }
       if (isFuryDungeon) {
         const furySword = createFurySword();
         setFuryDungeonEntered(false);
@@ -834,6 +930,35 @@ export function HomePage() {
 
   function clearCity() {
     if (!enemy) return;
+
+    if (isMansurKingBoss) {
+      const mansurBlade = createMansurBlade();
+      setVictory(true);
+      setSecretEnding('mansurKing');
+      setMansurGateOpen(false);
+      setMansurDungeonEntered(false);
+      setMansurKingFightStarted(false);
+      setChapter(dragonSons.length + 1);
+      setWeapons((currentWeapons) => [...currentWeapons, mansurBlade]);
+      setEquippedWeapon(mansurBlade);
+      setGold(gold + 1_000_000);
+      setMessage('Король Мансур побежден. Получен Мансур секретный клинок.');
+      navigate('/world');
+      return;
+    }
+
+    if (isAnuarKingBoss) {
+      setVictory(true);
+      setSecretEnding('anuarKing');
+      setAnuarGateOpen(false);
+      setAnuarWorldEntered(false);
+      setAnuarKingFightStarted(false);
+      setChapter(dragonSons.length + 1);
+      setGold(gold + 1_000_000);
+      setMessage('Бомбическая концовка открыта: Ануар побежден, секретный город бомб зачищен.');
+      navigate('/world');
+      return;
+    }
 
     if (isFuryKingBoss) {
       setSecretEnding('furyKing');
@@ -1014,6 +1139,26 @@ export function HomePage() {
       return;
     }
 
+    if (adminCode.trim().toLowerCase() === 'anuar') {
+      setAnuarGateOpen(true);
+      setAnuarWorldEntered(false);
+      setAnuarBombsLeft(anuarBombEnemiesTotal);
+      setAnuarKingFightStarted(false);
+      setAdminCode('');
+      setMessage('Код Anuar открыл секретный мир города бомб. Выбери: войти или выйти.');
+      return;
+    }
+
+    if (adminCode.trim().toLowerCase() === 'mansur') {
+      setMansurGateOpen(true);
+      setMansurDungeonEntered(false);
+      setMansurMonstersLeft(mansurDungeonEnemiesTotal);
+      setMansurKingFightStarted(false);
+      setAdminCode('');
+      setMessage('Код mansur открыл секретное подземелье Мансура для братишки.');
+      return;
+    }
+
     if (adminCode.trim() === '999999999') {
       const sword = createBillionSword();
       setWeapons((currentWeapons) => [...currentWeapons, sword]);
@@ -1023,7 +1168,7 @@ export function HomePage() {
       return;
     }
 
-    if (adminCode.trim().toUpperCase() !== 'DDD') {
+    if (adminCode.trim().toLowerCase() !== 'wwnurikww') {
       setAdminCode('');
       setMessage('Код не подошел.');
       return;
@@ -1037,7 +1182,7 @@ export function HomePage() {
     setEquippedArmor(helmet);
     setHeroHp(Number.MAX_SAFE_INTEGER);
     setAdminCode('');
-    setMessage('Код DDD принят. Получена админская ядерка и шлем с огромным здоровьем.');
+    setMessage('Код wwnurikww принят. Получена админская ядерка и шлем с огромным здоровьем.');
   }
 
   function enterDungeon() {
@@ -1076,6 +1221,14 @@ export function HomePage() {
     setFuryMonstersLeft(furyDungeonEnemiesTotal);
     setFuryChoiceOpen(false);
     setFuryKingFightStarted(false);
+    setAnuarGateOpen(false);
+    setAnuarWorldEntered(false);
+    setAnuarBombsLeft(anuarBombEnemiesTotal);
+    setAnuarKingFightStarted(false);
+    setMansurGateOpen(false);
+    setMansurDungeonEntered(false);
+    setMansurMonstersLeft(mansurDungeonEnemiesTotal);
+    setMansurKingFightStarted(false);
     setGold(0);
     setDungeon(null);
     setRelics([]);
@@ -1300,6 +1453,78 @@ export function HomePage() {
     );
   }
 
+  if (anuarGateOpen && !anuarWorldEntered && !anuarKingFightStarted) {
+    return (
+      <main className="anuar-choice-page">
+        <section className="cave-choice anuar-choice" aria-label="Секретный мир Ануара">
+          <p className="intro-kicker">Код Anuar</p>
+          <h1>Секретный город бомб</h1>
+          <p>
+            На экране появилась надпись: войти или выйти. За входом ждут
+            {formatPower(anuarBombEnemiesTotal)} бомба-монстров.
+          </p>
+          <p>
+            После зачистки выйдет Ануар с табличкой, и начнется финальный бой
+            за бомбическую концовку.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setAnuarWorldEntered(true);
+              setAnuarBombsLeft(anuarBombEnemiesTotal);
+              setMessage(`Ты вошел в город бомб. Внутри ${formatPower(anuarBombEnemiesTotal)} бомба-монстров.`);
+              navigate('/');
+            }} type="button">
+              Войти
+            </button>
+            <button className="secondary" onClick={() => {
+              setAnuarGateOpen(false);
+              setMessage('Ты вышел из секретного города бомб.');
+              navigate('/');
+            }} type="button">
+              Выйти
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (mansurGateOpen && !mansurDungeonEntered && !mansurKingFightStarted) {
+    return (
+      <main className="mansur-choice-page">
+        <section className="cave-choice mansur-choice" aria-label="Секретное подземелье Мансура">
+          <p className="intro-kicker">Код mansur</p>
+          <h1>Подземелье Мансура</h1>
+          <p>
+            Это секретное подземелье для твоего братишки Мансура. Внутри
+            {formatPower(mansurDungeonEnemiesTotal)} монстров и горный мир.
+          </p>
+          <p>
+            После победы над всеми монстрами выйдет Король Мансур с короной.
+            Победи его, чтобы получить секретный клинок Мансура.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setMansurDungeonEntered(true);
+              setMansurMonstersLeft(mansurDungeonEnemiesTotal);
+              setMessage(`Ты вошел в подземелье Мансура. Внутри ${formatPower(mansurDungeonEnemiesTotal)} монстров.`);
+              navigate('/');
+            }} type="button">
+              Войти
+            </button>
+            <button className="secondary" onClick={() => {
+              setMansurGateOpen(false);
+              setMessage('Ты вышел из подземелья Мансура.');
+              navigate('/');
+            }} type="button">
+              Выйти
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   if (furyChoiceOpen) {
     return (
       <main className="fury-choice-page">
@@ -1365,7 +1590,7 @@ export function HomePage() {
           <div className="monster-pack" data-kind={enemy?.monsterKind ?? 'goblin'}>
             {Array.from({ length: Math.max(0, Math.min(4, Math.ceil(currentMonsters / 500))) }).map((_, index) => {
               const mixedMonster = monsterKinds[(chapter + index) % monsterKinds.length];
-              const monsterKind = isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
+              const monsterKind = isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
               const monsterColumn = index % 8;
               const monsterRow = Math.floor(index / 8);
               return (
@@ -1442,7 +1667,35 @@ export function HomePage() {
               </span>
             </div>
           )}
-          {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && !isFuryKingBoss && (
+          {!isFinalReveal && enemy && currentMonsters === 0 && isAnuarKingBoss && (
+            <div className="anuar-boss">
+              <div className="anuar-sign">Ну ты и душнила</div>
+              <div className="anuar-person">
+                <span className="anuar-head" />
+                <span className="anuar-body" />
+                <span className="anuar-arm" />
+              </div>
+            </div>
+          )}
+          {!isFinalReveal && enemy && currentMonsters === 0 && isMansurKingBoss && (
+            <div className="mansur-king-boss">
+              <div className="mansur-crown">
+                <span />
+                <span />
+                <span />
+              </div>
+              <span className="monster-token mansur king">
+                <i />
+                <em className="monster-face" />
+                <em className="monster-nose" />
+                <em className="monster-belt" />
+                <em className="monster-boots" />
+                <em className="monster-armor" />
+                <b />
+              </span>
+            </div>
+          )}
+          {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && !isFuryKingBoss && !isAnuarKingBoss && !isMansurKingBoss && (
             <div className={`boss ${isFinalBoss ? 'final-boss' : ''} ${dragonClass}`} style={{ '--dragon-color': enemy.color } as CSSProperties}>
               <div className="tail-2d" />
               <div className="wing wing-left" />
@@ -1500,7 +1753,41 @@ export function HomePage() {
           <p>{message}</p>
         </div>
 
-        {secretEnding === 'furyKing' ? (
+        {secretEnding === 'mansurKing' ? (
+          <div className="reveal mansur-ending">
+            <p className="eyebrow">Секретная концовка</p>
+            <h2>Подземелье Мансура зачищено</h2>
+            <p>
+              Герой победил {formatPower(mansurDungeonEnemiesTotal)} монстров и Короля Мансура.
+              Для братишки Мансура открыт секретный горный мир.
+            </p>
+            <p>
+              Получено оружие: Мансур секретный клинок. Урон клинка:
+              {mansurBladeDamageText}.
+            </p>
+            <div className="ending-actions">
+              <Link className="ending-link" href="/">Продолжать</Link>
+              <button onClick={restart}>Начать повторно</button>
+            </div>
+          </div>
+        ) : secretEnding === 'anuarKing' ? (
+          <div className="reveal anuar-ending">
+            <p className="eyebrow">Секретная концовка</p>
+            <h2>Бомбическая концовка</h2>
+            <p>
+              Герой победил Ануара после {formatPower(anuarBombEnemiesTotal)} бомба-монстров.
+              Секретный мир открылся полностью, а город бомб больше не взрывается.
+            </p>
+            <p>
+              Финальная надпись: секретный мир города бомб зачищен.
+              Это бомбическая концовка.
+            </p>
+            <div className="ending-actions">
+              <Link className="ending-link" href="/">Продолжать</Link>
+              <button onClick={restart}>Начать повторно</button>
+            </div>
+          </div>
+        ) : secretEnding === 'furyKing' ? (
           <div className="reveal">
             <p className="eyebrow">Секретная концовка</p>
             <h2>Ты ужасен</h2>

@@ -256,7 +256,9 @@ button.secondary {
 
 .cave-choice-page,
 .goblin-choice-page,
-.fury-choice-page {
+.fury-choice-page,
+.anuar-choice-page,
+.mansur-choice-page {
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -279,6 +281,21 @@ button.secondary {
     radial-gradient(circle at 76% 20%, rgba(255, 159, 28, 0.22) 0 8rem, transparent 8.2rem),
     radial-gradient(ellipse at 50% 78%, rgba(0, 0, 0, 0.72) 0 16rem, transparent 16.2rem),
     linear-gradient(180deg, #e8e4dc 0%, #8f8b84 44%, #28282c 45%, #0e0e12 100%);
+}
+
+.anuar-choice-page {
+  background:
+    radial-gradient(circle at 50% 38%, #fff7ad 0 44px, #ff8a1d 45px 86px, #b91c1c 87px 150px, transparent 151px),
+    radial-gradient(circle at 50% 50%, rgba(255, 90, 38, 0.45), transparent 22rem),
+    linear-gradient(135deg, #120808, #401111 48%, #120808);
+}
+
+.mansur-choice-page {
+  background:
+    radial-gradient(ellipse at 50% 74%, rgba(0, 175, 210, 0.58) 0 13rem, transparent 13.2rem),
+    radial-gradient(ellipse at 28% 64%, #163d2b 0 13rem, transparent 13.2rem),
+    radial-gradient(ellipse at 76% 62%, #1c4a35 0 14rem, transparent 14.2rem),
+    linear-gradient(180deg, #f8c6a2 0%, #aac8dc 36%, #0d5f73 72%, #06323f 100%);
 }
 
 .cave-choice {
@@ -306,6 +323,20 @@ button.secondary {
   background:
     radial-gradient(circle at 82% 18%, rgba(255, 159, 28, 0.2), transparent 10rem),
     linear-gradient(90deg, rgba(14, 14, 18, 0.94), rgba(41, 42, 48, 0.78));
+}
+
+.anuar-choice {
+  border-color: rgba(255, 209, 102, 0.86);
+  color: #fff8e8;
+  background:
+    linear-gradient(180deg, rgba(70, 12, 12, 0.9), rgba(20, 8, 8, 0.92));
+}
+
+.mansur-choice {
+  border-color: rgba(156, 255, 0, 0.86);
+  color: #fff8e8;
+  background:
+    linear-gradient(180deg, rgba(19, 61, 43, 0.9), rgba(5, 32, 40, 0.92));
 }
 
 .cave-choice h1 {
@@ -908,6 +939,52 @@ button.secondary {
   background:
     repeating-linear-gradient(90deg, rgba(255, 159, 28, 0.18) 0 44px, transparent 45px 88px),
     linear-gradient(180deg, #36363c, #111116);
+}
+
+.sky.scene-anuar {
+  background:
+    radial-gradient(circle at 50% 27%, #fff5a8 0 42px, #ff9f1c 43px 90px, #d00000 91px 150px, transparent 151px),
+    radial-gradient(ellipse at 30% 82%, #3b2418 0 110px, transparent 111px),
+    radial-gradient(ellipse at 78% 80%, #5b231e 0 132px, transparent 133px),
+    linear-gradient(180deg, #241015 0%, #672018 52%, #1a1022 100%);
+}
+
+.sky.scene-anuar::before {
+  height: 100%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 76px, rgba(255, 209, 102, 0.15) 77px 82px),
+    radial-gradient(circle at 52% 32%, rgba(255, 255, 255, 0.7), transparent 92px);
+}
+
+.sky.scene-anuar::after {
+  height: 136px;
+  border-top-color: #ff9f1c;
+  background:
+    radial-gradient(ellipse at 18% 76%, #2b1a16 0 86px, transparent 87px),
+    linear-gradient(180deg, #6b2c18, #23100f);
+}
+
+.sky.scene-mansur {
+  background:
+    radial-gradient(ellipse at 50% 74%, rgba(0, 190, 220, 0.64) 0 190px, transparent 191px),
+    radial-gradient(ellipse at 28% 62%, #164b34 0 168px, transparent 169px),
+    radial-gradient(ellipse at 76% 62%, #1e593c 0 184px, transparent 185px),
+    linear-gradient(180deg, #f5c7a5 0%, #adc5d9 36%, #17718a 72%, #073342 100%);
+}
+
+.sky.scene-mansur::before {
+  height: 100%;
+  background:
+    radial-gradient(ellipse at 50% 48%, #d5e6f7 0 86px, transparent 87px),
+    linear-gradient(135deg, transparent 0 36%, rgba(255, 255, 255, 0.28) 37% 42%, transparent 43% 100%);
+}
+
+.sky.scene-mansur::after {
+  height: 136px;
+  border-top-color: #9cff00;
+  background:
+    radial-gradient(ellipse at 44% 10%, rgba(255, 255, 255, 0.18) 0 150px, transparent 151px),
+    linear-gradient(180deg, #0d6378, #062833);
 }
 
 .sky.scene-family {
@@ -1914,6 +1991,280 @@ button.secondary {
 .monster-token.fury .monster-face,
 .monster-token.fury .monster-nose {
   background-color: #ff9f1c;
+}
+
+.monster-token.bomb {
+  width: 78px;
+  height: 78px;
+  scale: 1.28;
+  border: 4px solid #101010;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.22) 0 14px, transparent 15px),
+    linear-gradient(135deg, #555, #181818);
+  box-shadow: 10px 4px 0 -4px #ffd166, 0 12px 12px rgba(20, 8, 4, 0.3);
+}
+
+.monster-token.bomb i,
+.monster-token.bomb b,
+.monster-token.bomb::before,
+.monster-token.bomb::after,
+.monster-token.bomb .monster-belt,
+.monster-token.bomb .monster-boots,
+.monster-token.bomb .monster-armor {
+  display: none;
+}
+
+.monster-token.bomb .monster-face {
+  left: 20px;
+  top: 28px;
+  width: 38px;
+  height: 12px;
+  border: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 8px 4px, #050505 0 4px, transparent 5px),
+    radial-gradient(circle at 30px 4px, #050505 0 4px, transparent 5px);
+}
+
+.monster-token.bomb .monster-nose {
+  left: 28px;
+  top: 44px;
+  width: 24px;
+  height: 10px;
+  border: 3px solid #050505;
+  border-top: 0;
+  border-radius: 0 0 16px 16px;
+  background: transparent;
+  transform: rotate(18deg);
+}
+
+.monster-token.bomb .monster-nose::after {
+  right: 23px;
+  top: -62px;
+  width: 42px;
+  height: 24px;
+  border: 0;
+  background:
+    radial-gradient(ellipse at 0 100%, transparent 0 18px, #9b8a68 19px 23px, transparent 24px),
+    linear-gradient(90deg, transparent 0 70%, #9b8a68 71% 86%, transparent 87%);
+  transform: rotate(-24deg);
+}
+
+.monster-token.mansur {
+  width: 86px;
+  height: 112px;
+  scale: 1.35;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.28));
+}
+
+.monster-token.mansur i {
+  left: 18px;
+  top: 2px;
+  width: 50px;
+  height: 28px;
+  border: 6px solid #050505;
+  border-radius: 14px;
+  background: #9cff00;
+}
+
+.monster-token.mansur i::before,
+.monster-token.mansur i::after {
+  top: -10px;
+  width: 38px;
+  height: 28px;
+  border: 6px solid #050505;
+  border-radius: 100% 20% 100% 20%;
+  background: #9cff00;
+}
+
+.monster-token.mansur i::before {
+  left: -38px;
+  transform: rotate(42deg);
+}
+
+.monster-token.mansur i::after {
+  right: -38px;
+  transform: rotate(138deg) scaleY(-1);
+}
+
+.monster-token.mansur b {
+  left: 20px;
+  top: 42px;
+  width: 48px;
+  height: 48px;
+  border: 6px solid #050505;
+  border-radius: 6px;
+  background: #ad7d6d;
+}
+
+.monster-token.mansur::before,
+.monster-token.mansur::after {
+  top: 42px;
+  width: 20px;
+  height: 54px;
+  border: 6px solid #050505;
+  border-radius: 999px;
+  background: #9cff00;
+}
+
+.monster-token.mansur::before {
+  left: -6px;
+  transform: rotate(4deg);
+}
+
+.monster-token.mansur::after {
+  right: -6px;
+  transform: rotate(-4deg);
+}
+
+.monster-token.mansur .monster-face,
+.monster-token.mansur .monster-nose,
+.monster-token.mansur .monster-belt,
+.monster-token.mansur .monster-armor {
+  display: none;
+}
+
+.monster-token.mansur .monster-boots {
+  display: block;
+  left: 11px;
+  right: 8px;
+  bottom: 0;
+  height: 22px;
+  background:
+    radial-gradient(ellipse at 25% 70%, #ad7d6d 0 17px, #050505 18px 24px, transparent 25px),
+    radial-gradient(ellipse at 76% 70%, #ad7d6d 0 17px, #050505 18px 24px, transparent 25px);
+}
+
+.mansur-king-boss {
+  position: absolute;
+  right: 16%;
+  bottom: 132px;
+  z-index: 7;
+  width: 210px;
+  height: 230px;
+}
+
+.mansur-king-boss .monster-token {
+  position: absolute;
+  left: 54px;
+  bottom: 0;
+  scale: 2.05;
+}
+
+.mansur-crown {
+  position: absolute;
+  left: 66px;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: end;
+  gap: 4px;
+  width: 78px;
+  height: 42px;
+  padding: 0 6px 7px;
+  border: 5px solid #050505;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fff275, #ffb703);
+}
+
+.mansur-crown span {
+  flex: 1;
+  height: 24px;
+  background: #9cff00;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.mansur-crown span:nth-child(2) {
+  height: 34px;
+}
+
+.mansur-ending {
+  border-color: #9cff00;
+  background:
+    radial-gradient(ellipse at 50% 0, rgba(156, 255, 0, 0.24), transparent 13rem),
+    #fff8e8;
+}
+
+.anuar-boss {
+  position: absolute;
+  right: 14%;
+  bottom: 126px;
+  z-index: 7;
+  width: 250px;
+  height: 260px;
+}
+
+.anuar-sign {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 170px;
+  height: 118px;
+  padding: 16px;
+  color: #050505;
+  font-size: 24px;
+  font-weight: 950;
+  line-height: 0.95;
+  text-align: center;
+  background: #ff5a3d;
+  transform: rotate(3deg);
+}
+
+.anuar-person {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 150px;
+  height: 220px;
+}
+
+.anuar-head {
+  position: absolute;
+  left: 48px;
+  top: 0;
+  width: 58px;
+  height: 58px;
+  border: 4px solid #050505;
+  border-radius: 50%;
+  background: #ff5a3d;
+  box-shadow: 10px -14px 0 -7px #050505;
+}
+
+.anuar-body {
+  position: absolute;
+  left: 24px;
+  top: 54px;
+  width: 112px;
+  height: 145px;
+  border: 4px solid #050505;
+  border-radius: 40px 44px 18px 18px;
+  background: #ff5a3d;
+}
+
+.anuar-arm {
+  position: absolute;
+  left: 4px;
+  top: 88px;
+  width: 84px;
+  height: 28px;
+  border: 4px solid #050505;
+  border-radius: 999px;
+  background: #ff5a3d;
+  transform: rotate(-34deg);
+}
+
+.anuar-ending {
+  border-color: #ff9f1c;
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 159, 28, 0.26), transparent 14rem),
+    #fff8e8;
 }
 
 .monster-token i {
