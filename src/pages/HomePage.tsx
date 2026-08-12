@@ -67,7 +67,7 @@ type Quest = {
 
 type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
 type EndingChoice = 'spare' | 'fight' | 'family' | null;
-type SecretEnding = 'goblinKing' | null;
+type SecretEnding = 'goblinKing' | 'furyKing' | null;
 
 const firstDragonCities: CityStage[] = [
   { name: 'Игнис', city: 'Алматы', country: 'Казахстан', lair: 'Логово Искры в горах Заилийского Алатау', monsterKind: 'goblin', monsterName: 'гоблины', title: 'сын искры', power: 1_000, color: '#ffb703', attackSpeed: 0.85, reaction: 'бьет очень быстро' },
@@ -167,6 +167,20 @@ const goblinKing: CityStage = {
   reaction: 'дерется быстро, потому что защищает своих',
 };
 
+const furyKing: CityStage = {
+  name: 'Король фури',
+  city: 'Секретный фури-мир',
+  country: 'Скрытая улица',
+  lair: 'Трон фури под серым городом',
+  monsterKind: 'shadow',
+  monsterName: 'фури',
+  title: 'король фури',
+  power: 999_999_999,
+  color: '#111111',
+  attackSpeed: 0.52,
+  reaction: 'двигается очень быстро',
+};
+
 const worldLocations = [
   'Астана', 'Бишкек', 'Ташкент', 'Дубай', 'Каир', 'Афины', 'Берлин',
   'Мадрид', 'Прага', 'Сеул', 'Пекин', 'Сидней', 'Торонто', 'Мехико',
@@ -176,12 +190,14 @@ const worldLocations = [
 const heroMaxHp = 100;
 const monstersPerCity = 10_000;
 const dungeonEnemiesTotal = 10_000;
+const furyDungeonEnemiesTotal = 100_000;
 const baseMonsterHp = 1_000;
 const baseMonsterDamage = 10;
 const baseDragonHp = 1_000_000;
 const baseDragonDamage = 1_000;
 const adminNukeDamageText = '9'.repeat(4_000);
 const adminHelmetHealthText = '9'.repeat(384);
+const furySwordDamageText = '1' + '0'.repeat(116);
 
 const shopItems: ShopItem[] = [
   { id: 'sword', name: 'Меч рассвета', price: 120, bonus: '+100 урона' },
@@ -410,6 +426,17 @@ function createBillionSword(): Weapon {
   };
 }
 
+function createFurySword(): Weapon {
+  return {
+    id: `fury-sword-${Date.now()}-${Math.random()}`,
+    name: 'Фури меч',
+    rarity: 'Секретное',
+    damage: Number.MAX_SAFE_INTEGER,
+    displayDamage: furySwordDamageText,
+    price: 0,
+  };
+}
+
 function createAdminHelmet(): Armor {
   return {
     id: `admin-helmet-${Date.now()}-${Math.random()}`,
@@ -440,6 +467,11 @@ export function HomePage() {
   const [secretEnding, setSecretEnding] = useState<SecretEnding>(null);
   const [goblinKingReady, setGoblinKingReady] = useState(false);
   const [goblinKingFightStarted, setGoblinKingFightStarted] = useState(false);
+  const [furyGateOpen, setFuryGateOpen] = useState(false);
+  const [furyDungeonEntered, setFuryDungeonEntered] = useState(false);
+  const [furyMonstersLeft, setFuryMonstersLeft] = useState(furyDungeonEnemiesTotal);
+  const [furyChoiceOpen, setFuryChoiceOpen] = useState(false);
+  const [furyKingFightStarted, setFuryKingFightStarted] = useState(false);
   const [gold, setGold] = useState(0);
   const [dungeon, setDungeon] = useState<Dungeon | null>(null);
   const [relics, setRelics] = useState<string[]>([]);
@@ -488,7 +520,9 @@ export function HomePage() {
   const isFinalBoss = chapter === dragonSons.length && !victory;
   const isFamilyBoss = endingChoice === 'family';
   const isGoblinKingBoss = goblinKingReady && goblinKingFightStarted;
-  const enemy = isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
+  const isFuryKingBoss = furyKingFightStarted;
+  const isFuryDungeon = furyDungeonEntered && !furyChoiceOpen && !furyKingFightStarted;
+  const enemy = isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
   const isDungeon = dungeon?.entered && !dungeon.cleared;
@@ -502,13 +536,13 @@ export function HomePage() {
   const armorBonus = equippedArmor?.defense ?? 0;
   const defenseBonus = upgradePower(items.clothes, shopBasePower.clothes) + upgradePower(items.helmet, shopBasePower.helmet) + upgradePower(items.armor, shopBasePower.armor) + armorBonus;
   const reward = enemy ? 120 + chapter * 110 : 0;
-  const currentMonsters = isFinalBoss || isFamilyBoss || isGoblinKingBoss ? 0 : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
-  const currentMonsterHp = isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
-  const currentMonsterDamage = isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
+  const currentMonsters = isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss ? 0 : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
+  const currentMonsterHp = isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
+  const currentMonsterDamage = isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
-  const currentDragonHp = isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
-  const currentDragonDamage = isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
+  const currentDragonHp = isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
+  const currentDragonDamage = isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const dragonReactionSpeed = enemy?.attackSpeed ?? 1;
   const currentEnemyHealthText = currentMonsters > 0
@@ -517,7 +551,9 @@ export function HomePage() {
   const cityScene = `scene-city-${chapter % 6}`;
   const battleScene = isDungeon
     ? 'scene-dungeon'
-    : isFamilyBoss
+    : isFuryDungeon || isFuryKingBoss
+      ? 'scene-fury'
+      : isFamilyBoss
       ? 'scene-family'
       : currentMonsters === 0
         ? isGoblinKingBoss
@@ -528,6 +564,8 @@ export function HomePage() {
         : cityScene;
   const dragonClass = isFamilyBoss
     ? 'dragon-family'
+    : isFuryKingBoss
+      ? 'dragon-fury'
     : isGoblinKingBoss
       ? 'dragon-goblin'
       : isFinalBoss
@@ -701,6 +739,16 @@ export function HomePage() {
     setBattlePulse((pulse) => pulse + 1);
 
     if (equippedWeapon?.id.startsWith('admin-nuke-')) {
+      if (isFuryDungeon) {
+        const furySword = createFurySword();
+        setFuryMonstersLeft(0);
+        setFuryDungeonEntered(false);
+        setFuryChoiceOpen(true);
+        setWeapons((currentWeapons) => [...currentWeapons, furySword]);
+        setEquippedWeapon(furySword);
+        setMessage('Фури-подземелье очищено. Получен секретный Фури меч. Выбери: убить или любить.');
+        return;
+      }
       if (isDungeon && dungeon) {
         setDungeon({ ...dungeon, enemiesLeft: 0, cleared: true, entered: false });
         setGoblinKingReady(true);
@@ -720,12 +768,14 @@ export function HomePage() {
     const nextHeroHp = Math.max(0, heroHp - monsterDamage);
     const monstersPerHit = items.doubleStrike > 0 ? 2 + Math.max(0, shopLevels.doubleStrike - 1) : 1;
     const nextMonsters = Math.max(0, currentMonsters - monstersPerHit);
-    const monsterWeapon = isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2, chapter + 1);
-    const monsterArmor = isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2, chapter + 1);
+    const monsterWeapon = isFuryDungeon ? rollDungeonWeapon(chapter + 10) : isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2, chapter + 1);
+    const monsterArmor = isFuryDungeon ? rollArmor(10, chapter + 10) : isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2, chapter + 1);
     const nextCityMonsters = cityMonsters.map((count, index) => (index === chapter ? nextMonsters : count));
 
     setHeroHp(nextHeroHp);
-    if (isDungeon && dungeon) {
+    if (isFuryDungeon) {
+      setFuryMonstersLeft(nextMonsters);
+    } else if (isDungeon && dungeon) {
       setDungeon({ ...dungeon, enemiesLeft: nextMonsters });
     } else {
       setCityMonsters(nextCityMonsters);
@@ -753,13 +803,22 @@ export function HomePage() {
 
     setMessage(
       monsterWeapon
-        ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${monsterWeapon.name} (${monsterWeapon.rarity}).`
+        ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${monsterWeapon.name} (${monsterWeapon.rarity}).`
         : monsterArmor
-          ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
-        : `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Получено золото.`
+          ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
+        : `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Получено золото.`
     );
 
     if (nextMonsters === 0) {
+      if (isFuryDungeon) {
+        const furySword = createFurySword();
+        setFuryDungeonEntered(false);
+        setFuryChoiceOpen(true);
+        setWeapons([...weapons, furySword]);
+        setEquippedWeapon(furySword);
+        setMessage('100000 фури-монстров побеждены. Получен секретный Фури меч. Выбери: убить или любить.');
+        return;
+      }
       if (isDungeon && dungeon) {
         setDungeon({ ...dungeon, enemiesLeft: 0, cleared: true, entered: false });
         setGoblinKingReady(true);
@@ -775,6 +834,18 @@ export function HomePage() {
 
   function clearCity() {
     if (!enemy) return;
+
+    if (isFuryKingBoss) {
+      setSecretEnding('furyKing');
+      setFuryGateOpen(false);
+      setFuryDungeonEntered(false);
+      setFuryChoiceOpen(false);
+      setFuryKingFightStarted(false);
+      setGold(gold + 999_999);
+      setMessage('Секретная концовка открыта: король фури побежден.');
+      navigate('/world');
+      return;
+    }
 
     if (isGoblinKingBoss) {
       setVictory(true);
@@ -932,6 +1003,17 @@ export function HomePage() {
   function submitAdminCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (adminCode.trim().toLowerCase() === 'wwfuri') {
+      setFuryGateOpen(true);
+      setFuryDungeonEntered(false);
+      setFuryMonstersLeft(furyDungeonEnemiesTotal);
+      setFuryChoiceOpen(false);
+      setFuryKingFightStarted(false);
+      setAdminCode('');
+      setMessage('Код wwfuri открыл секретный фури-мир. Выбери: войти или выйти.');
+      return;
+    }
+
     if (adminCode.trim() === '999999999') {
       const sword = createBillionSword();
       setWeapons((currentWeapons) => [...currentWeapons, sword]);
@@ -989,6 +1071,11 @@ export function HomePage() {
     setSecretEnding(null);
     setGoblinKingReady(false);
     setGoblinKingFightStarted(false);
+    setFuryGateOpen(false);
+    setFuryDungeonEntered(false);
+    setFuryMonstersLeft(furyDungeonEnemiesTotal);
+    setFuryChoiceOpen(false);
+    setFuryKingFightStarted(false);
     setGold(0);
     setDungeon(null);
     setRelics([]);
@@ -1177,6 +1264,75 @@ export function HomePage() {
     );
   }
 
+  if (furyGateOpen && !furyDungeonEntered && !furyChoiceOpen && !furyKingFightStarted) {
+    return (
+      <main className="fury-choice-page">
+        <section className="cave-choice fury-choice" aria-label="Секретный фури-мир">
+          <p className="intro-kicker">Код wwfuri</p>
+          <h1>Секретный фури-мир</h1>
+          <p>
+            Код открыл скрытый вход. За ним ждут {formatPower(furyDungeonEnemiesTotal)}
+            фури-монстров и секретное оружие.
+          </p>
+          <p>
+            Если войдёшь, назад будет трудно вернуться: после победы появится выбор
+            любить или убить короля фури.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setFuryDungeonEntered(true);
+              setFuryMonstersLeft(furyDungeonEnemiesTotal);
+              setMessage(`Ты вошел в фури-мир. Внутри ${formatPower(furyDungeonEnemiesTotal)} монстров.`);
+              navigate('/');
+            }} type="button">
+              Войти
+            </button>
+            <button className="secondary" onClick={() => {
+              setFuryGateOpen(false);
+              setMessage('Ты вышел из секретного фури-мира.');
+              navigate('/');
+            }} type="button">
+              Выйти
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (furyChoiceOpen) {
+    return (
+      <main className="fury-choice-page">
+        <section className="cave-choice fury-choice" aria-label="Выбор фури">
+          <p className="intro-kicker">Фури меч найден</p>
+          <h1>Убить или любить</h1>
+          <p>
+            Все {formatPower(furyDungeonEnemiesTotal)} фури-монстров побеждены.
+            Герой получил секретный Фури меч с уроном {furySwordDamageText}.
+          </p>
+          <p>
+            Перед тобой путь к королю фури. Можно любить и начать заново,
+            или убить и открыть страшную секретную концовку.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setFuryChoiceOpen(false);
+              setFuryKingFightStarted(true);
+              setEnemyHp(currentDragonHp);
+              setMessage(`Король фури вышел на бой. У него ${formatPower(currentDragonHp)} HP.`);
+              navigate('/');
+            }} type="button">
+              Убить
+            </button>
+            <button className="secondary" onClick={restart} type="button">
+              Любить
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className={`game ${isWorldPage ? 'world-page' : 'play-page'}`}>
       <div className="auth-panel">
@@ -1209,7 +1365,7 @@ export function HomePage() {
           <div className="monster-pack" data-kind={enemy?.monsterKind ?? 'goblin'}>
             {Array.from({ length: Math.max(0, Math.min(4, Math.ceil(currentMonsters / 500))) }).map((_, index) => {
               const mixedMonster = monsterKinds[(chapter + index) % monsterKinds.length];
-              const monsterKind = enemy?.monsterKind ?? mixedMonster[0];
+              const monsterKind = isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
               const monsterColumn = index % 8;
               const monsterRow = Math.floor(index / 8);
               return (
@@ -1268,7 +1424,25 @@ export function HomePage() {
               </span>
             </div>
           )}
-          {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && (
+          {!isFinalReveal && enemy && currentMonsters === 0 && isFuryKingBoss && (
+            <div className="fury-king-boss">
+              <div className="fury-king-crown">
+                <span />
+                <span />
+                <span />
+              </div>
+              <span className="monster-token fury">
+                <i />
+                <em className="monster-face" />
+                <em className="monster-nose" />
+                <em className="monster-belt" />
+                <em className="monster-boots" />
+                <em className="monster-armor" />
+                <b />
+              </span>
+            </div>
+          )}
+          {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && !isFuryKingBoss && (
             <div className={`boss ${isFinalBoss ? 'final-boss' : ''} ${dragonClass}`} style={{ '--dragon-color': enemy.color } as CSSProperties}>
               <div className="tail-2d" />
               <div className="wing wing-left" />
@@ -1326,7 +1500,28 @@ export function HomePage() {
           <p>{message}</p>
         </div>
 
-        {secretEnding === 'goblinKing' ? (
+        {secretEnding === 'furyKing' ? (
+          <div className="reveal">
+            <p className="eyebrow">Секретная концовка</p>
+            <h2>Ты ужасен</h2>
+            <p>
+              Король фури упал, и герой увидел правду: они были не чудовищами,
+              а людьми в костюмах.
+            </p>
+            <p>
+              Они прятались, потому что боялись войны, мечей и героев. Их страшный
+              вид был маской, а под маской были живые люди.
+            </p>
+            <p>
+              Теперь весь мир спрашивает: были ли они монстрами, или монстром стал
+              тот, кто не захотел понять их?
+            </p>
+            <div className="ending-actions">
+              <button onClick={restart}>Начать повторно</button>
+              <Link className="ending-link" href="/">Продолжать</Link>
+            </div>
+          </div>
+        ) : secretEnding === 'goblinKing' ? (
           <div className="reveal">
             <p className="eyebrow">Секретная концовка</p>
             <h2>Люди, ставшие гоблинами</h2>

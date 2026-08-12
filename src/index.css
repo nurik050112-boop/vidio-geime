@@ -255,7 +255,8 @@ button.secondary {
 }
 
 .cave-choice-page,
-.goblin-choice-page {
+.goblin-choice-page,
+.fury-choice-page {
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -271,6 +272,13 @@ button.secondary {
     radial-gradient(circle at 50% 20%, rgba(101, 168, 50, 0.28) 0 8rem, transparent 8.2rem),
     radial-gradient(ellipse at 50% 78%, rgba(20, 16, 11, 0.92) 0 16rem, transparent 16.2rem),
     linear-gradient(180deg, #10190e 0%, #284822 45%, #11100b 100%);
+}
+
+.fury-choice-page {
+  background:
+    radial-gradient(circle at 76% 20%, rgba(255, 159, 28, 0.22) 0 8rem, transparent 8.2rem),
+    radial-gradient(ellipse at 50% 78%, rgba(0, 0, 0, 0.72) 0 16rem, transparent 16.2rem),
+    linear-gradient(180deg, #e8e4dc 0%, #8f8b84 44%, #28282c 45%, #0e0e12 100%);
 }
 
 .cave-choice {
@@ -290,6 +298,14 @@ button.secondary {
   background:
     radial-gradient(circle at 78% 18%, rgba(255, 209, 102, 0.18), transparent 10rem),
     linear-gradient(90deg, rgba(13, 18, 10, 0.94), rgba(39, 60, 27, 0.74));
+}
+
+.fury-choice {
+  border-color: rgba(255, 159, 28, 0.82);
+  color: #fff8e8;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(255, 159, 28, 0.2), transparent 10rem),
+    linear-gradient(90deg, rgba(14, 14, 18, 0.94), rgba(41, 42, 48, 0.78));
 }
 
 .cave-choice h1 {
@@ -868,6 +884,30 @@ button.secondary {
     radial-gradient(circle at 50% 22%, rgba(255, 0, 76, 0.3) 0 110px, transparent 111px),
     radial-gradient(ellipse at 50% 78%, #5c1118 0 160px, transparent 161px),
     linear-gradient(180deg, #170f24 0%, #751227 42%, #2a0812 43%, #050308 100%);
+}
+
+.sky.scene-fury {
+  background:
+    radial-gradient(circle at 72% 22%, rgba(255, 159, 28, 0.24) 0 82px, transparent 83px),
+    radial-gradient(ellipse at 52% 78%, #1c1c21 0 140px, transparent 141px),
+    linear-gradient(180deg, #d9d5cc 0%, #7b7c82 42%, #2b2c32 43%, #0f1014 100%);
+}
+
+.sky.scene-fury::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 14%, rgba(45, 45, 52, 0.82) 14% 20%, transparent 20% 44%, rgba(22, 22, 28, 0.84) 44% 51%, transparent 51% 76%, rgba(55, 55, 62, 0.78) 76% 82%, transparent 82%),
+    repeating-linear-gradient(90deg, rgba(20, 20, 24, 0.18) 0 3px, transparent 4px 34px);
+  box-shadow: inset 0 0 135px rgba(0, 0, 0, 0.58);
+}
+
+.sky.scene-fury::after {
+  height: 136px;
+  border-top-color: #ff9f1c;
+  border-bottom-color: #0e0e12;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 159, 28, 0.18) 0 44px, transparent 45px 88px),
+    linear-gradient(180deg, #36363c, #111116);
 }
 
 .sky.scene-family {
@@ -1808,10 +1848,72 @@ button.secondary {
   background: #ff004c;
 }
 
+.fury-king-boss {
+  position: absolute;
+  right: 17%;
+  bottom: 142px;
+  z-index: 8;
+  width: 190px;
+  height: 245px;
+  filter: drop-shadow(0 20px 16px rgba(20, 8, 4, 0.48));
+  animation: dragon-hover 1.8s ease-in-out infinite;
+}
+
+.fury-king-boss .monster-token {
+  position: absolute;
+  left: 50px;
+  bottom: 0;
+  scale: 2.95;
+  transform-origin: bottom center;
+  animation: none;
+}
+
+.fury-king-crown {
+  position: absolute;
+  left: 60px;
+  top: 0;
+  z-index: 12;
+  display: flex;
+  align-items: end;
+  gap: 5px;
+  width: 82px;
+  height: 48px;
+  padding: 0 8px 8px;
+  border: 4px solid #1a1022;
+  background: linear-gradient(180deg, #fff275, #ff9f1c);
+  clip-path: polygon(0 100%, 0 42%, 18% 62%, 32% 12%, 50% 60%, 68% 12%, 82% 62%, 100% 42%, 100% 100%);
+}
+
+.fury-king-crown span {
+  width: 9px;
+  height: 9px;
+  border: 2px solid #1a1022;
+  border-radius: 50%;
+  background: #ff004c;
+}
+
 .monster-token.goblin {
   scale: 1;
   transform-origin: bottom center;
   animation: none;
+}
+
+.monster-token.fury {
+  width: 46px;
+  height: 82px;
+  border-radius: 44% 44% 28% 28%;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 159, 28, 0.28) 0 12px, transparent 13px),
+    linear-gradient(180deg, #111116, #2d2d35 66%, #101014);
+}
+
+.monster-token.fury i,
+.monster-token.fury b,
+.monster-token.fury::before,
+.monster-token.fury::after,
+.monster-token.fury .monster-face,
+.monster-token.fury .monster-nose {
+  background-color: #ff9f1c;
 }
 
 .monster-token i {
