@@ -175,7 +175,7 @@ const worldLocations = [
 
 const heroMaxHp = 100;
 const monstersPerCity = 10_000;
-const dungeonEnemiesTotal = 100_000;
+const dungeonEnemiesTotal = 10_000;
 const baseMonsterHp = 1_000;
 const baseMonsterDamage = 10;
 const baseDragonHp = 1_000_000;
@@ -575,7 +575,7 @@ export function HomePage() {
     {
       id: 108,
       title: 'Секрет: Король гоблинов',
-      text: 'Очисти пещеру на 100000 врагов и узнай тайну бедных гоблинов.',
+      text: 'Очисти пещеру на 10000 врагов и узнай тайну короля гоблинов.',
       done: secretEnding === 'goblinKing',
       progress: secretEnding === 'goblinKing' ? 'секрет раскрыт' : goblinKingReady ? 'король гоблинов ждет' : 'найди пещеру',
       money: 77_777,
@@ -704,8 +704,9 @@ export function HomePage() {
       if (isDungeon && dungeon) {
         setDungeon({ ...dungeon, enemiesLeft: 0, cleared: true, entered: false });
         setGoblinKingReady(true);
+        setGoblinKingFightStarted(true);
         setEnemyHp(currentDragonHp);
-        setMessage('Админская ядерка очистила пещеру. Теперь можно сразиться с королем гоблинов.');
+        setMessage('Админская ядерка очистила пещеру. Король гоблинов вышел на бой.');
         return;
       }
       setCityMonsters(cityMonsters.map((count, index) => (index === chapter ? 0 : count)));
@@ -762,8 +763,9 @@ export function HomePage() {
       if (isDungeon && dungeon) {
         setDungeon({ ...dungeon, enemiesLeft: 0, cleared: true, entered: false });
         setGoblinKingReady(true);
+        setGoblinKingFightStarted(true);
         setEnemyHp(currentDragonHp);
-        setMessage('Пещера очищена: 100000 врагов побеждены. Теперь выбери: сражаться с королем гоблинов или не сражаться.');
+        setMessage('Пещера очищена: 10000 врагов побеждены. Король гоблинов вышел на бой.');
         return;
       }
       setEnemyHp(currentDragonHp);
@@ -1175,43 +1177,6 @@ export function HomePage() {
     );
   }
 
-  if (goblinKingReady && !goblinKingFightStarted) {
-    return (
-      <main className="goblin-choice-page">
-        <section className="cave-choice goblin-choice" aria-label="Король гоблинов">
-          <p className="intro-kicker">Секретный бой</p>
-          <h1>Король гоблинов</h1>
-          <p>
-            Все {formatPower(dungeonEnemiesTotal)} монстров в подземелье побеждены.
-            Из темноты вышел один огромный гоблин с короной.
-          </p>
-          <p>
-            Можно сразиться с ним и открыть секретную концовку, или уйти и оставить
-            его королевство в пещере.
-          </p>
-          <div className="cave-actions">
-            <button onClick={() => {
-              setGoblinKingFightStarted(true);
-              setEnemyHp(currentDragonHp);
-              setMessage(`Король гоблинов вышел из глубокой пещеры. У него ${formatPower(currentDragonHp)} HP.`);
-              navigate('/');
-            }} type="button">
-              Сражаться
-            </button>
-            <button className="secondary" onClick={() => {
-              setGoblinKingReady(false);
-              setGoblinKingFightStarted(false);
-              setMessage('Герой не стал сражаться с королем гоблинов. Тайна пещеры осталась жить под землей.');
-              navigate('/world');
-            }} type="button">
-              Не сражаться
-            </button>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
   return (
     <main className={`game ${isWorldPage ? 'world-page' : 'play-page'}`}>
       <div className="auth-panel">
@@ -1364,22 +1329,23 @@ export function HomePage() {
         {secretEnding === 'goblinKing' ? (
           <div className="reveal">
             <p className="eyebrow">Секретная концовка</p>
-            <h2>Король бедных гоблинов</h2>
+            <h2>Люди, ставшие гоблинами</h2>
             <p>
-              Герой победил короля гоблинов и узнал правду: гоблинов все гнобили,
-              прогоняли из городов и считали злыми только из-за страшного вида.
+              Герой победил короля гоблинов и узнал страшную правду: первые гоблины
+              были обычными людьми, но их заразила древняя пещерная болезнь.
             </p>
             <p>
-              Они были самыми несчастными существами. Да, они противные на вид,
-              но хотели всего лишь жить нормально: иметь дом, еду и чтобы их никто не унижал.
+              После мутации они изменились: кожа стала зеленой, тела выросли,
+              лица стали пугающими, а голоса грубыми. Люди испугались их и начали
+              прогонять, будто они больше не живые существа.
             </p>
             <p>
-              Теперь герой понял: даже у тех, кто кажется монстром, может быть сердце,
-              страх и мечта о спокойной жизни.
+              Король гоблинов защищал зараженных людей, которые просто хотели
+              продолжать жить нормально. Теперь герой знает их тайну.
             </p>
             <div className="ending-actions">
-              <button onClick={restart}>Начать заново</button>
-              <Link className="ending-link" href="/">Вернуться в битву</Link>
+              <Link className="ending-link" href="/">Продолжать</Link>
+              <button onClick={restart}>Начать повторно</button>
             </div>
           </div>
         ) : isFinalReveal ? (
@@ -1544,7 +1510,7 @@ export function HomePage() {
               <div className="dungeon">
                 <div>
                   <p className="label">Король гоблинов</p>
-                  <strong>После 100000 врагов открылся трон гоблинов</strong>
+                  <strong>После 10000 врагов открылся трон гоблинов</strong>
                   <p>Выбор: сражаться с ним или не сражаться. Победа откроет секретную концовку про бедных гоблинов.</p>
                 </div>
                 <div className="ending-actions">
