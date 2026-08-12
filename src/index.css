@@ -259,7 +259,8 @@ button.secondary {
 .fury-choice-page,
 .anuar-choice-page,
 .mansur-choice-page,
-.arailm-choice-page {
+.arailm-choice-page,
+.bbi-choice-page {
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -268,6 +269,22 @@ button.secondary {
     radial-gradient(ellipse at 52% 38%, rgba(150, 204, 204, 0.24) 0 12rem, transparent 12.2rem),
     radial-gradient(ellipse at 25% 78%, rgba(38, 31, 28, 0.82) 0 15rem, transparent 15.2rem),
     repeating-radial-gradient(ellipse at 50% 34%, #13191a 0 26px, #314345 27px 52px, #6e817b 53px 64px, #20292a 65px 88px);
+}
+
+.bbi-choice-page {
+  background:
+    linear-gradient(90deg, rgba(116, 174, 97, 0.82) 0 8%, transparent 8% 100%),
+    linear-gradient(90deg, transparent 0 18%, rgba(255, 255, 255, 0.72) 18% 42%, transparent 42% 100%),
+    radial-gradient(circle at 34% 76%, #ff8a1d 0 30px, transparent 31px),
+    radial-gradient(circle at 62% 76%, #f7d047 0 44px, transparent 45px),
+    radial-gradient(circle at 82% 72%, #7ad66d 0 34px, transparent 35px),
+    linear-gradient(180deg, #f4dfc5 0%, #fff8e8 43%, #94d8aa 44%, #79c990 100%);
+}
+
+.bbi-choice-page.final {
+  background:
+    radial-gradient(circle at 50% 34%, rgba(255, 0, 76, 0.38), transparent 18rem),
+    linear-gradient(180deg, #f4dfc5 0%, #fff8e8 40%, #477a8f 41%, #251943 100%);
 }
 
 .goblin-choice-page {
@@ -353,6 +370,14 @@ button.secondary {
   color: #fff8e8;
   background:
     linear-gradient(180deg, rgba(58, 4, 8, 0.94), rgba(6, 2, 4, 0.94));
+}
+
+.bbi-choice {
+  border-color: rgba(255, 209, 102, 0.92);
+  color: #251105;
+  background:
+    linear-gradient(90deg, rgba(255, 248, 232, 0.94), rgba(255, 248, 232, 0.78)),
+    repeating-linear-gradient(90deg, transparent 0 72px, rgba(47, 128, 237, 0.08) 73px 76px);
 }
 
 .cave-choice h1 {
@@ -948,6 +973,33 @@ button.secondary {
     radial-gradient(circle at 50% 22%, rgba(255, 0, 76, 0.3) 0 110px, transparent 111px),
     radial-gradient(ellipse at 50% 78%, #5c1118 0 160px, transparent 161px),
     linear-gradient(180deg, #170f24 0%, #751227 42%, #2a0812 43%, #050308 100%);
+}
+
+.sky.scene-bbi {
+  background:
+    radial-gradient(circle at 32% 76%, #ff8a1d 0 36px, transparent 37px),
+    radial-gradient(circle at 56% 76%, #f5d54a 0 54px, transparent 55px),
+    radial-gradient(circle at 80% 74%, #7ad66d 0 40px, transparent 41px),
+    linear-gradient(180deg, #f1dcc4 0%, #fff8e8 42%, #94d8aa 43%, #6fc08d 100%);
+}
+
+.sky.scene-bbi::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, rgba(86, 148, 44, 0.85) 0 8%, transparent 8% 18%, rgba(255, 255, 255, 0.68) 18% 43%, transparent 43%),
+    linear-gradient(90deg, transparent 0 55%, rgba(241, 184, 132, 0.84) 55% 88%, transparent 88%),
+    repeating-linear-gradient(90deg, transparent 0 74px, rgba(47, 128, 237, 0.12) 75px 80px);
+}
+
+.sky.scene-bbi::after {
+  height: 136px;
+  border-top-color: #ffcf4a;
+  border-bottom-color: #7d5235;
+  background:
+    radial-gradient(circle at 14% 20%, #e74c3c 0 16px, transparent 17px),
+    radial-gradient(circle at 42% 18%, #ffd166 0 22px, transparent 23px),
+    radial-gradient(circle at 72% 20%, #2f80ed 0 18px, transparent 19px),
+    linear-gradient(180deg, #9ae0ad, #72c38d);
 }
 
 .sky.scene-fury {

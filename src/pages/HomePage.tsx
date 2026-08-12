@@ -69,6 +69,7 @@ type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
 type EndingChoice = 'spare' | 'fight' | 'family' | null;
 type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | null;
 type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing';
+type BbiBossStage = 'manager' | 'director' | 'final' | null;
 
 const firstDragonCities: CityStage[] = [
   { name: 'Игнис', city: 'Алматы', country: 'Казахстан', lair: 'Логово Искры в горах Заилийского Алатау', monsterKind: 'goblin', monsterName: 'гоблины', title: 'сын искры', power: 1_000, color: '#ffb703', attackSpeed: 0.85, reaction: 'бьет очень быстро' },
@@ -247,6 +248,53 @@ const furySwordDamageText = '1' + '0'.repeat(116);
 const mansurBladeDamageText = '99999999999999999999999999999999999999999999999999999999';
 const programSwordDamageText = '1000000000000000000000000';
 const arailmBossPowerText = '9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999';
+const bbiMonsterTotal = 100;
+const bbiMonsterHp = 10_000_000_000_000_000;
+const bbiManagerHp = 10_000_000_000_000_000;
+const bbiDirectorHp = bbiManagerHp * 3;
+const bbiFinalBossHp = bbiDirectorHp * 5;
+
+const bbiBosses: Record<Exclude<BbiBossStage, null>, CityStage> = {
+  manager: {
+    name: 'Управляющий',
+    city: 'BBI новый мир',
+    country: 'Детский город',
+    lair: 'Главная комната нового мира',
+    monsterKind: 'shadow',
+    monsterName: 'монстры BBI',
+    title: 'управляющий босс',
+    power: bbiManagerHp,
+    color: '#2f80ed',
+    attackSpeed: 0.58,
+    reaction: 'управляющий атакует быстро',
+  },
+  director: {
+    name: 'Директор',
+    city: 'BBI кабинет директора',
+    country: 'Детский город',
+    lair: 'Большой кабинет после управляющего',
+    monsterKind: 'magma',
+    monsterName: 'директорские стражи',
+    title: 'директор босс',
+    power: bbiDirectorHp,
+    color: '#ffd166',
+    attackSpeed: 0.5,
+    reaction: 'директор сильнее управляющего в 3 раза',
+  },
+  final: {
+    name: 'Последний BBI босс',
+    city: 'BBI финальная арена',
+    country: 'Детский город',
+    lair: 'Арена после надписи сражаться или отказаться',
+    monsterKind: 'frost',
+    monsterName: 'финальные стражи',
+    title: 'последний босс',
+    power: bbiFinalBossHp,
+    color: '#ff004c',
+    attackSpeed: 0.42,
+    reaction: 'последний босс сильнее директора в 5 раз',
+  },
+};
 
 const achievements: { id: AchievementId; name: string }[] = [
   { id: 'dragonPeace', name: 'Мир после огня' },
@@ -552,6 +600,17 @@ function createProgramSword(): Weapon {
   };
 }
 
+function createBbiLegendarySword(): Weapon {
+  return {
+    id: `bbi-legendary-sword-${Date.now()}-${Math.random()}`,
+    name: 'BBI легендарный меч 3-го города',
+    rarity: 'Легендарка',
+    damage: Number.MAX_SAFE_INTEGER,
+    displayDamage: 'легендарный урон',
+    price: 0,
+  };
+}
+
 function createAdminHelmet(): Armor {
   return {
     id: `admin-helmet-${Date.now()}-${Math.random()}`,
@@ -601,6 +660,13 @@ export function HomePage() {
   const [arailmMonstersLeft, setArailmMonstersLeft] = useState(arailmEnemiesTotal);
   const [arailmChoiceOpen, setArailmChoiceOpen] = useState(false);
   const [arailmKingFightStarted, setArailmKingFightStarted] = useState(false);
+  const [bbiGateOpen, setBbiGateOpen] = useState(false);
+  const [bbiWorldEntered, setBbiWorldEntered] = useState(false);
+  const [bbiMonstersLeft, setBbiMonstersLeft] = useState(bbiMonsterTotal);
+  const [bbiBossStage, setBbiBossStage] = useState<BbiBossStage>(null);
+  const [bbiFinalChoiceOpen, setBbiFinalChoiceOpen] = useState(false);
+  const [bbiCityReward, setBbiCityReward] = useState(false);
+  const [bbiBadEnding, setBbiBadEnding] = useState(false);
   const [unlockedAchievements, setUnlockedAchievements] = useState<AchievementId[]>([]);
   const [gold, setGold] = useState(0);
   const [dungeon, setDungeon] = useState<Dungeon | null>(null);
@@ -662,7 +728,9 @@ export function HomePage() {
   const isAnuarWorld = anuarWorldEntered && !anuarKingFightStarted;
   const isMansurDungeon = mansurDungeonEntered && !mansurKingFightStarted;
   const isArailmWorld = arailmWorldEntered && !arailmChoiceOpen && !arailmKingFightStarted;
-  const enemy = isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
+  const isBbiBoss = bbiBossStage !== null;
+  const isBbiWorld = bbiWorldEntered && !isBbiBoss && !bbiFinalChoiceOpen;
+  const enemy = isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
   const isDungeon = dungeon?.entered && !dungeon.cleared;
@@ -677,15 +745,16 @@ export function HomePage() {
   const armorBonus = equippedArmor?.defense ?? 0;
   const defenseBonus = upgradePower(items.clothes, shopBasePower.clothes) + upgradePower(items.helmet, shopBasePower.helmet) + upgradePower(items.armor, shopBasePower.armor) + armorBonus;
   const reward = enemy ? 120 + chapter * 110 : 0;
-  const currentMonsters = isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
-  const currentMonsterHp = isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
-  const currentMonsterDamage = isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
+  const currentMonsters = isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
+  const currentMonsterHp = isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
+  const currentMonsterDamage = isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
-  const currentDragonHp = isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
-  const currentDragonDamage = isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
+  const currentDragonHp = isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
+  const currentDragonDamage = isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const dragonReactionSpeed = enemy?.attackSpeed ?? 1;
+  const currentMonsterTotal = isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
   const currentEnemyHealthText = currentMonsters > 0
     ? `Враг HP ${formatPower(currentMonsterHp)}`
     : isArailmKingBoss
@@ -694,6 +763,8 @@ export function HomePage() {
   const cityScene = `scene-city-${chapter % 6}`;
   const battleScene = isDungeon
     ? 'scene-dungeon'
+    : isBbiWorld || isBbiBoss || bbiCityReward
+      ? 'scene-bbi'
     : isArailmWorld || isArailmKingBoss
       ? 'scene-arailm'
       : isMansurDungeon || isMansurKingBoss
@@ -711,7 +782,9 @@ export function HomePage() {
             ? 'scene-boss-final'
             : `scene-boss-${chapter % 10}`
         : cityScene;
-  const dragonClass = isFamilyBoss
+  const dragonClass = isBbiBoss
+    ? 'dragon-bbi'
+    : isFamilyBoss
     ? 'dragon-family'
     : isArailmKingBoss
       ? 'dragon-arailm'
@@ -1013,6 +1086,14 @@ export function HomePage() {
     setBattlePulse((pulse) => pulse + 1);
 
     if (equippedWeapon?.id.startsWith('admin-nuke-')) {
+      if (isBbiWorld) {
+        setBbiMonstersLeft(0);
+        setBbiWorldEntered(false);
+        setBbiBossStage('manager');
+        setEnemyHp(bbiManagerHp);
+        setMessage('100 BBI монстров уничтожены. Появился босс Управляющий.');
+        return;
+      }
       if (isArailmWorld) {
         setArailmMonstersLeft(0);
         setArailmWorldEntered(false);
@@ -1065,12 +1146,14 @@ export function HomePage() {
     const nextHeroHp = Math.max(0, heroHp - monsterDamage);
     const monstersPerHit = items.doubleStrike > 0 ? 2 + Math.max(0, shopLevels.doubleStrike - 1) : 1;
     const nextMonsters = Math.max(0, currentMonsters - monstersPerHit);
-    const monsterWeapon = isArailmWorld ? rollDungeonWeapon(chapter + 16) : isMansurDungeon ? rollDungeonWeapon(chapter + 14) : isAnuarWorld ? rollDungeonWeapon(chapter + 12) : isFuryDungeon ? rollDungeonWeapon(chapter + 10) : isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2, chapter + 1);
-    const monsterArmor = isArailmWorld ? rollArmor(16, chapter + 16) : isMansurDungeon ? rollArmor(14, chapter + 14) : isAnuarWorld ? rollArmor(12, chapter + 12) : isFuryDungeon ? rollArmor(10, chapter + 10) : isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2, chapter + 1);
+    const monsterWeapon = isBbiWorld ? rollDungeonWeapon(chapter + 12) : isArailmWorld ? rollDungeonWeapon(chapter + 16) : isMansurDungeon ? rollDungeonWeapon(chapter + 14) : isAnuarWorld ? rollDungeonWeapon(chapter + 12) : isFuryDungeon ? rollDungeonWeapon(chapter + 10) : isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2, chapter + 1);
+    const monsterArmor = isBbiWorld ? rollArmor(12, chapter + 12) : isArailmWorld ? rollArmor(16, chapter + 16) : isMansurDungeon ? rollArmor(14, chapter + 14) : isAnuarWorld ? rollArmor(12, chapter + 12) : isFuryDungeon ? rollArmor(10, chapter + 10) : isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2, chapter + 1);
     const nextCityMonsters = cityMonsters.map((count, index) => (index === chapter ? nextMonsters : count));
 
     setHeroHp(nextHeroHp);
-    if (isArailmWorld) {
+    if (isBbiWorld) {
+      setBbiMonstersLeft(nextMonsters);
+    } else if (isArailmWorld) {
       setArailmMonstersLeft(nextMonsters);
     } else if (isMansurDungeon) {
       setMansurMonstersLeft(nextMonsters);
@@ -1106,13 +1189,20 @@ export function HomePage() {
 
     setMessage(
       monsterWeapon
-        ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${monsterWeapon.name} (${monsterWeapon.rarity}).`
+        ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${monsterWeapon.name} (${monsterWeapon.rarity}).`
         : monsterArmor
-          ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
-        : `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Получено золото.`
+          ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
+        : `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Получено золото.`
     );
 
     if (nextMonsters === 0) {
+      if (isBbiWorld) {
+        setBbiWorldEntered(false);
+        setBbiBossStage('manager');
+        setEnemyHp(bbiManagerHp);
+        setMessage('100 BBI монстров побеждены. Появился босс Управляющий.');
+        return;
+      }
       if (isArailmWorld) {
         setArailmWorldEntered(false);
         setArailmChoiceOpen(true);
@@ -1157,6 +1247,30 @@ export function HomePage() {
 
   function clearCity() {
     if (!enemy) return;
+
+    if (isBbiBoss) {
+      if (bbiBossStage === 'manager') {
+        setBbiBossStage('director');
+        setEnemyHp(bbiDirectorHp);
+        setMessage(`Управляющий побежден. Появился Директор: ${formatPower(bbiDirectorHp)} HP, в 3 раза больше.`);
+        return;
+      }
+      if (bbiBossStage === 'director') {
+        setBbiBossStage(null);
+        setBbiFinalChoiceOpen(true);
+        setMessage('Директор побежден. Появилась надпись: сражаться или отказаться.');
+        return;
+      }
+      setBbiBossStage(null);
+      setBbiGateOpen(false);
+      setBbiBadEnding(true);
+      setVictory(true);
+      setChapter(dragonSons.length + 1);
+      setGold(gold + 5_000_000);
+      setMessage('Последний BBI босс побежден. Концовка: изверг, ты мог отказаться.');
+      navigate('/world');
+      return;
+    }
 
     if (isArailmKingBoss) {
       setVictory(true);
@@ -1338,7 +1452,7 @@ export function HomePage() {
   function strike() {
     if (isFinalReveal || !enemy) return;
     if (currentMonsters > 0) {
-      setMessage(`Сначала победи всех монстров города. Осталось: ${formatPower(currentMonsters)} из ${formatPower(monstersPerCity)}.`);
+      setMessage(`Сначала победи всех монстров. Осталось: ${formatPower(currentMonsters)}.`);
       return;
     }
     playHeroAnimation('strike', 420);
@@ -1365,11 +1479,11 @@ export function HomePage() {
     setHeroHp(nextHeroHp);
 
     if (nextHeroHp === 0) {
-      setMessage(`Дракон ударил на ${formatPower(dragonDamage)} урона. Герой упал, нажми восстановить.`);
+      setMessage(`${isBbiBoss ? 'Босс' : 'Дракон'} ударил на ${formatPower(dragonDamage)} урона. Герой упал, нажми восстановить.`);
       return;
     }
 
-    setMessage(`Удар по дракону: -${formatPower(heroDamage)} HP. У дракона осталось ${formatPower(nextEnemyHp)} HP. Он ответил на ${formatPower(dragonDamage)} урона. HP героя ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Реакция: ${dragonReaction}.`);
+    setMessage(`Удар по ${isBbiBoss ? 'боссу' : 'дракону'}: -${formatPower(heroDamage)} HP. Осталось ${formatPower(nextEnemyHp)} HP. Ответный удар: ${formatPower(dragonDamage)} урона. HP героя ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Реакция: ${dragonReaction}.`);
   }
 
   function submitAdminCode(event: FormEvent<HTMLFormElement>) {
@@ -1409,6 +1523,18 @@ export function HomePage() {
 
     if (code === 'arailm' || code === 'arailym') {
       openArailmWorld();
+      return;
+    }
+
+    if (code === 'bbi' || code === 'ииш') {
+      setBbiGateOpen(true);
+      setBbiWorldEntered(false);
+      setBbiMonstersLeft(bbiMonsterTotal);
+      setBbiBossStage(null);
+      setBbiFinalChoiceOpen(false);
+      setBbiCityReward(false);
+      setAdminCode('');
+      setMessage('Код BBI открыл новый мир. Выбери: войти или не входить.');
       return;
     }
 
@@ -1500,6 +1626,13 @@ export function HomePage() {
     setArailmMonstersLeft(arailmEnemiesTotal);
     setArailmChoiceOpen(false);
     setArailmKingFightStarted(false);
+    setBbiGateOpen(false);
+    setBbiWorldEntered(false);
+    setBbiMonstersLeft(bbiMonsterTotal);
+    setBbiBossStage(null);
+    setBbiFinalChoiceOpen(false);
+    setBbiCityReward(false);
+    setBbiBadEnding(false);
     setGold(0);
     setDungeon(null);
     setRelics([]);
@@ -1728,6 +1861,87 @@ export function HomePage() {
           <div className="cave-actions">
             <button onClick={enterDungeon} disabled={heroHp === 0} type="button">Войти</button>
             <button className="secondary" onClick={declineDungeon} type="button">Выйти из подземелья</button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (bbiGateOpen && !bbiWorldEntered && !bbiBossStage && !bbiFinalChoiceOpen && !bbiCityReward) {
+    return (
+      <main className="bbi-choice-page">
+        <section className="cave-choice bbi-choice" aria-label="BBI новый мир">
+          <p className="intro-kicker">Код BBI</p>
+          <h1>Новый мир</h1>
+          <p>
+            На фоне открылась большая игровая комната. На экране выбор: войти или не входить.
+            Внутри ждут {formatPower(bbiMonsterTotal)} монстров, и у каждого {formatPower(bbiMonsterHp)} HP.
+          </p>
+          <p>
+            После победы над монстрами появится Управляющий с {formatPower(bbiManagerHp)} HP,
+            потом Директор с HP в 3 раза больше.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setBbiWorldEntered(true);
+              setBbiMonstersLeft(bbiMonsterTotal);
+              setMessage(`Ты вошел в BBI новый мир. Внутри ${formatPower(bbiMonsterTotal)} монстров по ${formatPower(bbiMonsterHp)} HP.`);
+              navigate('/');
+            }} type="button">
+              Войти
+            </button>
+            <button className="secondary" onClick={() => {
+              setBbiGateOpen(false);
+              setMessage('Ты не вошел в BBI новый мир.');
+              navigate('/');
+            }} type="button">
+              Не входить
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (bbiFinalChoiceOpen) {
+    return (
+      <main className="bbi-choice-page final">
+        <section className="cave-choice bbi-choice" aria-label="BBI финальный выбор">
+          <p className="intro-kicker">Директор побежден</p>
+          <h1>Сражаться или отказаться</h1>
+          <p>
+            Появилась надпись: сражаться или отказаться. Если отказаться,
+            тебя перенесет в 3 город с легендарным мечом.
+          </p>
+          <p>
+            Если сражаться, выйдет последний босс. Он сильнее директора в 5 раз:
+            {formatPower(bbiFinalBossHp)} HP.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setBbiFinalChoiceOpen(false);
+              setBbiBossStage('final');
+              setEnemyHp(bbiFinalBossHp);
+              setMessage(`Последний BBI босс вышел на бой. Он сильнее директора в 5 раз: ${formatPower(bbiFinalBossHp)} HP.`);
+              navigate('/');
+            }} type="button">
+              Сражаться
+            </button>
+            <button className="secondary" onClick={() => {
+              const bbiSword = createBbiLegendarySword();
+              setBbiFinalChoiceOpen(false);
+              setBbiGateOpen(false);
+              setBbiCityReward(true);
+              setWeapons((currentWeapons) => [...currentWeapons, bbiSword]);
+              setEquippedWeapon(bbiSword);
+              setSavedCities(dragonSons.slice(0, 2).map((city) => `${city.city}, ${city.country}`));
+              setChapter(2);
+              setEnemyHp(scaledDragonPower(baseDragonHp, 2));
+              setMessage('Ты отказался сражаться. Перенос в 3 город: получен BBI легендарный меч.');
+              navigate('/');
+            }} type="button">
+              Отказаться
+            </button>
           </div>
         </section>
       </main>
@@ -2025,7 +2239,7 @@ export function HomePage() {
           <div className="monster-pack" data-kind={enemy?.monsterKind ?? 'goblin'}>
             {Array.from({ length: Math.max(0, Math.min(4, Math.ceil(currentMonsters / 500))) }).map((_, index) => {
               const mixedMonster = monsterKinds[(chapter + index) % monsterKinds.length];
-              const monsterKind = isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
+              const monsterKind = isBbiWorld ? 'shadow' : isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
               const monsterColumn = index % 8;
               const monsterRow = Math.floor(index / 8);
               return (
@@ -2206,7 +2420,24 @@ export function HomePage() {
           <p>{message}</p>
         </div>
 
-        {secretEnding === 'arailmKing' ? (
+        {bbiBadEnding ? (
+          <div className="reveal bbi-ending">
+            <p className="eyebrow">BBI концовка</p>
+            <h2>Изверг, ты мог отказаться</h2>
+            <p>
+              На экране появилась надпись: ты видел кнопку отказаться,
+              но все равно выбрал сражаться.
+            </p>
+            <p>
+              Последний BBI босс был сильнее директора в 5 раз, но даже его победа
+              не стала хорошей концовкой.
+            </p>
+            <div className="ending-actions">
+              <Link className="ending-link" href="/">Продолжать</Link>
+              <button onClick={restart}>Начать повторно</button>
+            </div>
+          </div>
+        ) : secretEnding === 'arailmKing' ? (
           <div className="reveal arailm-ending">
             <p className="eyebrow">Секретная концовка</p>
             <h2>Код хочет выбраться</h2>
@@ -2374,9 +2605,9 @@ export function HomePage() {
                 <strong>{heroHealthText}</strong>
               </div>
               <div>
-                <p className="label">{currentMonsters === 0 ? 'Дракон-босс' : 'Город'}</p>
+                <p className="label">{currentMonsters === 0 ? (isBbiBoss ? 'BBI босс' : 'Дракон-босс') : (isBbiWorld ? 'BBI новый мир' : 'Город')}</p>
                 <div className="bar enemy">
-                  <span style={{ width: `${currentMonsters === 0 ? Math.min(100, (enemyHp / currentDragonHp) * 100) : Math.max(0, 100 - (currentMonsters / monstersPerCity) * 100)}%` }} />
+                  <span style={{ width: `${currentMonsters === 0 ? Math.min(100, (enemyHp / currentDragonHp) * 100) : Math.max(0, 100 - (currentMonsters / currentMonsterTotal) * 100)}%` }} />
                 </div>
                 <strong>{currentMonsters === 0 ? enemy.name : enemy.city}</strong>
                 {currentMonsters === 0 ? (
@@ -2386,7 +2617,7 @@ export function HomePage() {
                     <strong>Реакция: {dragonReaction}</strong>
                   </>
                 ) : (
-                <strong>Очищено: {formatPower(monstersPerCity - currentMonsters)} / {formatPower(monstersPerCity)}</strong>
+                <strong>Очищено: {formatPower(currentMonsterTotal - currentMonsters)} / {formatPower(currentMonsterTotal)}</strong>
                 )}
               </div>
               <div className="lair-summary">
@@ -2432,9 +2663,9 @@ export function HomePage() {
             <div className="monster-panel">
               <div>
                 <p className="label">Монстры города</p>
-                <strong>{enemy.city}: разные монстры {formatPower(currentMonsters)} / {formatPower(monstersPerCity)}</strong>
-                <p>{currentMonsters === 0 ? 'Все монстры побеждены. Теперь бей дракона.' : `Победи ${formatPower(monstersPerCity)} монстров, чтобы появился дракон.`}</p>
-                <p>Первый город: 100 HP и 10 урона. Каждый следующий город сильнее в 100 раз.</p>
+                <strong>{enemy.city}: разные монстры {formatPower(currentMonsters)} / {formatPower(currentMonsterTotal)}</strong>
+                <p>{currentMonsters === 0 ? `Все монстры побеждены. Теперь бей ${isBbiBoss ? 'босса' : 'дракона'}.` : `Победи ${formatPower(currentMonsterTotal)} монстров, чтобы появился ${isBbiWorld ? 'Управляющий' : 'дракон'}.`}</p>
+                <p>{isBbiWorld ? `BBI монстр: ${formatPower(bbiMonsterHp)} HP. Всего монстров: ${formatPower(bbiMonsterTotal)}.` : 'Первый город: 100 HP и 10 урона. Каждый следующий город сильнее в 100 раз.'}</p>
               </div>
             </div>
 
