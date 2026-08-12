@@ -1,6 +1,8 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, FormEvent } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { Link, useLocation } from 'wouter';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 type DragonSon = {
   name: string;
@@ -454,6 +456,12 @@ export function HomePage() {
   const [monsterAttackCount, setMonsterAttackCount] = useState(0);
   const [battlePulse, setBattlePulse] = useState(0);
   const [adminCode, setAdminCode] = useState('');
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authMessage, setAuthMessage] = useState('');
+  const [authUser, setAuthUser] = useState<User | null>(null);
   const paidQuestIds = useRef<Set<number>>(new Set());
   const [items, setItems] = useState<Record<ShopItem['id'], number>>({
     sword: 0,
@@ -557,6 +565,26 @@ export function HomePage() {
   const visibleQuests = quests.filter((quest) => quest.done).slice(-3).concat(activeQuest).filter((quest, index, list) => list.findIndex((item) => item.title === quest.title) === index);
   const visibleWeapons = showFullInventory ? weapons : weapons.slice(-8);
   const visibleArmors = showFullInventory ? armors : armors.slice(-8);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    supabase.auth.getUser().then(({ data }) => {
+      setAuthUser(data.user);
+    });
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthUser(session?.user ?? null);
+      if (session?.user) {
+        setAuthOpen(false);
+        setAuthMessage('');
+      }
+    });
+
+    return () => {
+      data.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     const completedUnpaid = quests.filter((quest) => quest.done && !paidQuestIds.current.has(quest.id));
@@ -954,8 +982,90 @@ export function HomePage() {
     setShopLevels({ sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
   }
 
+  async function submitLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!isSupabaseConfigured) {
+      setAuthMessage('Supabase не настроен в .env');
+      return;
+    }
+
+    setAuthBusy(true);
+    setAuthMessage('');
+    const { error } = await supabase.auth.signInWithPassword({
+      email: authEmail,
+      password: authPassword,
+    });
+
+    if (error) setAuthMessage(error.message);
+    setAuthBusy(false);
+  }
+
+  async function createAccount() {
+    if (!isSupabaseConfigured) {
+      setAuthMessage('Supabase не настроен в .env');
+      return;
+    }
+
+    setAuthBusy(true);
+    setAuthMessage('');
+    const { error } = await supabase.auth.signUp({
+      email: authEmail,
+      password: authPassword,
+      options: { emailRedirectTo: window.location.origin },
+    });
+
+    setAuthMessage(error ? error.message : 'Аккаунт создан. Если Supabase просит подтверждение, проверь почту.');
+    setAuthBusy(false);
+  }
+
+  async function logout() {
+    setAuthBusy(true);
+    await supabase.auth.signOut();
+    setAuthBusy(false);
+  }
+
   return (
     <main className={`game ${isWorldPage ? 'world-page' : 'play-page'}`}>
+      <div className="auth-panel">
+        {authUser ? (
+          <>
+            <span>{authUser.email}</span>
+            <button className="secondary" onClick={logout} disabled={authBusy}>Выйти</button>
+          </>
+        ) : (
+          <>
+            <button onClick={() => setAuthOpen((open) => !open)}>
+              {authOpen ? 'Закрыть' : 'Войти'}
+            </button>
+            {authOpen && (
+              <form className="login-form" onSubmit={submitLogin}>
+                <input
+                  aria-label="Email"
+                  onChange={(event) => setAuthEmail(event.target.value)}
+                  placeholder="email"
+                  type="email"
+                  value={authEmail}
+                  required
+                />
+                <input
+                  aria-label="Пароль"
+                  minLength={6}
+                  onChange={(event) => setAuthPassword(event.target.value)}
+                  placeholder="пароль"
+                  type="password"
+                  value={authPassword}
+                  required
+                />
+                <button type="submit" disabled={authBusy}>{authBusy ? '...' : 'Войти'}</button>
+                <button className="secondary" type="button" onClick={createAccount} disabled={authBusy}>
+                  Создать
+                </button>
+                {authMessage && <p>{authMessage}</p>}
+              </form>
+            )}
+          </>
+        )}
+      </div>
       <section className="stage" aria-label="Поле битвы">
         <Link className="page-switch world-link" href="/world">Пылающий мир</Link>
         <div
@@ -1056,7 +1166,6 @@ export function HomePage() {
             <span>Здоровье {heroHealthText}</span>
             <span>{currentEnemyHealthText}</span>
             <span>{isDungeon ? 'Пещера' : 'Монстры'}: {currentMonsters}</span>
-            <span>Движение: W A S D, прыжок: Space</span>
           </div>
           <form className="code-form" onSubmit={submitAdminCode}>
             <input
@@ -1225,19 +1334,6 @@ export function HomePage() {
                 />
                 <button className="nuclear-button" type="submit">OK</button>
               </form>
-            </div>
-
-            <div className="movement">
-              <div>
-                <p className="label">Движение по 2D миру</p>
-                <strong>W вперед, A вправо, D влево, S назад</strong>
-              </div>
-              <div className="move-pad">
-                <button onClick={() => moveHero(0, -450)}>Вперед</button>
-                <button onClick={() => moveHero(450, 0)}>Вправо</button>
-                <button onClick={() => moveHero(-450, 0)}>Влево</button>
-                <button onClick={() => moveHero(0, 450)}>Назад</button>
-              </div>
             </div>
 
             <div className="monster-panel">
