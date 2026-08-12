@@ -376,7 +376,15 @@ const rarityClass: Record<Rarity, string> = {
 };
 
 function formatPower(value: number) {
+  if (value >= Number.MAX_SAFE_INTEGER) return '1оерн';
+
   const tiers = [
+    { value: 1e42, suffix: 'уу' },
+    { value: 1e39, suffix: 'бб' },
+    { value: 1e36, suffix: 'аа' },
+    { value: 1e33, suffix: 'сс' },
+    { value: 1e30, suffix: 'дк' },
+    { value: 1e27, suffix: 'ок' },
     { value: 1e24, suffix: 'сп' },
     { value: 1e21, suffix: 'ск' },
     { value: 1e18, suffix: 'кс' },
@@ -393,6 +401,12 @@ function formatPower(value: number) {
   const shortValue = value / tier.value;
   const rounded = shortValue >= 100 ? Math.round(shortValue) : Math.round(shortValue * 10) / 10;
   return `${rounded.toLocaleString('ru-RU')}${tier.suffix}`;
+}
+
+function formatHugeText(value: string) {
+  if (value.length > 1000) return '1qghe';
+  if (value.length > 100) return '1оерн';
+  return value;
 }
 
 function normalizeCode(value: string) {
@@ -670,7 +684,7 @@ export function HomePage() {
   const currentEnemyHealthText = currentMonsters > 0
     ? `Враг HP ${formatPower(currentMonsterHp)}`
     : isArailmKingBoss
-      ? `Босс HP ${arailmBossPowerText}`
+      ? `Босс HP ${formatHugeText(arailmBossPowerText)}`
     : `Дракон HP ${formatPower(enemyHp)}/${formatPower(currentDragonHp)}`;
   const cityScene = `scene-city-${chapter % 6}`;
   const battleScene = isDungeon
@@ -1719,11 +1733,11 @@ export function HomePage() {
           <p className="intro-kicker">100к монстров побеждены</p>
           <h1>Сражаться или не сражаться</h1>
           <p>
-            Если не сражаться, герой получит меч програм с уроном {programSwordDamageText}
+            Если не сражаться, герой получит меч програм с уроном {formatHugeText(programSwordDamageText)}
             и сразу окажется на 5-м городе, будто 5 городов уже зачищены.
           </p>
           <p>
-            Если сражаться, у босса будет {arailmBossPowerText} HP и такой же урон.
+            Если сражаться, у босса будет {formatHugeText(arailmBossPowerText)} HP и такой же урон.
           </p>
           <div className="cave-actions">
             <button onClick={() => {
@@ -1744,7 +1758,7 @@ export function HomePage() {
               setArailmChoiceOpen(false);
               setArailmKingFightStarted(true);
               setEnemyHp(Number.MAX_SAFE_INTEGER);
-              setMessage(`Босс Арайлым вышла на бой. HP и урон: ${arailmBossPowerText}.`);
+              setMessage(`Босс Арайлым вышла на бой. HP и урон: ${formatHugeText(arailmBossPowerText)}.`);
               navigate('/');
             }} type="button">
               Сражаться
@@ -1763,7 +1777,7 @@ export function HomePage() {
           <h1>Убить или любить</h1>
           <p>
             Все {formatPower(furyDungeonEnemiesTotal)} фури-монстров побеждены.
-            Герой получил секретный Фури меч с уроном {furySwordDamageText}.
+            Герой получил секретный Фури меч с уроном {formatHugeText(furySwordDamageText)}.
           </p>
           <p>
             Перед тобой путь к королю фури. Можно любить и начать заново,
@@ -2064,7 +2078,7 @@ export function HomePage() {
             </p>
             <p>
               Получено оружие: Мансур секретный клинок. Урон клинка:
-              {mansurBladeDamageText}.
+              {formatHugeText(mansurBladeDamageText)}.
             </p>
             <div className="ending-actions">
               <Link className="ending-link" href="/">Продолжать</Link>
@@ -2238,7 +2252,7 @@ export function HomePage() {
               <div className="weapon-summary">
                 <p className="label">Оружие 12 500 видов</p>
                 <strong>{equippedWeapon ? equippedWeapon.name : 'Пока нет оружия'}</strong>
-                <span>{equippedWeapon ? `${equippedWeapon.rarity}, +${equippedWeapon.displayDamage ?? equippedWeapon.damage} урона, цена ${equippedWeapon.price}` : 'Выбивается с врагов и в подземельях'}</span>
+                <span>{equippedWeapon ? `${equippedWeapon.rarity}, +${equippedWeapon.displayDamage ? formatHugeText(equippedWeapon.displayDamage) : formatPower(equippedWeapon.damage)} урона, цена ${formatPower(equippedWeapon.price)}` : 'Выбивается с врагов и в подземельях'}</span>
               </div>
               <div className="weapon-summary armor-summary">
                 <p className="label">Броня 3375 видов</p>
@@ -2410,7 +2424,7 @@ export function HomePage() {
             </div>
             <div>
               <strong>Числа</strong>
-              <p>к - тысяча, м - миллион, в - миллиард, т - триллион, кв - квадриллион, кс - квинтиллион, ск - секстиллион, сп - септиллион.</p>
+              <p>к, м, в, т, кв, кс, ск, сп, ок, дк, сс, аа, бб, уу. Если число огромное: оерн, а если больше 1000 символов: qghe.</p>
             </div>
             <div>
               <strong>Коды силы</strong>
@@ -2495,7 +2509,7 @@ export function HomePage() {
                   key={weapon.id}
                 >
                   <span>{weapon.name}</span>
-                  <small>{weapon.rarity} +{weapon.displayDamage ?? weapon.damage} | цена {weapon.price}</small>
+                  <small>{weapon.rarity} +{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | цена {formatPower(weapon.price)}</small>
                 </button>
               ))}
             </div>
