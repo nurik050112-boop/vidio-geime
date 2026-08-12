@@ -525,6 +525,13 @@ export function HomePage() {
             ? 'scene-boss-final'
             : `scene-boss-${chapter % 10}`
         : cityScene;
+  const dragonClass = isFamilyBoss
+    ? 'dragon-family'
+    : isGoblinKingBoss
+      ? 'dragon-goblin'
+      : isFinalBoss
+        ? 'dragon-final'
+        : `dragon-${chapter % 10}`;
   const defeatedMonsters = cityMonsters.reduce((sum, monsters) => sum + (monstersPerCity - monsters), 0);
   const storyProgress = savedCities.length * 15 + Math.floor(defeatedMonsters / 7) + weapons.length + relics.length;
   const cityQuestNames = [
@@ -1215,7 +1222,7 @@ export function HomePage() {
             <div className="heal-aura" />
           </div>
           {!isFinalReveal && enemy && currentMonsters === 0 && (
-            <div className={`boss ${isFinalBoss ? 'final-boss' : ''}`} style={{ '--dragon-color': enemy.color } as CSSProperties}>
+            <div className={`boss ${isFinalBoss ? 'final-boss' : ''} ${dragonClass}`} style={{ '--dragon-color': enemy.color } as CSSProperties}>
               <div className="tail-2d" />
               <div className="wing wing-left" />
               <div className="wing wing-right" />

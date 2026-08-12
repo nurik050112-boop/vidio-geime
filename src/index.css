@@ -1188,6 +1188,82 @@ button.secondary {
   animation: dragon-hover 1.8s ease-in-out infinite;
 }
 
+.boss.dragon-0 {
+  --dragon-color: #c62f2f;
+  width: 330px;
+  height: 252px;
+}
+
+.boss.dragon-1 {
+  --dragon-color: #f2efe6;
+  width: 342px;
+  height: 260px;
+  filter: drop-shadow(0 18px 16px rgba(235, 245, 255, 0.24));
+}
+
+.boss.dragon-2 {
+  --dragon-color: #d9d9d2;
+  width: 318px;
+  height: 250px;
+  filter: drop-shadow(0 16px 10px rgba(0, 0, 0, 0.28)) grayscale(0.55);
+}
+
+.boss.dragon-3 {
+  --dragon-color: #98292a;
+  width: 382px;
+  height: 220px;
+}
+
+.boss.dragon-4 {
+  --dragon-color: #202735;
+  width: 320px;
+  height: 285px;
+}
+
+.boss.dragon-5 {
+  --dragon-color: #235f9a;
+  width: 336px;
+  height: 278px;
+}
+
+.boss.dragon-6 {
+  --dragon-color: #cf6b35;
+  width: 330px;
+  height: 255px;
+}
+
+.boss.dragon-7 {
+  --dragon-color: #e7f8ff;
+  width: 350px;
+  height: 268px;
+  filter: drop-shadow(0 18px 16px rgba(210, 240, 255, 0.35));
+}
+
+.boss.dragon-8 {
+  --dragon-color: #463019;
+  width: 390px;
+  height: 215px;
+}
+
+.boss.dragon-9 {
+  --dragon-color: #ff1f18;
+  width: 322px;
+  height: 258px;
+}
+
+.boss.dragon-goblin {
+  --dragon-color: #557a2b;
+  width: 286px;
+  height: 220px;
+  filter: drop-shadow(0 14px 10px rgba(20, 8, 4, 0.35)) hue-rotate(42deg);
+}
+
+.boss.dragon-family {
+  --dragon-color: #fff275;
+  width: 410px;
+  height: 286px;
+}
+
 .boss.final-boss {
   right: 8%;
   bottom: 156px;
@@ -1438,6 +1514,148 @@ button.secondary {
 .wing-right {
   right: 74px;
   transform: rotate(18deg) scaleX(-1);
+}
+
+.boss.dragon-1 .boss-body,
+.boss.dragon-1 .boss-head,
+.boss.dragon-1 .neck-2d,
+.boss.dragon-1 .tail-2d {
+  background:
+    repeating-linear-gradient(135deg, rgba(116, 163, 178, 0.22) 0 5px, transparent 6px 13px),
+    linear-gradient(180deg, #fffaf0, #b9d4d9);
+}
+
+.boss.dragon-1 .wing {
+  opacity: 0.9;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0 50%, rgba(176, 218, 230, 0.92) 51% 100%);
+}
+
+.boss.dragon-2 .boss-body,
+.boss.dragon-2 .boss-head,
+.boss.dragon-2 .neck-2d,
+.boss.dragon-2 .tail-2d {
+  background:
+    repeating-radial-gradient(circle at 42% 46%, transparent 0 7px, rgba(25, 18, 14, 0.42) 8px 10px),
+    linear-gradient(180deg, #f4f1e8, #a9a79e);
+}
+
+.boss.dragon-2 .wing {
+  background: transparent;
+  border: 5px solid #1a1022;
+  border-left-width: 10px;
+}
+
+.boss.dragon-3 .boss-body,
+.boss.dragon-8 .boss-body {
+  width: 190px;
+  height: 72px;
+  border-radius: 72% 30% 44% 38%;
+}
+
+.boss.dragon-3 .neck-2d,
+.boss.dragon-8 .neck-2d {
+  right: 76px;
+  top: 70px;
+  width: 180px;
+  height: 28px;
+  transform: rotate(-10deg);
+}
+
+.boss.dragon-3 .tail-2d,
+.boss.dragon-8 .tail-2d {
+  width: 210px;
+  transform: rotate(-8deg);
+}
+
+.boss.dragon-3 .wing,
+.boss.dragon-8 .wing {
+  width: 190px;
+  height: 118px;
+  opacity: 0.82;
+}
+
+.boss.dragon-4 .boss-body,
+.boss.dragon-4 .boss-head,
+.boss.dragon-4 .neck-2d,
+.boss.dragon-4 .tail-2d {
+  background:
+    repeating-linear-gradient(120deg, rgba(128, 150, 170, 0.24) 0 4px, transparent 5px 12px),
+    linear-gradient(180deg, #44505f, #111722);
+}
+
+.boss.dragon-4 .horn-2d {
+  height: 58px;
+  background: linear-gradient(180deg, #9fb4c5, #202735);
+}
+
+.boss.dragon-5 .wing {
+  width: 188px;
+  height: 170px;
+  background: linear-gradient(135deg, rgba(173, 216, 255, 0.9) 0 42%, rgba(40, 91, 145, 0.96) 43% 100%);
+}
+
+.boss.dragon-5 .boss-body,
+.boss.dragon-5 .boss-head,
+.boss.dragon-5 .neck-2d {
+  background:
+    repeating-linear-gradient(90deg, rgba(195, 229, 255, 0.28) 0 9px, transparent 10px 18px),
+    linear-gradient(180deg, #386fae, #162d55);
+}
+
+.boss.dragon-6 .boss-body,
+.boss.dragon-6 .boss-head,
+.boss.dragon-6 .neck-2d {
+  background:
+    radial-gradient(ellipse at 44% 72%, #f5d58f 0 30%, transparent 31%),
+    repeating-linear-gradient(135deg, rgba(100, 39, 20, 0.3) 0 6px, transparent 7px 16px),
+    linear-gradient(180deg, #d87942, #6c251d);
+}
+
+.boss.dragon-6 .boss-fire {
+  width: 116px;
+}
+
+.boss.dragon-7 .boss-body,
+.boss.dragon-7 .boss-head,
+.boss.dragon-7 .neck-2d,
+.boss.dragon-7 .tail-2d {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent 48%),
+    linear-gradient(180deg, #f9ffff, #a8d8f0);
+}
+
+.boss.dragon-7 .boss-fire {
+  background: linear-gradient(90deg, #e7f8ff, #8ecae6, transparent 78%);
+}
+
+.boss.dragon-8 .boss-head {
+  right: 6px;
+  width: 118px;
+  height: 42px;
+  border-radius: 70% 18% 32% 44%;
+}
+
+.boss.dragon-9 .boss-body,
+.boss.dragon-9 .boss-head,
+.boss.dragon-9 .neck-2d,
+.boss.dragon-9 .tail-2d {
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 232, 77, 0.28) 0 8px, transparent 9px 18px),
+    linear-gradient(180deg, #ff2a1f, #8b1111);
+}
+
+.boss.dragon-9 .wing {
+  background: linear-gradient(135deg, #ffe66d 0 48%, #ff2a1f 49% 100%);
+}
+
+.boss.dragon-family .wing {
+  width: 215px;
+  height: 182px;
+}
+
+.boss.dragon-family .boss-body::after,
+.boss.dragon-family .boss-head::after {
+  background: #ffd166;
 }
 
 .boss-fire {
