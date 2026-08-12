@@ -238,11 +238,11 @@ const anuarBombEnemiesTotal = 100_000;
 const mansurDungeonEnemiesTotal = 100_000;
 const arailmEnemiesTotal = 100_000;
 const baseMonsterHp = 10_000;
-const baseMonsterDamage = 100;
+const baseMonsterDamage = 20;
 const baseDragonHp = 100_000_000;
 const baseDragonDamage = 100_000;
 const adminNukeDamageText = '9'.repeat(4_000);
-const adminHelmetHealthText = '9'.repeat(384);
+const adminHelmetHealthText = '∞';
 const furySwordDamageText = '1' + '0'.repeat(116);
 const mansurBladeDamageText = '99999999999999999999999999999999999999999999999999999999';
 const programSwordDamageText = '1000000000000000000000000';
@@ -665,6 +665,7 @@ export function HomePage() {
   const hasAdminHelmet = equippedArmor?.id.startsWith('admin-helmet-') ?? false;
   const currentHeroMaxHp = hasAdminHelmet ? Number.MAX_SAFE_INTEGER : heroMaxHp + upgradePower(healthLevel, shopBasePower.health);
   const heroHealthText = hasAdminHelmet ? `${adminHelmetHealthText} / ${adminHelmetHealthText}` : `${heroHp} / ${currentHeroMaxHp}`;
+  const heroHealthPercent = Math.max(0, Math.min(100, (heroHp / currentHeroMaxHp) * 100));
 
   const worldBurn = useMemo(() => Math.max(0, 100 - savedCities.length * 13), [savedCities.length]);
   const weaponBonus = equippedWeapon?.damage ?? 0;
@@ -956,7 +957,7 @@ export function HomePage() {
       return;
     }
 
-    const monsterDamage = Math.max(1, currentMonsterDamage - defenseBonus);
+    const monsterDamage = hasAdminHelmet ? 0 : Math.max(1, currentMonsterDamage - defenseBonus);
     const nextHeroHp = Math.max(0, heroHp - monsterDamage);
     const monstersPerHit = items.doubleStrike > 0 ? 2 + Math.max(0, shopLevels.doubleStrike - 1) : 1;
     const nextMonsters = Math.max(0, currentMonsters - monstersPerHit);
@@ -1001,10 +1002,10 @@ export function HomePage() {
 
     setMessage(
       monsterWeapon
-        ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${monsterWeapon.name} (${monsterWeapon.rarity}).`
+        ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${monsterWeapon.name} (${monsterWeapon.rarity}).`
         : monsterArmor
-          ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
-        : `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Получено золото.`
+          ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
+        : `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Получено золото.`
     );
 
     if (nextMonsters === 0) {
@@ -1212,7 +1213,7 @@ export function HomePage() {
     if (isFinalReveal || heroHp === 0 || currentMonsters <= 0) return;
 
     const attackTimer = window.setInterval(() => {
-      const monsterDamage = Math.max(1, currentMonsterDamage - defenseBonus);
+      const monsterDamage = hasAdminHelmet ? 0 : Math.max(1, currentMonsterDamage - defenseBonus);
       playHeroAnimation('strike', 260);
       setBattlePulse((pulse) => pulse + 1);
       setMonsterAttackCount((count) => count + 1);
@@ -1221,14 +1222,14 @@ export function HomePage() {
         if (nextHp === 0) {
           setMessage('Монстры постоянно нападали и герой упал. Нажми восстановить, чтобы продолжить.');
         } else {
-          setMessage(`Монстр напал сам! Урон ${formatPower(monsterDamage)}. Осталось монстров: ${formatPower(currentMonsters)}.`);
+          setMessage(`Монстр напал сам! Урон ${formatPower(monsterDamage)}. HP ${formatPower(hp)} -> ${formatPower(nextHp)}. Осталось монстров: ${formatPower(currentMonsters)}.`);
         }
         return nextHp;
       });
     }, 3200);
 
     return () => window.clearInterval(attackTimer);
-  }, [chapter, currentMonsters, defenseBonus, heroHp, isFinalReveal]);
+  }, [chapter, currentMonsterDamage, currentMonsters, defenseBonus, hasAdminHelmet, heroHp, isFinalReveal]);
 
   function strike() {
     if (isFinalReveal || !enemy) return;
@@ -1254,7 +1255,7 @@ export function HomePage() {
     }
 
     const speedDamageBonus = Math.max(1, Math.round(1 / dragonReactionSpeed));
-    const dragonDamage = Math.max(1, currentDragonDamage * speedDamageBonus - defenseBonus);
+    const dragonDamage = hasAdminHelmet ? 0 : Math.max(1, currentDragonDamage * speedDamageBonus - defenseBonus);
     const nextHeroHp = Math.max(0, heroHp - dragonDamage);
     setEnemyHp(nextEnemyHp);
     setHeroHp(nextHeroHp);
@@ -1264,7 +1265,7 @@ export function HomePage() {
       return;
     }
 
-    setMessage(`Удар по дракону: -${formatPower(heroDamage)} HP. У дракона осталось ${formatPower(nextEnemyHp)} HP. Реакция: ${dragonReaction}. Он ответил на ${formatPower(dragonDamage)} урона.`);
+    setMessage(`Удар по дракону: -${formatPower(heroDamage)} HP. У дракона осталось ${formatPower(nextEnemyHp)} HP. Он ответил на ${formatPower(dragonDamage)} урона. HP героя ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Реакция: ${dragonReaction}.`);
   }
 
   function submitAdminCode(event: FormEvent<HTMLFormElement>) {
@@ -1316,7 +1317,7 @@ export function HomePage() {
       return;
     }
 
-    if (code !== 'wwnurikww') {
+    if (code !== 'wwnurikww' && code !== 'ццтгкшлцц') {
       setAdminCode('');
       setMessage('Код не подошел.');
       return;
@@ -2214,7 +2215,7 @@ export function HomePage() {
               <div>
                 <p className="label">Герой</p>
                 <div className="bar">
-                  <span style={{ width: `${(heroHp / currentHeroMaxHp) * 100}%` }} />
+                  <span style={{ width: `${heroHealthPercent}%` }} />
                 </div>
                 <strong>{heroHealthText}</strong>
               </div>
@@ -2241,7 +2242,7 @@ export function HomePage() {
               <div className="stats">
                 <strong>Золото: {formatPower(gold)}</strong>
                 <strong>Урон: +{formatPower(attackBonus)}</strong>
-                <strong>Защита: -{formatPower(defenseBonus)}</strong>
+                <strong>Защита: -{hasAdminHelmet ? '∞' : formatPower(defenseBonus)}</strong>
                 <strong>Деньги за босса: {formatPower(reward)}</strong>
                 <strong>Монстры: {formatPower(currentMonsters)}</strong>
                 <strong>Нападений: {monsterAttackCount}</strong>
@@ -2257,7 +2258,7 @@ export function HomePage() {
               <div className="weapon-summary armor-summary">
                 <p className="label">Броня 3375 видов</p>
                 <strong>{equippedArmor ? equippedArmor.name : 'Пока нет брони'}</strong>
-                <span>{equippedArmor ? `${equippedArmor.rarity}, +${equippedArmor.displayDefense ?? equippedArmor.defense} защиты, цена ${equippedArmor.price}` : 'Выбивается с врагов и в подземельях'}</span>
+                <span>{equippedArmor ? `${equippedArmor.rarity}, +${equippedArmor.displayDefense ?? formatPower(equippedArmor.defense)} защиты, цена ${formatPower(equippedArmor.price)}` : 'Выбивается с врагов и в подземельях'}</span>
               </div>
             </div>
 
@@ -2428,7 +2429,7 @@ export function HomePage() {
             </div>
             <div>
               <strong>Коды силы</strong>
-              <p><b>wwnurikww</b> дает админскую ядерку и шлем. <b>999999999</b> дает меч на 999999999 урона.</p>
+              <p><b>wwnurikww</b> дает админскую ядерку и шлем с бесконечностью ∞. <b>999999999</b> дает меч на 999999999 урона.</p>
             </div>
             <div>
               <strong>Пещера 7-го дракона</strong>
@@ -2535,7 +2536,7 @@ export function HomePage() {
                   key={armor.id}
                 >
                   <span>{armor.name}</span>
-                  <small>{armor.rarity} +{armor.displayDefense ?? armor.defense} защиты | цена {armor.price}</small>
+                  <small>{armor.rarity} +{armor.displayDefense ?? formatPower(armor.defense)} защиты | цена {formatPower(armor.price)}</small>
                 </button>
               ))}
             </div>
