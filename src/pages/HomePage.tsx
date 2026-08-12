@@ -439,6 +439,7 @@ export function HomePage() {
   const [endingChoice, setEndingChoice] = useState<EndingChoice>(null);
   const [secretEnding, setSecretEnding] = useState<SecretEnding>(null);
   const [goblinKingReady, setGoblinKingReady] = useState(false);
+  const [goblinKingFightStarted, setGoblinKingFightStarted] = useState(false);
   const [gold, setGold] = useState(0);
   const [dungeon, setDungeon] = useState<Dungeon | null>(null);
   const [relics, setRelics] = useState<string[]>([]);
@@ -486,7 +487,7 @@ export function HomePage() {
 
   const isFinalBoss = chapter === dragonSons.length && !victory;
   const isFamilyBoss = endingChoice === 'family';
-  const isGoblinKingBoss = goblinKingReady;
+  const isGoblinKingBoss = goblinKingReady && goblinKingFightStarted;
   const enemy = isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
@@ -719,7 +720,7 @@ export function HomePage() {
     const monstersPerHit = items.doubleStrike > 0 ? 2 + Math.max(0, shopLevels.doubleStrike - 1) : 1;
     const nextMonsters = Math.max(0, currentMonsters - monstersPerHit);
     const monsterWeapon = isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2, chapter + 1);
-    const monsterArmor = rollArmor(2, chapter + 1);
+    const monsterArmor = isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2, chapter + 1);
     const nextCityMonsters = cityMonsters.map((count, index) => (index === chapter ? nextMonsters : count));
 
     setHeroHp(nextHeroHp);
@@ -777,6 +778,7 @@ export function HomePage() {
       setVictory(true);
       setSecretEnding('goblinKing');
       setGoblinKingReady(false);
+      setGoblinKingFightStarted(false);
       setChapter(dragonSons.length + 1);
       setGold(gold + 777_777);
       setMessage('Секретная концовка открыта: король гоблинов побежден.');
@@ -812,7 +814,7 @@ export function HomePage() {
 
     setSavedCities(nextSavedCities);
     setGold(gold + prize);
-    if (chapter === 5 && !dungeon) {
+    if (chapter === 6 && !dungeon) {
       setDungeon({ city: enemy.city, danger: 80 + chapter * 30, cleared: false, entered: false, enemiesLeft: dungeonEnemiesTotal, declined: false });
     }
 
@@ -841,7 +843,7 @@ export function HomePage() {
     setChapter(chapter + 1);
     setEnemyHp(scaledDragonPower(baseDragonHp, chapter + 1));
     setHeroHp(Math.min(currentHeroMaxHp, heroHp + 28));
-    setMessage(`${clearedCity} очищен от монстров. Ты получил ${prize} золота. ${chapter === 5 ? 'После победы над драконом открылась пещера. Выбери: войти или не входить.' : 'Путь идет дальше.'}`);
+    setMessage(`${clearedCity} очищен от монстров. Ты получил ${prize} золота. ${chapter === 6 ? 'После победы над 7-м драконом открылась пещера. Выбери: войти или выйти из подземелья.' : 'Путь идет дальше.'}`);
   }
 
   useEffect(() => {
@@ -958,6 +960,7 @@ export function HomePage() {
     if (!dungeon || dungeon.cleared) return;
     setDungeon({ ...dungeon, entered: true });
     setMessage(`Ты вошел в пещеру под городом ${dungeon.city}. Внутри ${formatPower(dungeon.enemiesLeft)} врагов.`);
+    navigate('/');
   }
 
   function exitDungeon() {
@@ -983,6 +986,7 @@ export function HomePage() {
     setEndingChoice(null);
     setSecretEnding(null);
     setGoblinKingReady(false);
+    setGoblinKingFightStarted(false);
     setGold(0);
     setDungeon(null);
     setRelics([]);
@@ -1148,6 +1152,66 @@ export function HomePage() {
     );
   }
 
+  if (dungeon && !dungeon.entered && !dungeon.cleared && !dungeon.declined) {
+    return (
+      <main className="cave-choice-page">
+        <section className="cave-choice" aria-label="Вход в подземелье">
+          <p className="intro-kicker">Тайная пещера</p>
+          <h1>Подземелье 7-го дракона</h1>
+          <p>
+            После победы над 7-м драконом земля раскрылась. В глубине темной
+            пещеры ждут {formatPower(dungeonEnemiesTotal)} монстров.
+          </p>
+          <p>
+            Здесь предметы выпадают намного лучше: шансы на оружие и броню
+            улучшены в 10 раз.
+          </p>
+          <div className="cave-actions">
+            <button onClick={enterDungeon} disabled={heroHp === 0} type="button">Войти</button>
+            <button className="secondary" onClick={declineDungeon} type="button">Выйти из подземелья</button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (goblinKingReady && !goblinKingFightStarted) {
+    return (
+      <main className="goblin-choice-page">
+        <section className="cave-choice goblin-choice" aria-label="Король гоблинов">
+          <p className="intro-kicker">Секретный бой</p>
+          <h1>Король гоблинов</h1>
+          <p>
+            Все {formatPower(dungeonEnemiesTotal)} монстров в подземелье побеждены.
+            Из темноты вышел один огромный гоблин с короной.
+          </p>
+          <p>
+            Можно сразиться с ним и открыть секретную концовку, или уйти и оставить
+            его королевство в пещере.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setGoblinKingFightStarted(true);
+              setEnemyHp(currentDragonHp);
+              setMessage(`Король гоблинов вышел из глубокой пещеры. У него ${formatPower(currentDragonHp)} HP.`);
+              navigate('/');
+            }} type="button">
+              Сражаться
+            </button>
+            <button className="secondary" onClick={() => {
+              setGoblinKingReady(false);
+              setGoblinKingFightStarted(false);
+              setMessage('Герой не стал сражаться с королем гоблинов. Тайна пещеры осталась жить под землей.');
+              navigate('/world');
+            }} type="button">
+              Не сражаться
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className={`game ${isWorldPage ? 'world-page' : 'play-page'}`}>
       <div className="auth-panel">
@@ -1221,7 +1285,25 @@ export function HomePage() {
             <div className="sword" />
             <div className="heal-aura" />
           </div>
-          {!isFinalReveal && enemy && currentMonsters === 0 && (
+          {!isFinalReveal && enemy && currentMonsters === 0 && isGoblinKingBoss && (
+            <div className="goblin-king-boss">
+              <div className="goblin-king-crown">
+                <span />
+                <span />
+                <span />
+              </div>
+              <span className="monster-token goblin">
+                <i />
+                <em className="monster-face" />
+                <em className="monster-nose" />
+                <em className="monster-belt" />
+                <em className="monster-boots" />
+                <em className="monster-armor" />
+                <b />
+              </span>
+            </div>
+          )}
+          {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && (
             <div className={`boss ${isFinalBoss ? 'final-boss' : ''} ${dragonClass}`} style={{ '--dragon-color': enemy.color } as CSSProperties}>
               <div className="tail-2d" />
               <div className="wing wing-left" />
@@ -1229,14 +1311,14 @@ export function HomePage() {
               <div className="boss-body" />
               <div className="neck-2d" />
               <div className="boss-head" />
-              {isFinalBoss && (
+              {(isFinalBoss || isGoblinKingBoss) && (
                 <>
-                  <div className="dragon-crown">
+                  <div className={`dragon-crown ${isGoblinKingBoss ? 'goblin-crown' : ''}`}>
                     <span />
                     <span />
                     <span />
                   </div>
-                  <div className="dragon-beard" />
+                  {isFinalBoss && <div className="dragon-beard" />}
                 </>
               )}
               <div className="horn-2d left-horn" />
@@ -1284,12 +1366,16 @@ export function HomePage() {
             <p className="eyebrow">Секретная концовка</p>
             <h2>Король бедных гоблинов</h2>
             <p>
-              Герой победил короля гоблинов и узнал правду: самые бедные гоблины жили в пещерах,
-              потому что их никто не любил, все прогоняли их из городов и считали злыми с рождения.
+              Герой победил короля гоблинов и узнал правду: гоблинов все гнобили,
+              прогоняли из городов и считали злыми только из-за страшного вида.
             </p>
             <p>
-              Они нападали не ради славы, а потому что боялись снова остаться без дома, еды и защиты.
-              Теперь герой может рассказать людям, что даже гоблинам нужен шанс.
+              Они были самыми несчастными существами. Да, они противные на вид,
+              но хотели всего лишь жить нормально: иметь дом, еду и чтобы их никто не унижал.
+            </p>
+            <p>
+              Теперь герой понял: даже у тех, кто кажется монстром, может быть сердце,
+              страх и мечта о спокойной жизни.
             </p>
             <div className="ending-actions">
               <button onClick={restart}>Начать заново</button>
@@ -1436,10 +1522,10 @@ export function HomePage() {
             {dungeon && !dungeon.declined && (
               <div className={`dungeon ${dungeon.cleared ? 'cleared' : ''}`}>
                 <div>
-                  <p className="label">Пещера 6-го города после дракона</p>
+                  <p className="label">Пещера 7-го дракона</p>
                   <strong>{dungeon.city}</strong>
                   <p>Врагов внутри: {formatPower(dungeon.enemiesLeft)} / {formatPower(dungeonEnemiesTotal)}</p>
-                  <p>Шансы оружия: обычное 10%, необычное 10%, эпик 30%, легендарка 5%, секретное 0.1%.</p>
+                  <p>Шансы на предметы улучшены в 10 раз. Обычное 10%, необычное 10%, эпик 30%, легендарка 5%, секретное 0.1%.</p>
                 </div>
                 {dungeon.entered || dungeon.cleared ? (
                   <button onClick={exitDungeon} disabled={dungeon.cleared || heroHp === 0}>
@@ -1454,7 +1540,7 @@ export function HomePage() {
               </div>
             )}
 
-            {goblinKingReady && (
+            {goblinKingReady && !goblinKingFightStarted && (
               <div className="dungeon">
                 <div>
                   <p className="label">Король гоблинов</p>
