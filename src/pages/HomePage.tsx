@@ -519,7 +519,11 @@ export function HomePage() {
     : isFamilyBoss
       ? 'scene-family'
       : currentMonsters === 0
-        ? 'scene-boss'
+        ? isGoblinKingBoss
+          ? 'scene-boss-goblin'
+          : isFinalBoss
+            ? 'scene-boss-final'
+            : `scene-boss-${chapter % 10}`
         : cityScene;
   const defeatedMonsters = cityMonsters.reduce((sum, monsters) => sum + (monstersPerCity - monsters), 0);
   const storyProgress = savedCities.length * 15 + Math.floor(defeatedMonsters / 7) + weapons.length + relics.length;
