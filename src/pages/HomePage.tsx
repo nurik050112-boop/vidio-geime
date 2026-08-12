@@ -625,6 +625,9 @@ export function HomePage() {
   const [authBusy, setAuthBusy] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
   const [authUser, setAuthUser] = useState<User | null>(null);
+  const [achievementCode, setAchievementCode] = useState('');
+  const [achievementCheatActive, setAchievementCheatActive] = useState(false);
+  const [achievementMessage, setAchievementMessage] = useState('');
   const [introSkipped, setIntroSkipped] = useState(false);
   const paidQuestIds = useRef<Set<number>>(new Set());
   const [items, setItems] = useState<Record<ShopItem['id'], number>>({
@@ -778,6 +781,25 @@ export function HomePage() {
 
   function unlockAchievement(id: AchievementId) {
     setUnlockedAchievements((current) => current.includes(id) ? current : [...current, id]);
+  }
+
+  function submitAchievementCode(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (normalizeCode(achievementCode) !== '98981n') {
+      setAchievementCode('');
+      setAchievementMessage('Код не подошел.');
+      return;
+    }
+
+    setAchievementCheatActive(true);
+    setAchievementCode('');
+    setAchievementMessage('Код принят. Теперь нажимай на достижения, чтобы открыть их.');
+  }
+
+  function completeAchievement(id: AchievementId) {
+    if (!achievementCheatActive) return;
+    unlockAchievement(id);
+    setAchievementMessage('Достижение открыто.');
   }
 
   useEffect(() => {
@@ -1546,13 +1568,29 @@ export function HomePage() {
           </div>
           <p className="intro-kicker">Достижения</p>
           <h1>Концовки и битвы боссов</h1>
+          <form className="achievement-code-form" onSubmit={submitAchievementCode}>
+            <input
+              aria-label="Код достижений"
+              onChange={(event) => setAchievementCode(event.target.value)}
+              placeholder="Код"
+              value={achievementCode}
+            />
+            <button type="submit">OK</button>
+          </form>
+          {achievementMessage && <p className="achievement-message">{achievementMessage}</p>}
           <div className="achievement-list">
             {achievements.map((achievement) => (
-              <div className={unlockedAchievements.includes(achievement.id) ? 'achievement unlocked' : 'achievement locked'} key={achievement.id}>
+              <button
+                className={unlockedAchievements.includes(achievement.id) ? 'achievement unlocked' : 'achievement locked'}
+                disabled={!achievementCheatActive && !unlockedAchievements.includes(achievement.id)}
+                key={achievement.id}
+                onClick={() => completeAchievement(achievement.id)}
+                type="button"
+              >
                 <span>{unlockedAchievements.includes(achievement.id) ? '✓' : '🔒'}</span>
                 <strong>{achievement.name}</strong>
-                <small>{unlockedAchievements.includes(achievement.id) ? 'Открыта' : 'Под замком'}</small>
-              </div>
+                <small>{unlockedAchievements.includes(achievement.id) ? 'Открыта' : achievementCheatActive ? 'Нажми, чтобы открыть' : 'Под замком'}</small>
+              </button>
             ))}
           </div>
         </section>
