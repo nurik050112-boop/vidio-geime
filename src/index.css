@@ -2424,9 +2424,7 @@ button.secondary {
 
 .achievement {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2px 8px;
-  align-items: center;
+  gap: 8px;
   width: 100%;
   padding: 9px 10px;
   border: 2px solid rgba(37, 17, 5, 0.16);
@@ -2440,12 +2438,31 @@ button.secondary {
   transform: none;
 }
 
-.achievement:disabled {
+.achievement-main {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  box-shadow: none;
+}
+
+.achievement-main:hover,
+.achievement-main:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.achievement-main:disabled {
   cursor: default;
   opacity: 1;
 }
 
-.achievement span {
+.achievement-main span {
   grid-row: span 2;
   display: grid;
   place-items: center;
@@ -2454,12 +2471,12 @@ button.secondary {
   border-radius: 999px;
 }
 
-.achievement strong,
-.achievement small {
+.achievement-main strong,
+.achievement-main small {
   min-width: 0;
 }
 
-.achievement small {
+.achievement-main small {
   font-size: 12px;
 }
 
@@ -2482,6 +2499,13 @@ button.secondary {
 .achievement.unlocked span {
   color: #fff;
   background: #2fbf71;
+}
+
+.teleport-button {
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 10px;
+  font-size: 13px;
 }
 
 .achievement-code-form {

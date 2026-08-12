@@ -802,6 +802,87 @@ export function HomePage() {
     setAchievementMessage('Достижение открыто.');
   }
 
+  function teleportToAchievement(id: AchievementId) {
+    if (!achievementCheatActive) return;
+
+    setIntroSkipped(true);
+    setVictory(false);
+    setEndingChoice(null);
+    setSecretEnding(null);
+    setGoblinKingReady(false);
+    setGoblinKingFightStarted(false);
+    setFuryGateOpen(false);
+    setFuryDungeonEntered(false);
+    setFuryChoiceOpen(false);
+    setFuryKingFightStarted(false);
+    setAnuarGateOpen(false);
+    setAnuarWorldEntered(false);
+    setAnuarKingFightStarted(false);
+    setMansurGateOpen(false);
+    setMansurDungeonEntered(false);
+    setMansurKingFightStarted(false);
+    setArailmGateOpen(false);
+    setArailmWorldEntered(false);
+    setArailmChoiceOpen(false);
+    setArailmKingFightStarted(false);
+    setHeroHp(currentHeroMaxHp);
+
+    if (id === 'dragonPeace') {
+      setVictory(true);
+      setChapter(dragonSons.length + 1);
+      setEndingChoice(null);
+      setMessage('Телепорт: финальный выбор после Великого дракона.');
+      navigate('/world');
+      return;
+    }
+
+    if (id === 'dragonWar') {
+      setEndingChoice('family');
+      setEnemyHp(kingDragonHp * 100);
+      setMessage('Телепорт: битва с семьей драконов.');
+      navigate('/');
+      return;
+    }
+
+    if (id === 'goblinKing') {
+      setGoblinKingReady(true);
+      setGoblinKingFightStarted(true);
+      setEnemyHp(scaledDragonPower(baseDragonHp, chapter + 4));
+      setMessage('Телепорт: Король гоблинов вышел на бой.');
+      navigate('/');
+      return;
+    }
+
+    if (id === 'furyKing') {
+      setFuryKingFightStarted(true);
+      setEnemyHp(Number.MAX_SAFE_INTEGER);
+      setMessage('Телепорт: Король фури вышел на бой.');
+      navigate('/');
+      return;
+    }
+
+    if (id === 'anuarKing') {
+      setAnuarKingFightStarted(true);
+      setEnemyHp(scaledDragonPower(baseDragonHp, chapter + 6));
+      setMessage('Телепорт: Ануар вышел на финальный бой.');
+      navigate('/');
+      return;
+    }
+
+    if (id === 'mansurKing') {
+      setMansurKingFightStarted(true);
+      setEnemyHp(scaledDragonPower(baseDragonHp, chapter + 7));
+      setMessage('Телепорт: Король Мансур вышел с короной.');
+      navigate('/');
+      return;
+    }
+
+    setArailmKingFightStarted(true);
+    setEnemyHp(Number.MAX_SAFE_INTEGER);
+    setMessage(`Телепорт: босс Арайлым вышла на бой. HP и урон: ${formatHugeText(arailmBossPowerText)}.`);
+    navigate('/');
+  }
+
   useEffect(() => {
     const savedAchievements = window.localStorage.getItem('dragon-game-achievements');
     if (!savedAchievements) return;
@@ -1580,17 +1661,23 @@ export function HomePage() {
           {achievementMessage && <p className="achievement-message">{achievementMessage}</p>}
           <div className="achievement-list">
             {achievements.map((achievement) => (
-              <button
-                className={unlockedAchievements.includes(achievement.id) ? 'achievement unlocked' : 'achievement locked'}
-                disabled={!achievementCheatActive && !unlockedAchievements.includes(achievement.id)}
-                key={achievement.id}
-                onClick={() => completeAchievement(achievement.id)}
-                type="button"
-              >
-                <span>{unlockedAchievements.includes(achievement.id) ? '✓' : '🔒'}</span>
-                <strong>{achievement.name}</strong>
-                <small>{unlockedAchievements.includes(achievement.id) ? 'Открыта' : achievementCheatActive ? 'Нажми, чтобы открыть' : 'Под замком'}</small>
-              </button>
+              <div className={unlockedAchievements.includes(achievement.id) ? 'achievement unlocked' : 'achievement locked'} key={achievement.id}>
+                <button
+                  className="achievement-main"
+                  disabled={!achievementCheatActive && !unlockedAchievements.includes(achievement.id)}
+                  onClick={() => completeAchievement(achievement.id)}
+                  type="button"
+                >
+                  <span>{unlockedAchievements.includes(achievement.id) ? '✓' : '🔒'}</span>
+                  <strong>{achievement.name}</strong>
+                  <small>{unlockedAchievements.includes(achievement.id) ? 'Открыта' : achievementCheatActive ? 'Нажми, чтобы открыть' : 'Под замком'}</small>
+                </button>
+                {achievementCheatActive && (
+                  <button className="teleport-button" onClick={() => teleportToAchievement(achievement.id)} type="button">
+                    Телепорт
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         </section>
