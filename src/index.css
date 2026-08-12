@@ -258,7 +258,8 @@ button.secondary {
 .goblin-choice-page,
 .fury-choice-page,
 .anuar-choice-page,
-.mansur-choice-page {
+.mansur-choice-page,
+.arailm-choice-page {
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -296,6 +297,14 @@ button.secondary {
     radial-gradient(ellipse at 28% 64%, #163d2b 0 13rem, transparent 13.2rem),
     radial-gradient(ellipse at 76% 62%, #1c4a35 0 14rem, transparent 14.2rem),
     linear-gradient(180deg, #f8c6a2 0%, #aac8dc 36%, #0d5f73 72%, #06323f 100%);
+}
+
+.arailm-choice-page {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 42, 31, 0.2) 0 14px, transparent 15px 34px),
+    repeating-linear-gradient(0deg, rgba(255, 42, 31, 0.18) 0 4px, transparent 5px 18px),
+    radial-gradient(circle at 50% 42%, rgba(255, 42, 31, 0.48), transparent 22rem),
+    linear-gradient(135deg, #090205, #3c0508 48%, #060204);
 }
 
 .cave-choice {
@@ -337,6 +346,13 @@ button.secondary {
   color: #fff8e8;
   background:
     linear-gradient(180deg, rgba(19, 61, 43, 0.9), rgba(5, 32, 40, 0.92));
+}
+
+.arailm-choice {
+  border-color: rgba(255, 42, 31, 0.9);
+  color: #fff8e8;
+  background:
+    linear-gradient(180deg, rgba(58, 4, 8, 0.94), rgba(6, 2, 4, 0.94));
 }
 
 .cave-choice h1 {
@@ -985,6 +1001,29 @@ button.secondary {
   background:
     radial-gradient(ellipse at 44% 10%, rgba(255, 255, 255, 0.18) 0 150px, transparent 151px),
     linear-gradient(180deg, #0d6378, #062833);
+}
+
+.sky.scene-arailm {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 42, 31, 0.16) 0 13px, transparent 14px 32px),
+    repeating-linear-gradient(0deg, rgba(255, 42, 31, 0.14) 0 4px, transparent 5px 20px),
+    radial-gradient(circle at 50% 30%, rgba(255, 42, 31, 0.46) 0 120px, transparent 121px),
+    linear-gradient(180deg, #090205 0%, #4c0508 52%, #0b0204 100%);
+}
+
+.sky.scene-arailm::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 20%, rgba(0, 0, 0, 0.82) 20% 62%, transparent 62%),
+    repeating-linear-gradient(90deg, transparent 0 68px, rgba(255, 255, 255, 0.16) 69px 72px);
+}
+
+.sky.scene-arailm::after {
+  height: 136px;
+  border-top-color: #ff2a1f;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 42, 31, 0.2) 0 32px, transparent 33px 66px),
+    linear-gradient(180deg, #240206, #080102);
 }
 
 .sky.scene-family {
@@ -2187,6 +2226,221 @@ button.secondary {
   background:
     radial-gradient(ellipse at 50% 0, rgba(156, 255, 0, 0.24), transparent 13rem),
     #fff8e8;
+}
+
+.monster-token.arailm {
+  width: 72px;
+  height: 96px;
+  scale: 1.35;
+  border: 4px solid #ff2a1f;
+  border-radius: 8px;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 42, 31, 0.34) 0 5px, transparent 6px 14px),
+    linear-gradient(180deg, #120104, #2c0305);
+  box-shadow: 0 0 22px rgba(255, 42, 31, 0.72);
+}
+
+.monster-token.arailm i,
+.monster-token.arailm b,
+.monster-token.arailm::before,
+.monster-token.arailm::after,
+.monster-token.arailm .monster-belt,
+.monster-token.arailm .monster-boots,
+.monster-token.arailm .monster-armor {
+  display: none;
+}
+
+.monster-token.arailm .monster-face {
+  left: 10px;
+  top: 16px;
+  width: 48px;
+  height: 56px;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, #ff2a1f 0 8px, transparent 9px 18px, #ff2a1f 19px 27px, transparent 28px 36px, #ff2a1f 37px 48px),
+    repeating-linear-gradient(180deg, transparent 0 8px, rgba(255, 255, 255, 0.26) 9px 10px);
+}
+
+.monster-token.arailm .monster-nose {
+  left: 18px;
+  top: 76px;
+  width: 34px;
+  height: 4px;
+  border: 0;
+  background: #ff2a1f;
+}
+
+.arailm-boss {
+  position: absolute;
+  right: 10%;
+  bottom: 132px;
+  z-index: 7;
+  width: 390px;
+  height: 280px;
+}
+
+.arailm-screen {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: grid;
+  gap: 7px;
+  width: 250px;
+  padding: 18px;
+  border: 4px solid #050505;
+  color: #64ff9b;
+  font-weight: 900;
+  background: #111;
+  box-shadow: 0 0 30px rgba(255, 42, 31, 0.8);
+}
+
+.arailm-person {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 170px;
+  height: 250px;
+}
+
+.arailm-head {
+  position: absolute;
+  left: 66px;
+  top: 44px;
+  width: 54px;
+  height: 64px;
+  border: 4px solid #2a140f;
+  border-radius: 45% 45% 48% 48%;
+  background: #f2c7a9;
+}
+
+.arailm-hair {
+  position: absolute;
+  left: 40px;
+  top: 34px;
+  width: 90px;
+  height: 120px;
+  border-radius: 42px 42px 12px 12px;
+  background: #d88b58;
+}
+
+.arailm-body {
+  position: absolute;
+  left: 42px;
+  top: 108px;
+  width: 98px;
+  height: 132px;
+  border-radius: 20px 20px 8px 8px;
+  background: #111;
+}
+
+.arailm-mic {
+  position: absolute;
+  left: 116px;
+  top: 76px;
+  width: 14px;
+  height: 62px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #050505, #555);
+  transform: rotate(-14deg);
+}
+
+.arailm-ending {
+  border-color: #ff2a1f;
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 42, 31, 0.25), transparent 14rem),
+    #fff8e8;
+}
+
+.achievements,
+.guide {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 2px solid rgba(37, 17, 5, 0.18);
+  border-radius: 8px;
+  background: #fffdf4;
+}
+
+.achievement-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.achievement {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 2px solid rgba(37, 17, 5, 0.16);
+  border-radius: 8px;
+  font-weight: 900;
+}
+
+.achievement span {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.achievement strong,
+.achievement small {
+  min-width: 0;
+}
+
+.achievement small {
+  font-size: 12px;
+}
+
+.achievement.locked {
+  color: #80665f;
+  background: #efe6d6;
+  filter: grayscale(0.35);
+}
+
+.achievement.locked span {
+  background: #d8c8b2;
+}
+
+.achievement.unlocked {
+  color: #15351f;
+  border-color: #2fbf71;
+  background: #ddf8e6;
+}
+
+.achievement.unlocked span {
+  color: #fff;
+  background: #2fbf71;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.guide-grid div {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 2px solid rgba(37, 17, 5, 0.14);
+  border-radius: 8px;
+  background: #f5eddd;
+}
+
+.guide-grid strong {
+  color: #251105;
+}
+
+.guide-grid p {
+  margin: 0;
+  color: #5b3d38;
+  font-weight: 800;
 }
 
 .anuar-boss {
