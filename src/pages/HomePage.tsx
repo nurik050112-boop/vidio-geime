@@ -461,6 +461,7 @@ export function HomePage() {
   const [authBusy, setAuthBusy] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
   const [authUser, setAuthUser] = useState<User | null>(null);
+  const [introSkipped, setIntroSkipped] = useState(false);
   const paidQuestIds = useRef<Set<number>>(new Set());
   const [items, setItems] = useState<Record<ShopItem['id'], number>>({
     sword: 0,
@@ -584,6 +585,8 @@ export function HomePage() {
       setAuthUser(session?.user ?? null);
       if (session?.user) {
         setAuthMessage('');
+      } else {
+        setIntroSkipped(false);
       }
     });
 
@@ -1103,6 +1106,32 @@ export function HomePage() {
               {authMessage && <p>{authMessage}</p>}
             </form>
           </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (!introSkipped) {
+    return (
+      <main className="intro-page">
+        <section className="intro-story" aria-label="История игры">
+          <p className="intro-kicker">История мира</p>
+          <h1>Драконы стали злыми</h1>
+          <p>
+            Когда-то драконы жили далеко от людей. Но однажды они разозлились,
+            поднялись из своих логовищ и начали уничтожать 10 городов.
+          </p>
+          <p>
+            Они сжигали дома, ломали башни и нападали на людей. Чтобы остановить
+            беду, жители отправили героя с мечом в самый опасный путь.
+          </p>
+          <p>
+            Теперь герой должен очистить города от монстров, победить сыновей
+            дракона и узнать, почему началась эта война.
+          </p>
+          <button onClick={() => setIntroSkipped(true)} type="button">
+            Пропустить
+          </button>
         </section>
       </main>
     );
