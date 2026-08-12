@@ -512,6 +512,14 @@ export function HomePage() {
   const currentEnemyHealthText = currentMonsters > 0
     ? `Враг HP ${formatPower(currentMonsterHp)}`
     : `Дракон HP ${formatPower(enemyHp)}/${formatPower(currentDragonHp)}`;
+  const cityScene = `scene-city-${chapter % 6}`;
+  const battleScene = isDungeon
+    ? 'scene-dungeon'
+    : isFamilyBoss
+      ? 'scene-family'
+      : currentMonsters === 0
+        ? 'scene-boss'
+        : cityScene;
   const defeatedMonsters = cityMonsters.reduce((sum, monsters) => sum + (monstersPerCity - monsters), 0);
   const storyProgress = savedCities.length * 15 + Math.floor(defeatedMonsters / 7) + weapons.length + relics.length;
   const cityQuestNames = [
@@ -1109,7 +1117,7 @@ export function HomePage() {
       <section className="stage" aria-label="Поле битвы">
         <Link className="page-switch world-link" href="/world">Пылающий мир</Link>
         <div
-          className={`sky battle-2d ${isDungeon ? 'dungeon-mode' : ''} ${battlePulse % 2 ? 'hit' : ''}`}
+          className={`sky battle-2d ${battleScene} ${battlePulse % 2 ? 'hit' : ''}`}
           onClick={() => (currentMonsters > 0 ? fightMonster() : strike())}
           onKeyDown={(event) => {
             if (event.key === 'Enter' || event.key === ' ') {
