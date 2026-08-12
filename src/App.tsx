@@ -7,6 +7,7 @@ export default function App() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
+      <Route path="/world" component={HomePage} />
       <Route component={NotFoundPage} />
     </Switch>
   );
