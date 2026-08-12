@@ -571,6 +571,7 @@ function shouldEquipArmor(currentArmor: Armor | null, nextArmor: Armor) {
 export function HomePage() {
   const [location, navigate] = useLocation();
   const isWorldPage = location === '/world';
+  const isAchievementsPage = location === '/achievements';
   const [chapter, setChapter] = useState(0);
   const [healthLevel, setHealthLevel] = useState(0);
   const [heroHp, setHeroHp] = useState(heroMaxHp);
@@ -1535,6 +1536,30 @@ export function HomePage() {
     );
   }
 
+  if (isAchievementsPage) {
+    return (
+      <main className="achievements-page">
+        <section className="achievements-screen" aria-label="Достижения">
+          <div className="achievement-topbar">
+            <Link className="page-switch play-link" href="/">Играть</Link>
+            <Link className="page-switch play-link" href="/world">Пылающий мир</Link>
+          </div>
+          <p className="intro-kicker">Достижения</p>
+          <h1>Концовки и битвы боссов</h1>
+          <div className="achievement-list">
+            {achievements.map((achievement) => (
+              <div className={unlockedAchievements.includes(achievement.id) ? 'achievement unlocked' : 'achievement locked'} key={achievement.id}>
+                <span>{unlockedAchievements.includes(achievement.id) ? '✓' : '🔒'}</span>
+                <strong>{achievement.name}</strong>
+                <small>{unlockedAchievements.includes(achievement.id) ? 'Открыта' : 'Под замком'}</small>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   if (!introSkipped) {
     return (
       <main className="intro-page">
@@ -1850,6 +1875,7 @@ export function HomePage() {
       </div>
       <section className="stage" aria-label="Поле битвы">
         <Link className="page-switch world-link" href="/world">Пылающий мир</Link>
+        <Link className="page-switch achievements-link" href="/achievements">Достижения</Link>
         <div
           className={`sky battle-2d ${battleScene} ${battlePulse % 2 ? 'hit' : ''}`}
           onClick={() => (currentMonsters > 0 ? fightMonster() : strike())}
@@ -2045,7 +2071,10 @@ export function HomePage() {
 
       {isWorldPage && (
       <section className="hud" aria-label="Состояние игры">
-        <Link className="page-switch play-link" href="/">Играть</Link>
+        <div className="world-nav">
+          <Link className="page-switch play-link" href="/">Играть</Link>
+          <Link className="page-switch play-link" href="/achievements">Достижения</Link>
+        </div>
         <div className="story">
           <p className="eyebrow">Пылающий мир</p>
           <h1>Меч против сыновей дракона</h1>
@@ -2392,104 +2421,6 @@ export function HomePage() {
             </div>
           </div>
         )}
-
-        <div className="achievements">
-          <div className="quest-head">
-            <p className="label">Достижения концовок</p>
-            <strong>{unlockedAchievements.length} / {achievements.length}</strong>
-          </div>
-          <div className="achievement-list">
-            {achievements.map((achievement) => (
-              <div className={unlockedAchievements.includes(achievement.id) ? 'achievement unlocked' : 'achievement locked'} key={achievement.id}>
-                <span>{unlockedAchievements.includes(achievement.id) ? '✓' : '🔒'}</span>
-                <strong>{achievement.name}</strong>
-                <small>{unlockedAchievements.includes(achievement.id) ? 'Открыта' : 'Под замком'}</small>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="guide">
-          <div className="quest-head">
-            <p className="label">Гид</p>
-            <strong>Все важное</strong>
-          </div>
-          <div className="guide-grid">
-            <div>
-              <strong>Основная игра</strong>
-              <p>Бей монстров, потом бей дракона. Очищай города, собирай золото, оружие, броню и проходи квесты.</p>
-            </div>
-            <div>
-              <strong>Управление</strong>
-              <p>Клик по полю боя атакует. W A S D двигают героя. Space делает прыжок.</p>
-            </div>
-            <div>
-              <strong>Числа</strong>
-              <p>к, м, в, т, кв, кс, ск, сп, ок, дк, сс, аа, бб, уу. Если число огромное: оерн, а если больше 1000 символов: qghe.</p>
-            </div>
-            <div>
-              <strong>Коды силы</strong>
-              <p><b>wwnurikww</b> дает админскую ядерку и шлем с бесконечностью ∞. <b>999999999</b> дает меч на 999999999 урона.</p>
-            </div>
-            <div>
-              <strong>Пещера 7-го дракона</strong>
-              <p>После победы над 7-м драконом открывается подземелье на 10к врагов. После зачистки выходит Король гоблинов.</p>
-            </div>
-            <div>
-              <strong>Король гоблинов</strong>
-              <p>Победи короля, чтобы открыть секретную концовку про людей, ставших гоблинами.</p>
-            </div>
-            <div>
-              <strong>wwfuri</strong>
-              <p>Секретный фури-мир: 100к монстров, Фури меч, потом выбор убить или любить. Убийство открывает фури-концовку.</p>
-            </div>
-            <div>
-              <strong>Anuar</strong>
-              <p>Город бомб: 100к бомба-монстров, босс Ануар и бомбическая концовка.</p>
-            </div>
-            <div>
-              <strong>mansur</strong>
-              <p>Подземелье Мансура: 100к монстров, Король Мансур с короной и Мансур секретный клинок.</p>
-            </div>
-            <div>
-              <strong>arailm</strong>
-              <p>Код работает на английском: arailm или arailym. Красная программа: 100к код-монстров, меч програм или кодовая концовка.</p>
-              <button className="guide-button" onClick={openArailmWorld} type="button">Открыть arailm</button>
-            </div>
-            <div>
-              <strong>Финал драконов</strong>
-              <p>После всех городов появляется Великий дракон. Потом можно оставить семью драконов или сразиться с ней.</p>
-            </div>
-            <div>
-              <strong>Достижения</strong>
-              <p>Каждая концовка сначала под замком. Когда проходишь концовку, достижение открывается и сохраняется в браузере.</p>
-            </div>
-            <div>
-              <strong>Все концовки</strong>
-              <p>Мир после огня, Пустое небо, Король гоблинов, Король фури, Бомбическая концовка, Подземелье Мансура, Код хочет выбраться.</p>
-            </div>
-            <div>
-              <strong>Все секретные награды</strong>
-              <p>Админская ядерка, админский шлем, меч 999999999, Фури меч, Мансур секретный клинок, меч програм.</p>
-            </div>
-            <div>
-              <strong>Как быстро пройти</strong>
-              <p>Введи wwnurikww, получи ядерку, очищай монстров быстрее, бей боссов и открывай секретные миры кодами.</p>
-            </div>
-            <div>
-              <strong>Как открыть 5-й город</strong>
-              <p>Введи arailm, победи 100к код-монстров и выбери “Не сражаться”. Герой получит меч програм и начнет с 5-го города.</p>
-            </div>
-            <div>
-              <strong>Как открыть боссов</strong>
-              <p>Сначала зачисти всех монстров в мире или подземелье. После 0 монстров появляется дракон, король или секретный босс.</p>
-            </div>
-            <div>
-              <strong>Что качать</strong>
-              <p>Покупай меч для урона, броню для защиты, здоровье для HP и двойной удар, чтобы быстрее чистить толпы.</p>
-            </div>
-          </div>
-        </div>
 
         {weapons.length > 0 && (
           <div className="weapons">

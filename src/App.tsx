@@ -8,6 +8,7 @@ export default function App() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/world" component={HomePage} />
+      <Route path="/achievements" component={HomePage} />
       <Route component={NotFoundPage} />
     </Switch>
   );
