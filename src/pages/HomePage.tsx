@@ -760,6 +760,7 @@ export function HomePage() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const bossMusicStopRef = useRef<(() => void) | null>(null);
   const lastSpokenSceneRef = useRef('');
+  const lastMessageVoiceAtRef = useRef(0);
   const [items, setItems] = useState<Record<ShopItem['id'], number>>({
     sword: 0,
     pet: 0,
@@ -817,8 +818,8 @@ export function HomePage() {
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
   const reward = enemy ? 120 + chapter * 110 : 0;
   const currentMonsters = isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
-  const bossMusicKey = currentMonsters > 0 || isFinalReveal
-    ? null
+  const musicKey = isFinalReveal
+    ? 'ending'
     : isBbiBoss
       ? 'bbi'
     : isArailmKingBoss
@@ -835,9 +836,19 @@ export function HomePage() {
       ? 'family'
     : isFinalBoss
       ? 'final'
-      : enemy
-        ? `dragon-${chapter % 4}`
-        : null;
+    : isBbiWorld
+      ? 'bbi-world'
+    : isArailmWorld
+      ? 'arailm-world'
+    : isMansurDungeon
+      ? 'mansur-world'
+    : isAnuarWorld
+      ? 'anuar-world'
+    : isFuryDungeon
+      ? 'fury-world'
+    : isDungeon
+      ? 'dungeon'
+      : 'world';
   const currentMonsterHp = isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
   const currentMonsterDamage = isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
@@ -969,9 +980,16 @@ export function HomePage() {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ru-RU';
-    utterance.rate = 0.92;
-    utterance.pitch = 0.95;
+    utterance.rate = 0.78;
+    utterance.pitch = 0.48;
+    utterance.volume = 0.95;
     window.speechSynthesis.speak(utterance);
+  }
+
+  function shouldSpeakMessage(text: string) {
+    if (text.length < 18) return false;
+    if (/HP|Удар по|Монстр напал сам|Осталось монстров|Получено золото/i.test(text)) return false;
+    return /Концовка|Телепорт|Код|Появился|появился|побежден|побеждены|очищен|очищена|вошел|вышел|выбор|Получен|Получена|куплен|Продано|Продана|началась|начинается|открыл|открыта|ядерка/i.test(text);
   }
 
   function stopBossMusic() {
@@ -989,15 +1007,23 @@ export function HomePage() {
     void context.resume();
 
     const patterns: Record<string, { notes: number[]; beat: number; wave: OscillatorType; gain: number }> = {
-      goblin: { notes: [196, 233, 262, 233], beat: 0.24, wave: 'square', gain: 0.045 },
-      fury: { notes: [110, 146, 196, 220], beat: 0.18, wave: 'sawtooth', gain: 0.035 },
-      anuar: { notes: [82, 123, 165, 247], beat: 0.28, wave: 'triangle', gain: 0.05 },
-      mansur: { notes: [147, 196, 247, 294], beat: 0.34, wave: 'triangle', gain: 0.04 },
-      arailm: { notes: [98, 131, 98, 175, 208], beat: 0.16, wave: 'sawtooth', gain: 0.03 },
-      bbi: { notes: [262, 330, 392, 523], beat: 0.2, wave: 'square', gain: 0.035 },
-      family: { notes: [73, 110, 147, 220], beat: 0.42, wave: 'sawtooth', gain: 0.04 },
-      final: { notes: [55, 82, 110, 165, 220], beat: 0.36, wave: 'sawtooth', gain: 0.045 },
-      dragon: { notes: [130, 164, 196, 246], beat: 0.3, wave: 'triangle', gain: 0.035 },
+      world: { notes: [196, 247, 294, 247], beat: 0.48, wave: 'triangle', gain: 0.022 },
+      dungeon: { notes: [98, 123, 147, 123], beat: 0.42, wave: 'triangle', gain: 0.026 },
+      ending: { notes: [220, 277, 330, 440], beat: 0.58, wave: 'triangle', gain: 0.024 },
+      'bbi-world': { notes: [262, 330, 392, 330], beat: 0.38, wave: 'triangle', gain: 0.024 },
+      'fury-world': { notes: [146, 196, 233, 196], beat: 0.34, wave: 'triangle', gain: 0.026 },
+      'anuar-world': { notes: [123, 165, 247, 165], beat: 0.36, wave: 'square', gain: 0.024 },
+      'mansur-world': { notes: [147, 196, 247, 196], beat: 0.46, wave: 'triangle', gain: 0.024 },
+      'arailm-world': { notes: [98, 131, 175, 131], beat: 0.28, wave: 'sawtooth', gain: 0.022 },
+      goblin: { notes: [98, 196, 233, 196, 87], beat: 0.13, wave: 'square', gain: 0.07 },
+      fury: { notes: [55, 110, 146, 196, 220], beat: 0.11, wave: 'sawtooth', gain: 0.065 },
+      anuar: { notes: [41, 82, 123, 165, 247], beat: 0.14, wave: 'square', gain: 0.075 },
+      mansur: { notes: [73, 147, 196, 247, 294], beat: 0.16, wave: 'sawtooth', gain: 0.068 },
+      arailm: { notes: [49, 98, 131, 98, 175, 208], beat: 0.1, wave: 'sawtooth', gain: 0.06 },
+      bbi: { notes: [131, 262, 330, 392, 523], beat: 0.1, wave: 'square', gain: 0.07 },
+      family: { notes: [37, 73, 110, 147, 220], beat: 0.18, wave: 'sawtooth', gain: 0.075 },
+      final: { notes: [27, 55, 82, 110, 165, 220], beat: 0.15, wave: 'sawtooth', gain: 0.08 },
+      dragon: { notes: [65, 130, 164, 196, 246], beat: 0.17, wave: 'sawtooth', gain: 0.065 },
     };
     const pattern = patterns[sceneKey] ?? patterns.dragon;
     const masterGain = context.createGain();
@@ -1181,9 +1207,9 @@ export function HomePage() {
 
   useEffect(() => {
     stopBossMusic();
-    if (bossMusicKey) playBossMusic(bossMusicKey.startsWith('dragon-') ? 'dragon' : bossMusicKey);
+    playBossMusic(musicKey);
     return () => stopBossMusic();
-  }, [bossMusicKey]);
+  }, [musicKey]);
 
   useEffect(() => {
     if (!introSkipped) speakText(introVoiceText, 'intro');
@@ -1192,6 +1218,13 @@ export function HomePage() {
   useEffect(() => {
     if (endingVoiceText) speakText(endingVoiceText, `ending-${bbiBadEnding}-${secretEnding}-${endingChoice}`);
   }, [endingVoiceText, bbiBadEnding, secretEnding, endingChoice]);
+
+  useEffect(() => {
+    const now = Date.now();
+    if (!introSkipped || endingVoiceText || now - lastMessageVoiceAtRef.current < 2600 || !shouldSpeakMessage(message)) return;
+    lastMessageVoiceAtRef.current = now;
+    speakText(message, `message-${message}`);
+  }, [message, introSkipped, endingVoiceText]);
 
   useEffect(() => () => {
     stopBossMusic();
@@ -2518,7 +2551,7 @@ export function HomePage() {
             <div className="arm-2d" />
             <div className="leg-2d left-leg" />
             <div className="leg-2d right-leg" />
-            <div className={`sword sword-style-${equippedWeaponStyle}`} />
+            <div className={`sword weapon-style-${equippedWeaponStyle}`} />
             <div className="heal-aura" />
             {equippedArtifact && (
               <div className={`hero-artifact artifact-icon ${equippedArtifact.icon}`} aria-label={equippedArtifact.name}>

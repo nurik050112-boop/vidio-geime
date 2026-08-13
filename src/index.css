@@ -3786,8 +3786,8 @@ button.selected {
 }
 
 .weapon-picture::before {
-  left: 21px;
-  top: 8px;
+  left: 50%;
+  top: 9px;
   width: 7px;
   height: 43px;
   border: 2px solid #1a1022;
@@ -3795,30 +3795,31 @@ button.selected {
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.88) 0 38%, transparent 39%),
     linear-gradient(180deg, #d7fbff, #73d2de);
-  transform: rotate(32deg);
+  transform: translateX(-50%) rotate(32deg);
+  transform-origin: 50% 92%;
   box-shadow: 0 0 12px rgba(115, 210, 222, 0.72);
 }
 
 .weapon-picture::after {
-  left: 16px;
+  left: 50%;
   top: 45px;
   width: 25px;
   height: 7px;
   border: 2px solid #1a1022;
   border-radius: 999px;
   background: linear-gradient(180deg, #ffe66d, #b5651d);
-  transform: rotate(32deg);
+  transform: translateX(-50%) rotate(32deg);
 }
 
 .weapon-picture i {
-  left: 15px;
+  left: 50%;
   top: 56px;
   width: 12px;
   height: 17px;
   border: 2px solid #1a1022;
   border-radius: 999px;
   background: #5b3d38;
-  transform: rotate(32deg);
+  transform: translateX(-50%) rotate(32deg);
 }
 
 .weapon-picture i::before {
@@ -3896,17 +3897,17 @@ button.selected {
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.88) 0 38%, transparent 39%),
     var(--sword-blade, linear-gradient(180deg, #d7fbff, #73d2de));
-  transform: rotate(var(--sword-tilt, 32deg));
+  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg));
 }
 
 .weapon-card .weapon-picture::after {
   width: var(--sword-guard, 25px);
   background: var(--sword-guard-color, #ffd166);
-  transform: rotate(var(--sword-tilt, 32deg));
+  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg));
 }
 
 .weapon-card .weapon-picture i {
-  transform: rotate(var(--sword-tilt, 32deg));
+  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg));
 }
 
 .weapon-style-18 .weapon-picture::before {
@@ -3917,7 +3918,7 @@ button.selected {
   border-radius: 50% 48% 48% 50%;
   background:
     linear-gradient(90deg, #26391f, #66745d 42%, #23361f);
-  transform: rotate(0deg);
+  transform: none;
   box-shadow: inset -7px 0 8px rgba(255, 255, 255, 0.18), 0 0 12px rgba(47, 80, 42, 0.9);
 }
 
