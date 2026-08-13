@@ -1869,6 +1869,15 @@ export function HomePage() {
       return;
     }
 
+    if (code === 'ibb') {
+      const bbiSword = createBbiLegendarySword();
+      setWeapons((currentWeapons) => [...currentWeapons, bbiSword]);
+      setEquippedWeapon(bbiSword);
+      setAdminCode('');
+      setMessage('Код ibb принят. Получен BBI огненный легендарный меч.');
+      return;
+    }
+
     if (code === '999999999') {
       const sword = createBillionSword();
       setWeapons((currentWeapons) => [...currentWeapons, sword]);
