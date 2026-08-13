@@ -863,6 +863,8 @@ export function HomePage() {
   const bossMusicStopRef = useRef<(() => void) | null>(null);
   const lastSpokenSceneRef = useRef('');
   const lastMessageVoiceAtRef = useRef(0);
+  const onlinePlayerListRef = useRef<HTMLDivElement | null>(null);
+  const onlinePlayerScrollTimer = useRef<number | null>(null);
   const [items, setItems] = useState<Record<ShopItem['id'], number>>({
     sword: 0,
     pet: 0,
@@ -2100,6 +2102,15 @@ export function HomePage() {
     setMessage(`${player.name} выбран из списка онлайн игроков.`);
   }
 
+  function scheduleOnlineListReturn() {
+    if (onlinePlayerScrollTimer.current) {
+      window.clearTimeout(onlinePlayerScrollTimer.current);
+    }
+    onlinePlayerScrollTimer.current = window.setTimeout(() => {
+      onlinePlayerListRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 1600);
+  }
+
   function declineDuel() {
     setDuelStatus('declined');
     setDuelTradeOpen(false);
@@ -2891,6 +2902,7 @@ export function HomePage() {
           <span>Ник</span>
           <input
             aria-label="Ник игрока"
+            className="admin-nick-input"
             maxLength={18}
             onChange={(event) => setNickname(event.target.value)}
             placeholder="Твой ник"
@@ -3141,14 +3153,14 @@ export function HomePage() {
             <p className="eyebrow">Дуэль онлайн</p>
             {duelStatus === 'searching' ? (
               <>
-                <h2>{playerName} ищет игроков в сети...</h2>
+                <h2><span className="admin-nick">{playerName}</span> ищет игроков в сети...</h2>
                 <div className="duel-scanner"><span /></div>
                 <button className="secondary" onClick={() => setDuelStatus('idle')} type="button">Отмена</button>
               </>
             ) : duelStatus === 'challenge' && duelOpponent ? (
               <>
                 <h2>{duelOpponent.name} кинул вызов</h2>
-                <p>{playerName} ID {playerId} против {duelOpponent.name} ID {duelOpponent.id}. {duelOpponent.title}. Сила: {formatPower(duelOpponent.power)}.</p>
+                <p><span className="admin-nick">{playerName}</span> ID {playerId} против {duelOpponent.name} ID {duelOpponent.id}. {duelOpponent.title}. Сила: {formatPower(duelOpponent.power)}.</p>
                 <div className="duel-loot">
                   <span>Оружие: {getWeaponDisplayName(duelOpponent.weapon)} +{formatPower(duelOpponent.weapon.damage)}</span>
                   <span>Броня: {duelOpponent.armor.name} +{formatPower(duelOpponent.armor.defense)}</span>
@@ -3163,10 +3175,10 @@ export function HomePage() {
             ) : duelStatus === 'fighting' && duelOpponent ? (
               <>
                 <h2>Дуэль началась</h2>
-                <p>{playerName} сражается против {duelOpponent.name}.</p>
+                <p><span className="admin-nick">{playerName}</span> сражается против {duelOpponent.name}.</p>
                 <div className="duel-fighters">
                   <div>
-                    <strong>{playerName}</strong>
+                    <strong className="admin-nick">{playerName}</strong>
                     <div className="bar"><span style={{ width: `${Math.max(0, Math.min(100, (duelHeroHp / Math.max(1, currentHeroMaxHp + defenseBonus + attackBonus)) * 100))}%` }} /></div>
                     <small>HP {formatPower(duelHeroHp)}</small>
                   </div>
@@ -3186,7 +3198,7 @@ export function HomePage() {
             ) : (
               <>
                 <h2>Победа в дуэли</h2>
-                <p>{playerName}, счет побед: {duelWins}. Можно искать следующего игрока.</p>
+                <p><span className="admin-nick">{playerName}</span>, счет побед: {duelWins}. Можно искать следующего игрока.</p>
                 <div className="duel-actions">
                   <button onClick={startDuelSearch} type="button">Еще дуэль</button>
                   <button className="secondary" onClick={() => setDuelStatus('idle')} type="button">Закрыть</button>
@@ -3207,7 +3219,11 @@ export function HomePage() {
             )}
             <div className="online-players">
               <strong>Люди в сети</strong>
-              <div className="online-player-list">
+              <div
+                className="online-player-list"
+                onScroll={scheduleOnlineListReturn}
+                ref={onlinePlayerListRef}
+              >
                 {duelPlayers.map((player) => (
                   <button
                     className={duelOpponent?.id === player.id ? 'selected' : ''}
@@ -3251,7 +3267,7 @@ export function HomePage() {
       {!isWorldPage && !isFinalReveal && enemy && (
         <div className="quick-hud" aria-label="Быстрое состояние игры">
           <div>
-            <strong>{playerName} | {enemy.city}</strong>
+            <strong><span className="admin-nick">{playerName}</span> | {enemy.city}</strong>
             <span>Здоровье {heroHealthText}</span>
             <span>{currentEnemyHealthText}</span>
             <span>{isDungeon ? 'Пещера' : 'Монстры'}: {formatPower(currentMonsters)}</span>
@@ -3479,7 +3495,7 @@ export function HomePage() {
             <div className="battle-panel">
               <div>
                 <p className="label">Герой</p>
-                <strong>{playerName}</strong>
+                <strong className="admin-nick">{playerName}</strong>
                 <div className="bar">
                   <span style={{ width: `${heroHealthPercent}%` }} />
                 </div>

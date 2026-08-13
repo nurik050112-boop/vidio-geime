@@ -564,6 +564,11 @@ button.secondary {
   color: #fff275;
 }
 
+.admin-nick {
+  color: #ff2a1f;
+  text-shadow: 0 0 10px rgba(255, 42, 31, 0.65);
+}
+
 .auth-panel button {
   min-height: 38px;
   padding: 8px 12px;
@@ -599,6 +604,10 @@ button.secondary {
   font-weight: 900;
   color: #251105;
   background: #fffdf4;
+}
+
+.nickname-field input.admin-nick-input {
+  color: #d00000;
 }
 
 .login-form {
@@ -794,6 +803,10 @@ button.secondary {
 
 .online-players {
   text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  backdrop-filter: blur(4px);
 }
 
 .online-player-list {
@@ -807,6 +820,7 @@ button.secondary {
   scrollbar-color: #fff275 rgba(255, 248, 232, 0.18);
   scrollbar-width: thin;
   cursor: grab;
+  scroll-behavior: smooth;
 }
 
 .online-player-list:active {
