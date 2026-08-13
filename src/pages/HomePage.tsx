@@ -802,6 +802,7 @@ export function HomePage() {
   const [duelStatus, setDuelStatus] = useState<DuelStatus>('idle');
   const [duelOpponent, setDuelOpponent] = useState<DuelPlayer | null>(null);
   const [duelWins, setDuelWins] = useState(0);
+  const [nickname, setNickname] = useState(() => window.localStorage.getItem('hero-nickname') ?? 'BBI герой');
   const [adminCode, setAdminCode] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState('');
@@ -914,6 +915,7 @@ export function HomePage() {
   const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, Math.max(strongestNonBbiWeaponDamage * 1_000, currentDragonHp * 1_000));
   const weaponBonus = isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0;
   const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + weaponBonus;
+  const playerName = nickname.trim() || 'BBI герой';
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const dragonReactionSpeed = enemy?.attackSpeed ?? 1;
   const currentMonsterTotal = isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
@@ -1967,7 +1969,7 @@ export function HomePage() {
     if (duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting') return;
     setDuelOpponent(null);
     setDuelStatus('searching');
-    setMessage('Дуэль: идет поиск игроков в сети...');
+    setMessage(`${playerName} ищет игроков в сети для дуэли...`);
   }
 
   function declineDuel() {
@@ -1986,7 +1988,7 @@ export function HomePage() {
       setDuelWins((wins) => wins + 1);
       addGold(duelReward);
       setDuelStatus('won');
-      setMessage(`Дуэль выиграна против ${duelOpponent.name}. Награда: ${formatPower(duelReward)} золота.`);
+      setMessage(`${playerName} выиграл дуэль против ${duelOpponent.name}. Награда: ${formatPower(duelReward)} золота.`);
     }, 1300);
   }
 
@@ -2002,6 +2004,10 @@ export function HomePage() {
 
     return () => window.clearTimeout(searchTimer);
   }, [armors.length, chapter, duelStatus, duelWins, weapons.length]);
+
+  useEffect(() => {
+    window.localStorage.setItem('hero-nickname', playerName);
+  }, [playerName]);
 
   function restart() {
     setChapter(0);
@@ -2589,6 +2595,16 @@ export function HomePage() {
   return (
     <main className={`game ${isWorldPage ? 'world-page' : 'play-page'}`}>
       <div className="auth-panel">
+        <label className="nickname-field">
+          <span>Ник</span>
+          <input
+            aria-label="Ник игрока"
+            maxLength={18}
+            onChange={(event) => setNickname(event.target.value)}
+            placeholder="Твой ник"
+            value={nickname}
+          />
+        </label>
         {authUser ? (
           <>
             <span>{authUser.email}</span>
@@ -2832,14 +2848,14 @@ export function HomePage() {
             <p className="eyebrow">Дуэль онлайн</p>
             {duelStatus === 'searching' ? (
               <>
-                <h2>Идет поиск игроков в сети...</h2>
+                <h2>{playerName} ищет игроков в сети...</h2>
                 <div className="duel-scanner"><span /></div>
                 <button className="secondary" onClick={() => setDuelStatus('idle')} type="button">Отмена</button>
               </>
             ) : duelStatus === 'challenge' && duelOpponent ? (
               <>
                 <h2>{duelOpponent.name} кинул вызов</h2>
-                <p>{duelOpponent.title}. Сила: {formatPower(duelOpponent.power)}.</p>
+                <p>{playerName} против {duelOpponent.name}. {duelOpponent.title}. Сила: {formatPower(duelOpponent.power)}.</p>
                 <strong>Драться?</strong>
                 <div className="duel-actions">
                   <button onClick={acceptDuel} type="button">Драться</button>
@@ -2849,13 +2865,13 @@ export function HomePage() {
             ) : duelStatus === 'fighting' && duelOpponent ? (
               <>
                 <h2>Дуэль началась</h2>
-                <p>Ты сражаешься против {duelOpponent.name}.</p>
+                <p>{playerName} сражается против {duelOpponent.name}.</p>
                 <div className="duel-clash"><span /><span /></div>
               </>
             ) : (
               <>
                 <h2>Победа в дуэли</h2>
-                <p>Счет побед: {duelWins}. Можно искать следующего игрока.</p>
+                <p>{playerName}, счет побед: {duelWins}. Можно искать следующего игрока.</p>
                 <div className="duel-actions">
                   <button onClick={startDuelSearch} type="button">Еще дуэль</button>
                   <button className="secondary" onClick={() => setDuelStatus('idle')} type="button">Закрыть</button>
@@ -2869,7 +2885,7 @@ export function HomePage() {
       {!isWorldPage && !isFinalReveal && enemy && (
         <div className="quick-hud" aria-label="Быстрое состояние игры">
           <div>
-            <strong>{enemy.city}</strong>
+            <strong>{playerName} | {enemy.city}</strong>
             <span>Здоровье {heroHealthText}</span>
             <span>{currentEnemyHealthText}</span>
             <span>{isDungeon ? 'Пещера' : 'Монстры'}: {formatPower(currentMonsters)}</span>
@@ -3083,6 +3099,7 @@ export function HomePage() {
             <div className="battle-panel">
               <div>
                 <p className="label">Герой</p>
+                <strong>{playerName}</strong>
                 <div className="bar">
                   <span style={{ width: `${heroHealthPercent}%` }} />
                 </div>

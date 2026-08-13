@@ -539,6 +539,37 @@ button.secondary {
   font-size: 14px;
 }
 
+.nickname-field {
+  display: grid;
+  grid-template-columns: auto minmax(96px, 150px);
+  gap: 6px;
+  align-items: center;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 2px solid rgba(255, 248, 232, 0.78);
+  border-radius: 8px;
+  background: rgba(37, 17, 5, 0.74);
+  box-shadow: 0 10px 26px rgba(20, 8, 4, 0.32);
+}
+
+.nickname-field span {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.nickname-field input {
+  min-width: 0;
+  width: 100%;
+  border: 2px solid #251105;
+  border-radius: 8px;
+  padding: 7px 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  color: #251105;
+  background: #fffdf4;
+}
+
 .login-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
