@@ -56,6 +56,17 @@ type Armor = {
   displayDefense?: string;
 };
 
+type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'sunOrb';
+
+type Artifact = {
+  id: ArtifactId;
+  name: string;
+  ending: AchievementId;
+  bonusPercent: number;
+  icon: string;
+  text: string;
+};
+
 type Quest = {
   id: number;
   title: string;
@@ -68,7 +79,7 @@ type Quest = {
 type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
 type EndingChoice = 'spare' | 'fight' | 'family' | null;
 type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | null;
-type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing';
+type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'bbiBadEnding';
 type BbiBossStage = 'manager' | 'director' | 'final' | null;
 
 const firstDragonCities: CityStage[] = [
@@ -304,6 +315,18 @@ const achievements: { id: AchievementId; name: string }[] = [
   { id: 'anuarKing', name: 'Бомбическая концовка' },
   { id: 'mansurKing', name: 'Подземелье Мансура' },
   { id: 'arailmKing', name: 'Код хочет выбраться' },
+  { id: 'bbiBadEnding', name: 'Они лишь дети' },
+];
+
+const endingArtifacts: Artifact[] = [
+  { id: 'starRing', name: 'Кольцо звезды', ending: 'dragonPeace', bonusPercent: 10, icon: 'star-ring', text: 'Концовка мира драконов' },
+  { id: 'dragonPendant', name: 'Шлем-дракон', ending: 'dragonWar', bonusPercent: 15, icon: 'dragon-pendant', text: 'Плохая концовка драконов' },
+  { id: 'magicBottle', name: 'Фиолетовый сосуд', ending: 'goblinKing', bonusPercent: 12, icon: 'magic-bottle', text: 'Тайна гоблинов' },
+  { id: 'goldHoop', name: 'Золотое кольцо', ending: 'furyKing', bonusPercent: 14, icon: 'gold-hoop', text: 'Концовка фури' },
+  { id: 'greenRelic', name: 'Зеленая печать', ending: 'anuarKing', bonusPercent: 16, icon: 'green-relic', text: 'Бомбическая концовка' },
+  { id: 'snowGlobe', name: 'Снежный шлем', ending: 'mansurKing', bonusPercent: 18, icon: 'snow-globe', text: 'Подземелье Мансура' },
+  { id: 'moonCrystal', name: 'Лунный кристалл', ending: 'arailmKing', bonusPercent: 20, icon: 'moon-crystal', text: 'Код хочет выбраться' },
+  { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 25, icon: 'sun-orb', text: 'BBI концовка' },
 ];
 
 const shopItems: ShopItem[] = [
@@ -675,6 +698,8 @@ export function HomePage() {
   const [equippedWeapon, setEquippedWeapon] = useState<Weapon | null>(null);
   const [armors, setArmors] = useState<Armor[]>([]);
   const [equippedArmor, setEquippedArmor] = useState<Armor | null>(null);
+  const [shopTab, setShopTab] = useState<'upgrades' | 'artifacts'>('upgrades');
+  const [equippedArtifactId, setEquippedArtifactId] = useState<ArtifactId | null>(null);
   const [showFullInventory, setShowFullInventory] = useState(false);
   const [heroAnimation, setHeroAnimation] = useState<HeroAnimation>('idle');
   const [heroPosition, setHeroPosition] = useState({ x: -18_000, z: 0 });
@@ -744,6 +769,9 @@ export function HomePage() {
   const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + weaponBonus;
   const armorBonus = equippedArmor?.defense ?? 0;
   const defenseBonus = upgradePower(items.clothes, shopBasePower.clothes) + upgradePower(items.helmet, shopBasePower.helmet) + upgradePower(items.armor, shopBasePower.armor) + armorBonus;
+  const unlockedArtifacts = endingArtifacts.filter((artifact) => unlockedAchievements.includes(artifact.ending));
+  const equippedArtifact = unlockedArtifacts.find((artifact) => artifact.id === equippedArtifactId) ?? null;
+  const artifactDamageMultiplier = equippedArtifact ? 1 + equippedArtifact.bonusPercent / 100 : 1;
   const reward = enemy ? 120 + chapter * 110 : 0;
   const currentMonsters = isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
   const currentMonsterHp = isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
@@ -849,8 +877,9 @@ export function HomePage() {
   ];
   const activeQuest = quests.find((quest) => !quest.done) ?? quests[quests.length - 1];
   const visibleQuests = quests.filter((quest) => quest.done).slice(-3).concat(activeQuest).filter((quest, index, list) => list.findIndex((item) => item.title === quest.title) === index);
-  const visibleWeapons = showFullInventory ? weapons : weapons.slice(-8);
-  const visibleArmors = showFullInventory ? armors : armors.slice(-8);
+  const inventoryPreviewLimit = 80;
+  const visibleWeapons = showFullInventory ? weapons : weapons.slice(-inventoryPreviewLimit);
+  const visibleArmors = showFullInventory ? armors : armors.slice(-inventoryPreviewLimit);
 
   function unlockAchievement(id: AchievementId) {
     setUnlockedAchievements((current) => current.includes(id) ? current : [...current, id]);
@@ -873,6 +902,20 @@ export function HomePage() {
     if (!achievementCheatActive) return;
     unlockAchievement(id);
     setAchievementMessage('Достижение открыто.');
+  }
+
+  function sellWeapon(weapon: Weapon) {
+    setWeapons((currentWeapons) => currentWeapons.filter((item) => item.id !== weapon.id));
+    if (equippedWeapon?.id === weapon.id) setEquippedWeapon(null);
+    setGold((currentGold) => currentGold + weapon.price);
+    setMessage(`Продано оружие: ${weapon.name}. Получено ${formatPower(weapon.price)} золота.`);
+  }
+
+  function sellArmor(armor: Armor) {
+    setArmors((currentArmors) => currentArmors.filter((item) => item.id !== armor.id));
+    if (equippedArmor?.id === armor.id) setEquippedArmor(null);
+    setGold((currentGold) => currentGold + armor.price);
+    setMessage(`Продана броня: ${armor.name}. Получено ${formatPower(armor.price)} золота.`);
   }
 
   function teleportToAchievement(id: AchievementId) {
@@ -1264,10 +1307,11 @@ export function HomePage() {
       setBbiBossStage(null);
       setBbiGateOpen(false);
       setBbiBadEnding(true);
+      unlockAchievement('bbiBadEnding');
       setVictory(true);
       setChapter(dragonSons.length + 1);
       setGold(gold + 5_000_000);
-      setMessage('Последний BBI босс побежден. Концовка: изверг, ты мог отказаться.');
+      setMessage('Последний BBI босс побежден. Концовка: они лишь дети, ты монстр.');
       navigate('/world');
       return;
     }
@@ -1459,7 +1503,7 @@ export function HomePage() {
     setBattlePulse((pulse) => pulse + 1);
 
     const manaDamage = items.mana > 0 ? Math.max(shopBasePower.mana, upgradePower(shopLevels.mana, shopBasePower.mana)) : 0;
-    const heroDamage = 18 + chapter * 5 + attackBonus + manaDamage;
+    const heroDamage = Math.floor((18 + chapter * 5 + attackBonus + manaDamage) * artifactDamageMultiplier);
     const nextEnemyHp = Math.max(0, enemyHp - heroDamage);
 
     if (items.mana > 0) {
@@ -1640,6 +1684,8 @@ export function HomePage() {
     setEquippedWeapon(null);
     setArmors([]);
     setEquippedArmor(null);
+    setShopTab('upgrades');
+    setEquippedArtifactId(null);
     setHeroAnimation('idle');
     setHeroPosition({ x: -18_000, z: 0 });
     setHeroHeight(0);
@@ -2279,6 +2325,11 @@ export function HomePage() {
             <div className="leg-2d right-leg" />
             <div className="sword" />
             <div className="heal-aura" />
+            {equippedArtifact && (
+              <div className={`hero-artifact artifact-icon ${equippedArtifact.icon}`} aria-label={equippedArtifact.name}>
+                <span />
+              </div>
+            )}
           </div>
           {!isFinalReveal && enemy && currentMonsters === 0 && isGoblinKingBoss && (
             <div className="goblin-king-boss">
@@ -2423,10 +2474,10 @@ export function HomePage() {
         {bbiBadEnding ? (
           <div className="reveal bbi-ending">
             <p className="eyebrow">BBI концовка</p>
-            <h2>Изверг, ты мог отказаться</h2>
+            <h2>Они лишь дети, ты монстр</h2>
             <p>
-              На экране появилась надпись: ты видел кнопку отказаться,
-              но все равно выбрал сражаться.
+              На экране появилась надпись: они лишь дети, ты монстр.
+              Ты мог отказаться, но все равно выбрал сражаться.
             </p>
             <p>
               Последний BBI босс был сильнее директора в 5 раз, но даже его победа
@@ -2627,6 +2678,7 @@ export function HomePage() {
               <div className="stats">
                 <strong>Золото: {formatPower(gold)}</strong>
                 <strong>Урон: +{formatPower(attackBonus)}</strong>
+                <strong>Артефакт: {equippedArtifact ? `+${equippedArtifact.bonusPercent}%` : 'нет'}</strong>
                 <strong>Защита: -{hasAdminHelmet ? '∞' : formatPower(defenseBonus)}</strong>
                 <strong>Деньги за босса: {formatPower(reward)}</strong>
                 <strong>Монстры: {formatPower(currentMonsters)}</strong>
@@ -2718,21 +2770,48 @@ export function HomePage() {
             <div className="shop">
               <div className="shop-title">
                 <p className="label">Лавка героя</p>
-                <strong>{formatPower(gold)} золота</strong>
+                <strong>{shopTab === 'upgrades' ? `${formatPower(gold)} золота` : `${unlockedArtifacts.length} / ${endingArtifacts.length} артефактов`}</strong>
               </div>
-              <div className="shop-grid">
-                {shopItems.map((item) => {
-                  const level = shopLevels[item.id];
-                  const price = getShopPrice(item, level);
-                  return (
-                    <button className="shop-item" onClick={() => buy(item)} disabled={gold < price} key={item.id}>
-                      <span>{item.name} ур. {level}</span>
-                      <small>{getShopBonusText(item, level)}</small>
-                      <b>{price}</b>
-                    </button>
-                  );
-                })}
+              <div className="shop-tabs" role="tablist" aria-label="Вкладки магазина">
+                <button className={shopTab === 'upgrades' ? 'selected' : ''} onClick={() => setShopTab('upgrades')} type="button">Улучшения</button>
+                <button className={shopTab === 'artifacts' ? 'selected' : ''} onClick={() => setShopTab('artifacts')} type="button">Артефакты</button>
               </div>
+              {shopTab === 'upgrades' ? (
+                <div className="shop-grid">
+                  {shopItems.map((item) => {
+                    const level = shopLevels[item.id];
+                    const price = getShopPrice(item, level);
+                    return (
+                      <button className="shop-item" onClick={() => buy(item)} disabled={gold < price} key={item.id}>
+                        <span>{item.name} ур. {level}</span>
+                        <small>{getShopBonusText(item, level)}</small>
+                        <b>{price}</b>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="artifact-grid">
+                  {endingArtifacts.map((artifact) => {
+                    const unlocked = unlockedAchievements.includes(artifact.ending);
+                    const equipped = equippedArtifactId === artifact.id;
+                    return (
+                      <button
+                        className={`artifact-card ${unlocked ? 'unlocked' : 'locked'} ${equipped ? 'equipped' : ''}`}
+                        disabled={!unlocked}
+                        key={artifact.id}
+                        onClick={() => setEquippedArtifactId(equipped ? null : artifact.id)}
+                        type="button"
+                      >
+                        <span className={`artifact-icon ${artifact.icon}`}><span /></span>
+                        <strong>{artifact.name}</strong>
+                        <small>{unlocked ? artifact.text : 'Открой концовку'}</small>
+                        <b>{unlocked ? (equipped ? 'Надет' : `+${artifact.bonusPercent}% урона`) : 'Закрыт'}</b>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </>
         )}
@@ -2783,7 +2862,7 @@ export function HomePage() {
             <div className="inventory-head">
               <div>
                 <p className="label">Инвентарь оружия</p>
-                <strong>{showFullInventory ? `Все оружие: ${weapons.length}` : `Последние 8 из ${weapons.length}`}</strong>
+                <strong>{showFullInventory ? `Все оружие: ${weapons.length}` : `Последние ${inventoryPreviewLimit} из ${weapons.length}`}</strong>
               </div>
               <button onClick={() => setShowFullInventory((show) => !show)}>
                 {showFullInventory ? 'Показать последние' : 'Показать весь'}
@@ -2798,6 +2877,17 @@ export function HomePage() {
                 >
                   <span>{weapon.name}</span>
                   <small>{weapon.rarity} +{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | цена {formatPower(weapon.price)}</small>
+                  <span
+                    className="sell-button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      sellWeapon(weapon);
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    Продать
+                  </span>
                 </button>
               ))}
             </div>
@@ -2809,7 +2899,7 @@ export function HomePage() {
             <div className="inventory-head">
               <div>
                 <p className="label">Инвентарь брони 3375 видов</p>
-                <strong>{showFullInventory ? `Вся броня: ${armors.length}` : `Последние 8 из ${armors.length}`}</strong>
+                <strong>{showFullInventory ? `Вся броня: ${armors.length}` : `Последние ${inventoryPreviewLimit} из ${armors.length}`}</strong>
               </div>
               <button onClick={() => setShowFullInventory((show) => !show)}>
                 {showFullInventory ? 'Показать последние' : 'Показать весь'}
@@ -2824,6 +2914,17 @@ export function HomePage() {
                 >
                   <span>{armor.name}</span>
                   <small>{armor.rarity} +{armor.displayDefense ?? formatPower(armor.defense)} защиты | цена {formatPower(armor.price)}</small>
+                  <span
+                    className="sell-button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      sellArmor(armor);
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    Продать
+                  </span>
                 </button>
               ))}
             </div>

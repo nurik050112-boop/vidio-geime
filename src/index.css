@@ -1453,6 +1453,15 @@ button.secondary {
   animation: heal-pulse 720ms ease-out;
 }
 
+.hero-artifact {
+  position: absolute;
+  right: -42px;
+  top: 42px;
+  z-index: 12;
+  pointer-events: none;
+  animation: artifact-float 1.4s ease-in-out infinite;
+}
+
 .heal-aura {
   position: absolute;
   left: -24px;
@@ -3621,6 +3630,23 @@ button.selected {
   overflow-wrap: anywhere;
 }
 
+.sell-button {
+  justify-self: start;
+  padding: 6px 9px;
+  border: 2px solid rgba(255, 248, 232, 0.82);
+  border-radius: 8px;
+  color: #fff8e8;
+  font-size: 12px;
+  font-weight: 900;
+  background: #8f2d1d;
+  box-shadow: 0 3px 0 rgba(37, 17, 5, 0.45);
+}
+
+.weapon.legendary .sell-button {
+  border-color: rgba(37, 17, 5, 0.35);
+  color: #fff8e8;
+}
+
 .weapon.common { background: linear-gradient(180deg, #7b8794, #4b5563); }
 .weapon.uncommon { background: linear-gradient(180deg, #3ddc84, #168a4a); }
 .weapon.rare { background: linear-gradient(180deg, #56ccf2, #1c63c7); }
@@ -3642,6 +3668,17 @@ button.selected {
 
 .shop-title strong {
   color: #8f2d1d;
+}
+
+.shop-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.shop-tabs button {
+  padding: 10px 12px;
+  font-size: 14px;
 }
 
 .shop-grid {
@@ -3679,6 +3716,216 @@ button.selected {
   border-radius: 999px;
   color: #fff8e8;
   background: #8f2d1d;
+}
+
+.artifact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.artifact-card {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  min-height: 156px;
+  padding: 10px 8px;
+  color: #251105;
+  text-align: center;
+  background: linear-gradient(180deg, #fff8e8, #e8f0fe);
+  box-shadow: 0 4px 0 #7b93ad, 0 12px 20px rgba(20, 8, 4, 0.16);
+}
+
+.artifact-card.locked {
+  filter: grayscale(0.9);
+  opacity: 0.62;
+}
+
+.artifact-card.equipped {
+  outline: 3px solid #2fbf71;
+  outline-offset: 2px;
+  background: linear-gradient(180deg, #e7fae9, #fff4cf);
+}
+
+.artifact-card strong {
+  font-size: 14px;
+}
+
+.artifact-card small {
+  color: #35506b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.artifact-card b {
+  padding: 5px 7px;
+  border-radius: 999px;
+  color: #fff8e8;
+  font-size: 12px;
+  background: #8f2d1d;
+}
+
+.artifact-icon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border: 3px solid #251105;
+  border-radius: 50%;
+  background: #fff8e8;
+  box-shadow: 0 7px 12px rgba(20, 8, 4, 0.2);
+}
+
+.artifact-icon > span,
+.artifact-icon::before,
+.artifact-icon::after {
+  content: "";
+  display: block;
+  position: absolute;
+}
+
+.artifact-icon.star-ring {
+  background: radial-gradient(circle, #2f80ed 0 4px, #ffd166 5px 10px, transparent 11px), #c7ccd4;
+}
+
+.artifact-icon.star-ring::before {
+  width: 28px;
+  height: 28px;
+  border: 5px solid #8a8174;
+  border-radius: 50%;
+}
+
+.artifact-icon.star-ring::after {
+  width: 30px;
+  height: 30px;
+  background: #ffd166;
+  clip-path: polygon(50% 0, 58% 35%, 98% 35%, 65% 55%, 78% 96%, 50% 68%, 22% 96%, 35% 55%, 2% 35%, 42% 35%);
+}
+
+.artifact-icon.dragon-pendant {
+  border-radius: 22px 22px 50% 50%;
+  background: linear-gradient(135deg, #dce5ed, #5f6d7a);
+}
+
+.artifact-icon.dragon-pendant::before {
+  inset: 8px;
+  border: 4px solid #b9903f;
+  border-radius: 18px 18px 50% 50%;
+}
+
+.artifact-icon.dragon-pendant::after {
+  top: -14px;
+  width: 72px;
+  height: 22px;
+  border-top: 6px solid #3a3230;
+  border-radius: 50%;
+}
+
+.artifact-icon.magic-bottle {
+  border-radius: 44% 44% 52% 52%;
+  background: linear-gradient(135deg, #8f4be8, #4f258f);
+}
+
+.artifact-icon.magic-bottle::before {
+  top: -10px;
+  width: 18px;
+  height: 18px;
+  border-radius: 7px 7px 2px 2px;
+  background: #9b5b2e;
+}
+
+.artifact-icon.magic-bottle::after {
+  inset: 14px 10px;
+  border: 3px solid #ffd166;
+  border-radius: 50%;
+}
+
+.artifact-icon.gold-hoop {
+  background: transparent;
+  border-color: #b88718;
+  box-shadow: inset 0 0 0 8px #ffd166, 0 7px 12px rgba(20, 8, 4, 0.2);
+}
+
+.artifact-icon.gold-hoop::before {
+  width: 18px;
+  height: 18px;
+  background: #fff8e8;
+  border-radius: 50%;
+}
+
+.artifact-icon.green-relic {
+  border-radius: 12px;
+  background: linear-gradient(180deg, #8fffd1, #05a66b);
+}
+
+.artifact-icon.green-relic::before {
+  inset: -6px 12px;
+  border: 5px solid #516071;
+  border-radius: 50%;
+}
+
+.artifact-icon.green-relic::after {
+  width: 50px;
+  height: 18px;
+  border-radius: 50%;
+  background: #516071;
+  transform: rotate(-62deg);
+}
+
+.artifact-icon.snow-globe {
+  border-radius: 50% 50% 12px 12px;
+  background: radial-gradient(circle at 50% 30%, #fff 0 3px, transparent 4px), linear-gradient(180deg, #dff7ff, #89a6d6);
+}
+
+.artifact-icon.snow-globe::before {
+  bottom: -8px;
+  width: 58px;
+  height: 16px;
+  border-radius: 5px;
+  background: #596b9a;
+}
+
+.artifact-icon.snow-globe::after {
+  width: 24px;
+  height: 24px;
+  border: 4px solid #b9903f;
+  border-radius: 50% 50% 35% 35%;
+}
+
+.artifact-icon.moon-crystal {
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffffff, #b8e2ff 55%, #d7b8ff);
+  clip-path: polygon(50% 0, 92% 28%, 78% 100%, 22% 100%, 8% 28%);
+}
+
+.artifact-icon.moon-crystal::before {
+  inset: 9px;
+  border: 2px solid rgba(47, 128, 237, 0.5);
+}
+
+.artifact-icon.sun-orb {
+  background: radial-gradient(circle, #8f2d1d 0 7px, #ffd166 8px 18px, #fff0bd 19px);
+}
+
+.artifact-icon.sun-orb::before {
+  width: 70px;
+  height: 12px;
+  border: 4px solid #d69b23;
+  border-left: 0;
+  border-right: 0;
+  border-radius: 50%;
+  transform: rotate(26deg);
+}
+
+.artifact-icon.sun-orb::after {
+  width: 70px;
+  height: 12px;
+  border: 4px solid #d69b23;
+  border-left: 0;
+  border-right: 0;
+  border-radius: 50%;
+  transform: rotate(-26deg);
 }
 
 .cities {
@@ -4026,6 +4273,11 @@ button.selected {
   100% { transform: scale(1); filter: brightness(1); }
 }
 
+@keyframes artifact-float {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-14px) rotate(6deg); }
+}
+
 @keyframes heal-pulse {
   0% {
     opacity: 0;
@@ -4221,6 +4473,7 @@ button.selected {
   .monster-panel,
   .camera-panel,
   .cities,
+  .artifact-grid,
   .shop-grid,
   .stats,
   .inventory-list {
