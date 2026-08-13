@@ -63,6 +63,7 @@ type Artifact = {
   name: string;
   ending: AchievementId;
   bonusPercent: number;
+  goldBonusPercent: number;
   attackSpeedPercent: number;
   icon: string;
   text: string;
@@ -361,15 +362,15 @@ const achievements: { id: AchievementId; name: string }[] = [
 ];
 
 const endingArtifacts: Artifact[] = [
-  { id: 'starRing', name: 'Кольцо звезды', ending: 'dragonPeace', bonusPercent: 10, attackSpeedPercent: 10, icon: 'star-ring', text: 'Концовка мира драконов' },
-  { id: 'dragonPendant', name: 'Шлем-дракон', ending: 'dragonWar', bonusPercent: 20, attackSpeedPercent: 20, icon: 'dragon-pendant', text: 'Плохая концовка драконов' },
-  { id: 'magicBottle', name: 'Фиолетовый сосуд', ending: 'goblinKing', bonusPercent: 30, attackSpeedPercent: 30, icon: 'magic-bottle', text: 'Тайна гоблинов' },
-  { id: 'goldHoop', name: 'Золотое кольцо', ending: 'furyKing', bonusPercent: 40, attackSpeedPercent: 40, icon: 'gold-hoop', text: 'Концовка фури' },
-  { id: 'greenRelic', name: 'Зеленая печать', ending: 'anuarKing', bonusPercent: 50, attackSpeedPercent: 50, icon: 'green-relic', text: 'Бомбическая концовка' },
-  { id: 'snowGlobe', name: 'Снежный шлем', ending: 'mansurKing', bonusPercent: 60, attackSpeedPercent: 60, icon: 'snow-globe', text: 'Подземелье Мансура' },
-  { id: 'moonCrystal', name: 'Лунный кристалл', ending: 'arailmKing', bonusPercent: 70, attackSpeedPercent: 70, icon: 'moon-crystal', text: 'Код хочет выбраться' },
-  { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 80, attackSpeedPercent: 80, icon: 'sun-orb', text: 'BBI концовка' },
-  { id: 'impossibleMedallion', name: 'Медальон невозможности', ending: 'impossibleEnding', bonusPercent: 100, attackSpeedPercent: 100, icon: 'impossible-medallion', text: 'Невозможная концовка' },
+  { id: 'starRing', name: 'Кольцо звезды', ending: 'dragonPeace', bonusPercent: 10, goldBonusPercent: 10, attackSpeedPercent: 10, icon: 'star-ring', text: 'Концовка мира драконов' },
+  { id: 'dragonPendant', name: 'Шлем-дракон', ending: 'dragonWar', bonusPercent: 20, goldBonusPercent: 20, attackSpeedPercent: 20, icon: 'dragon-pendant', text: 'Плохая концовка драконов' },
+  { id: 'magicBottle', name: 'Фиолетовый сосуд', ending: 'goblinKing', bonusPercent: 30, goldBonusPercent: 30, attackSpeedPercent: 30, icon: 'magic-bottle', text: 'Тайна гоблинов' },
+  { id: 'goldHoop', name: 'Золотое кольцо', ending: 'furyKing', bonusPercent: 40, goldBonusPercent: 40, attackSpeedPercent: 40, icon: 'gold-hoop', text: 'Концовка фури' },
+  { id: 'greenRelic', name: 'Зеленая печать', ending: 'anuarKing', bonusPercent: 50, goldBonusPercent: 50, attackSpeedPercent: 50, icon: 'green-relic', text: 'Бомбическая концовка' },
+  { id: 'snowGlobe', name: 'Снежный шлем', ending: 'mansurKing', bonusPercent: 60, goldBonusPercent: 60, attackSpeedPercent: 60, icon: 'snow-globe', text: 'Подземелье Мансура' },
+  { id: 'moonCrystal', name: 'Лунный кристалл', ending: 'arailmKing', bonusPercent: 70, goldBonusPercent: 70, attackSpeedPercent: 70, icon: 'moon-crystal', text: 'Код хочет выбраться' },
+  { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 80, goldBonusPercent: 80, attackSpeedPercent: 80, icon: 'sun-orb', text: 'BBI концовка' },
+  { id: 'impossibleMedallion', name: 'Медальон невозможности', ending: 'impossibleEnding', bonusPercent: 1000, goldBonusPercent: 1000, attackSpeedPercent: 1000, icon: 'impossible-medallion', text: 'Невозможная концовка мира Нурали' },
 ];
 
 const shopItems: ShopItem[] = [
@@ -925,6 +926,7 @@ export function HomePage() {
   const unlockedArtifacts = endingArtifacts.filter((artifact) => unlockedAchievements.includes(artifact.ending));
   const equippedArtifact = unlockedArtifacts.find((artifact) => artifact.id === equippedArtifactId) ?? null;
   const artifactDamageMultiplier = equippedArtifact ? 1 + equippedArtifact.bonusPercent / 100 : 1;
+  const artifactGoldMultiplier = equippedArtifact ? 1 + equippedArtifact.goldBonusPercent / 100 : 1;
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
   const reward = enemy ? 120 + chapter * 110 : 0;
   const currentMonsters = isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
@@ -1207,7 +1209,7 @@ export function HomePage() {
 
   function addGold(amount: number) {
     if (infiniteGold) return;
-    setGold((currentGold) => Math.min(Number.MAX_SAFE_INTEGER, currentGold + amount * goldMultiplier));
+    setGold((currentGold) => Math.min(Number.MAX_SAFE_INTEGER, currentGold + amount * goldMultiplier * artifactGoldMultiplier));
   }
 
   function sellWeapon(weapon: Weapon) {
@@ -1689,8 +1691,12 @@ export function HomePage() {
       setNuraliWorldEntered(false);
       setNuraliChoiceOpen(false);
       setNuraliBossFightStarted(false);
+      setImpossibleEnding(true);
+      setVictory(true);
+      setChapter(dragonSons.length + 1);
+      unlockAchievement('impossibleEnding');
       addGold(2_281_000);
-      setMessage('Босс Нурали побежден. Новый мир у дома очищен.');
+      setMessage('Босс Нурали побежден. Открыта невозможная концовка и артефакт Медальон невозможности.');
       navigate('/world');
       return;
     }
@@ -3346,11 +3352,12 @@ export function HomePage() {
             <p className="eyebrow">Невозможная концовка</p>
             <h2>Символ бесконечности</h2>
             <p>
-              Админская ядерка стала сильнее в 1000000000000000000000 раз.
-              На экране остался только знак ∞.
+              В мире nurali2281 Нурали был побежден. Админская ядерка стала сильнее
+              в 1000000000000000000000 раз, а на экране остался только знак ∞.
             </p>
             <p>
-              Получен артефакт: Медальон невозможности. Он усиливает урон и скорость атаки.
+              Получен артефакт: Медальон невозможности. Он дает +1000% урон,
+              +1000% деньги и +1000% скорость атаки.
             </p>
             <div className="ending-actions">
               <Link className="ending-link" href="/">Продолжать</Link>
@@ -3566,7 +3573,7 @@ export function HomePage() {
                 <strong>Золото: {infiniteGold ? '∞' : formatPower(gold)}</strong>
                 <strong>Деньги: x{goldMultiplier}</strong>
                 <strong>Урон: +{formatPower(attackBonus)}</strong>
-                <strong>Артефакт: {equippedArtifact ? `+${equippedArtifact.bonusPercent}% урон, +${equippedArtifact.attackSpeedPercent}% скорость` : 'нет'}</strong>
+                <strong>Артефакт: {equippedArtifact ? `+${equippedArtifact.bonusPercent}% урон, +${equippedArtifact.goldBonusPercent}% деньги, +${equippedArtifact.attackSpeedPercent}% скорость` : 'нет'}</strong>
                 <strong>Защита: -{hasAdminHelmet ? '∞' : formatPower(defenseBonus)}</strong>
                 <strong>Деньги за босса: {formatPower(reward)}</strong>
                 <strong>Монстры: {formatPower(currentMonsters)}</strong>
@@ -3706,7 +3713,7 @@ export function HomePage() {
                         <span className={`artifact-icon ${artifact.icon}`}><span /></span>
                         <strong>{artifact.name}</strong>
                         <small>{unlocked ? artifact.text : 'Открой концовку'}</small>
-                        <b>{unlocked ? `${equipped ? 'Надет: ' : ''}+${artifact.bonusPercent}% урон, +${artifact.attackSpeedPercent}% скорость` : 'Закрыт'}</b>
+                        <b>{unlocked ? `${equipped ? 'Надет: ' : ''}+${artifact.bonusPercent}% урон, +${artifact.goldBonusPercent}% деньги, +${artifact.attackSpeedPercent}% скорость` : 'Закрыт'}</b>
                       </button>
                     );
                   })}
