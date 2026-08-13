@@ -4947,6 +4947,42 @@ button.selected {
   transform: rotate(-26deg);
 }
 
+.artifact-icon.impossible-medallion {
+  border-radius: 46% 46% 50% 50%;
+  background:
+    radial-gradient(circle at 34% 36%, #0bbf8a 0 4px, transparent 5px),
+    radial-gradient(circle at 54% 32%, #0bbf8a 0 4px, transparent 5px),
+    radial-gradient(circle at 64% 50%, #0bbf8a 0 4px, transparent 5px),
+    linear-gradient(135deg, #d8c29b, #7f6c50 58%, #433528);
+  box-shadow: inset 0 0 0 5px rgba(255, 248, 232, 0.28), 0 7px 12px rgba(20, 8, 4, 0.2);
+}
+
+.artifact-icon.impossible-medallion::before {
+  width: 34px;
+  height: 34px;
+  border: 4px dotted #14b88a;
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  transform: rotate(44deg);
+}
+
+.artifact-icon.impossible-medallion::after {
+  width: 24px;
+  height: 30px;
+  border: 4px solid #6b5437;
+  border-top: 0;
+  border-radius: 0 0 50% 50%;
+  transform: rotate(-34deg);
+}
+
+.impossible-ending {
+  border-color: #0bbf8a;
+  background:
+    radial-gradient(circle at 84% 18%, rgba(11, 191, 138, 0.22), transparent 12rem),
+    linear-gradient(135deg, #17130f, #4b3b2b 54%, #111827);
+}
+
 .cities {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

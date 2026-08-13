@@ -56,7 +56,7 @@ type Armor = {
   displayDefense?: string;
 };
 
-type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'sunOrb';
+type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'sunOrb' | 'impossibleMedallion';
 
 type Artifact = {
   id: ArtifactId;
@@ -80,7 +80,7 @@ type Quest = {
 type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
 type EndingChoice = 'spare' | 'fight' | 'family' | null;
 type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | null;
-type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'bbiBadEnding';
+type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'bbiBadEnding' | 'impossibleEnding';
 type BbiBossStage = 'manager' | 'director' | 'final' | null;
 type DuelStatus = 'idle' | 'searching' | 'challenge' | 'fighting' | 'won' | 'declined';
 
@@ -270,7 +270,7 @@ const baseMonsterHp = 10_000;
 const baseMonsterDamage = 20;
 const baseDragonHp = 100_000_000;
 const baseDragonDamage = 100_000;
-const adminNukeDamageText = '9'.repeat(4_000);
+const adminNukeDamageText = '∞';
 const adminHelmetHealthText = '∞';
 const furySwordDamageText = '1' + '0'.repeat(116);
 const mansurBladeDamageText = '99999999999999999999999999999999999999999999999999999999';
@@ -357,6 +357,7 @@ const achievements: { id: AchievementId; name: string }[] = [
   { id: 'mansurKing', name: 'Подземелье Мансура' },
   { id: 'arailmKing', name: 'Код хочет выбраться' },
   { id: 'bbiBadEnding', name: 'Они лишь дети' },
+  { id: 'impossibleEnding', name: 'Невозможная концовка' },
 ];
 
 const endingArtifacts: Artifact[] = [
@@ -368,6 +369,7 @@ const endingArtifacts: Artifact[] = [
   { id: 'snowGlobe', name: 'Снежный шлем', ending: 'mansurKing', bonusPercent: 60, attackSpeedPercent: 60, icon: 'snow-globe', text: 'Подземелье Мансура' },
   { id: 'moonCrystal', name: 'Лунный кристалл', ending: 'arailmKing', bonusPercent: 70, attackSpeedPercent: 70, icon: 'moon-crystal', text: 'Код хочет выбраться' },
   { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 80, attackSpeedPercent: 80, icon: 'sun-orb', text: 'BBI концовка' },
+  { id: 'impossibleMedallion', name: 'Медальон невозможности', ending: 'impossibleEnding', bonusPercent: 100, attackSpeedPercent: 100, icon: 'impossible-medallion', text: 'Невозможная концовка' },
 ];
 
 const shopItems: ShopItem[] = [
@@ -688,7 +690,7 @@ function createAdminNuke(): Weapon {
     id: `admin-nuke-${Date.now()}-${Math.random()}`,
     name: 'Админская ядерка',
     rarity: 'Секретное',
-    damage: Number.MAX_SAFE_INTEGER * 10_000,
+    damage: Number.MAX_SAFE_INTEGER,
     displayDamage: adminNukeDamageText,
     price: 0,
   };
@@ -804,6 +806,7 @@ export function HomePage() {
   const [bbiFinalChoiceOpen, setBbiFinalChoiceOpen] = useState(false);
   const [bbiCityReward, setBbiCityReward] = useState(false);
   const [bbiBadEnding, setBbiBadEnding] = useState(false);
+  const [impossibleEnding, setImpossibleEnding] = useState(false);
   const [nuraliGateOpen, setNuraliGateOpen] = useState(false);
   const [nuraliWorldEntered, setNuraliWorldEntered] = useState(false);
   const [nuraliMonstersLeft, setNuraliMonstersLeft] = useState(nuraliMonsterTotal);
@@ -979,7 +982,9 @@ export function HomePage() {
       ? `Босс HP ${formatHugeText(arailmBossPowerText)}`
     : `Дракон HP ${formatPower(enemyHp)}/${formatPower(currentDragonHp)}`;
   const introVoiceText = 'Драконы стали злыми. Они начали уничтожать города. Герой берет меч и идет спасать мир.';
-  const endingVoiceText = bbiBadEnding
+  const endingVoiceText = impossibleEnding
+    ? 'Невозможная концовка. Админская ядерка стала бесконечной. Получен медальон невозможности.'
+    : bbiBadEnding
     ? 'Би Би Ай концовка. Они лишь дети, ты монстр. Ты мог отказаться, но выбрал сражаться.'
     : secretEnding === 'arailmKing'
       ? 'Секретная концовка. Код хочет выбраться. Даже код может хотеть свободы.'
@@ -1250,6 +1255,7 @@ export function HomePage() {
     setBbiFinalChoiceOpen(false);
     setBbiCityReward(false);
     setBbiBadEnding(false);
+    setImpossibleEnding(false);
     setHeroHp(currentHeroMaxHp);
 
     if (id === 'dragonPeace') {
@@ -1345,7 +1351,7 @@ export function HomePage() {
 
   useEffect(() => {
     if (endingVoiceText) speakText(endingVoiceText, `ending-${bbiBadEnding}-${secretEnding}-${endingChoice}`);
-  }, [endingVoiceText, bbiBadEnding, secretEnding, endingChoice]);
+  }, [endingVoiceText, impossibleEnding, bbiBadEnding, secretEnding, endingChoice]);
 
   useEffect(() => {
     const now = Date.now();
@@ -2025,10 +2031,15 @@ export function HomePage() {
       setGold(Number.MAX_SAFE_INTEGER);
       setGoldMultiplier(100);
       setInfiniteGold(true);
+      setImpossibleEnding(true);
+      unlockAchievement('impossibleEnding');
+      setVictory(true);
+      setChapter(dragonSons.length + 1);
+      navigate('/world');
     }
     setAdminCode('');
     setMessage(isSuperAdminCode
-      ? 'Код ццтгкшлцц принят. Получена админская ядерка, шлем, огромные деньги и множитель денег x100.'
+      ? 'Код ццтгкшлцц принят. Ядерка усилена до ∞, открыта невозможная концовка и артефакт медальон.'
       : 'Код wwnurikww принят. Получена админская ядерка и шлем с огромным здоровьем.');
   }
 
@@ -3330,7 +3341,23 @@ export function HomePage() {
           <p>{message}</p>
         </div>
 
-        {bbiBadEnding ? (
+        {impossibleEnding ? (
+          <div className="reveal impossible-ending">
+            <p className="eyebrow">Невозможная концовка</p>
+            <h2>Символ бесконечности</h2>
+            <p>
+              Админская ядерка стала сильнее в 1000000000000000000000 раз.
+              На экране остался только знак ∞.
+            </p>
+            <p>
+              Получен артефакт: Медальон невозможности. Он усиливает урон и скорость атаки.
+            </p>
+            <div className="ending-actions">
+              <Link className="ending-link" href="/">Продолжать</Link>
+              <button onClick={restart}>Начать повторно</button>
+            </div>
+          </div>
+        ) : bbiBadEnding ? (
           <div className="reveal bbi-ending">
             <p className="eyebrow">BBI концовка</p>
             <h2>Они лишь дети, ты монстр</h2>
