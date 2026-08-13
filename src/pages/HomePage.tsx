@@ -93,6 +93,12 @@ type DuelPlayer = {
   armor: Armor;
 };
 
+type DuelChatMessage = {
+  id: string;
+  from: string;
+  text: string;
+};
+
 const firstDragonCities: CityStage[] = [
   { name: 'Игнис', city: 'Алматы', country: 'Казахстан', lair: 'Логово Искры в горах Заилийского Алатау', monsterKind: 'goblin', monsterName: 'гоблины', title: 'сын искры', power: 1_000, color: '#ffb703', attackSpeed: 0.85, reaction: 'бьет очень быстро' },
   { name: 'Рубор', city: 'Стамбул', country: 'Турция', lair: 'Пепельное гнездо у древних стен', monsterKind: 'orc', monsterName: 'орки', title: 'сын пепла', power: 1_000_000, color: '#fb5607', attackSpeed: 1.3, reaction: 'бьет тяжелее и медленнее' },
@@ -830,6 +836,8 @@ export function HomePage() {
   const [duelHeroHp, setDuelHeroHp] = useState(0);
   const [duelOpponentHp, setDuelOpponentHp] = useState(0);
   const [duelTradeOpen, setDuelTradeOpen] = useState(false);
+  const [duelChatMessages, setDuelChatMessages] = useState<DuelChatMessage[]>([]);
+  const [duelChatText, setDuelChatText] = useState('');
   const [nickname, setNickname] = useState(() => window.localStorage.getItem('hero-nickname') ?? 'BBI герой');
   const [playerId] = useState(() => {
     const savedId = window.localStorage.getItem('hero-player-id');
@@ -2065,9 +2073,14 @@ export function HomePage() {
       return;
     }
     setDuelOpponent(null);
+    setDuelChatMessages([]);
     setDuelStatus('searching');
     if (requestedPlayer) {
       setDuelOpponent(requestedPlayer);
+      setDuelChatMessages([
+        { id: `system-${Date.now()}`, from: 'Система', text: `Чат открыт: ${playerName} ID ${playerId} и ${requestedPlayer.name} ID ${requestedPlayer.id}.` },
+        { id: `opponent-${Date.now()}`, from: requestedPlayer.name, text: 'Я онлайн. Можно драться, обменяться или просто писать.' },
+      ]);
       setDuelStatus('challenge');
       setMessage(`${playerName} вызвал игрока ${requestedPlayer.name} по ID ${requestedPlayer.id}.`);
       return;
@@ -2148,12 +2161,41 @@ export function HomePage() {
     setMessage(`Обмен: ты отдал ${offeredArmor.name} и получил ${receivedArmor.name} от ${duelOpponent.name}.`);
   }
 
+  function sendDuelChat(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!duelOpponent) {
+      setMessage('Сначала найди игрока по ID или нажми дуэль.');
+      return;
+    }
+    const text = duelChatText.trim();
+    if (!text) return;
+    const lowerText = text.toLowerCase();
+    const reply = lowerText.includes('обмен') || lowerText.includes('trade')
+      ? 'Ок, жми кнопку Обмен.'
+      : lowerText.includes('дуел') || lowerText.includes('драт') || lowerText.includes('бой')
+        ? 'Готов. Нажимай Драться.'
+        : lowerText.includes('прив') || lowerText.includes('салам')
+          ? 'Привет, я в сети.'
+          : 'Я понял. Можем драться или обменяться.';
+
+    setDuelChatMessages((messages) => [
+      ...messages,
+      { id: `you-${Date.now()}`, from: `${playerName} ID ${playerId}`, text },
+      { id: `opponent-${Date.now()}`, from: `${duelOpponent.name} ID ${duelOpponent.id}`, text: reply },
+    ].slice(-12));
+    setDuelChatText('');
+  }
+
   useEffect(() => {
     if (duelStatus !== 'searching') return;
 
     const searchTimer = window.setTimeout(() => {
       const player = duelPlayers[(duelWins + chapter + weapons.length + armors.length) % duelPlayers.length];
       setDuelOpponent(player);
+      setDuelChatMessages([
+        { id: `system-${Date.now()}`, from: 'Система', text: `Найден игрок ${player.name} ID ${player.id}.` },
+        { id: `opponent-${Date.now()}`, from: player.name, text: 'Привет. Драться будем или обмен?' },
+      ]);
       setDuelStatus('challenge');
       setMessage(`${player.name} найден в сети. ID ${player.id}. Он кинул вызов на дуэль.`);
     }, 1100);
@@ -2233,6 +2275,8 @@ export function HomePage() {
     setDuelHeroHp(0);
     setDuelOpponentHp(0);
     setDuelTradeOpen(false);
+    setDuelChatMessages([]);
+    setDuelChatText('');
     paidQuestIds.current.clear();
     setItems({ sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
     setShopLevels({ sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
@@ -3147,6 +3191,29 @@ export function HomePage() {
                 <button onClick={tradeDuelArmor} disabled={armors.length === 0} type="button">
                   Броню на {duelOpponent.armor.name}
                 </button>
+              </div>
+            )}
+            {duelOpponent && (
+              <div className="duel-chat">
+                <strong>Чат с {duelOpponent.name} ID {duelOpponent.id}</strong>
+                <div className="duel-chat-log">
+                  {duelChatMessages.length === 0 ? (
+                    <span>Напиши сообщение игроку.</span>
+                  ) : duelChatMessages.map((chatMessage) => (
+                    <p key={chatMessage.id}>
+                      <b>{chatMessage.from}:</b> {chatMessage.text}
+                    </p>
+                  ))}
+                </div>
+                <form className="duel-chat-form" onSubmit={sendDuelChat}>
+                  <input
+                    aria-label="Сообщение в дуэльный чат"
+                    onChange={(event) => setDuelChatText(event.target.value)}
+                    placeholder="Написать в чат"
+                    value={duelChatText}
+                  />
+                  <button type="submit">Отпр</button>
+                </form>
               </div>
             )}
           </div>

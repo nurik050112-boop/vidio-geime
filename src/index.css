@@ -746,7 +746,8 @@ button.secondary {
 
 .duel-loot,
 .duel-fighters,
-.duel-trade {
+.duel-trade,
+.duel-chat {
   display: grid;
   gap: 8px;
   padding: 10px;
@@ -782,6 +783,55 @@ button.secondary {
 .duel-trade button {
   min-height: 42px;
   font-size: 15px;
+}
+
+.duel-chat {
+  text-align: left;
+}
+
+.duel-chat-log {
+  display: grid;
+  gap: 6px;
+  max-height: 150px;
+  overflow: auto;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.duel-chat-log p,
+.duel-chat-log span {
+  margin: 0;
+  color: #fff8e8;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.duel-chat-log b {
+  color: #fff275;
+}
+
+.duel-chat-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.duel-chat-form input {
+  min-width: 0;
+  border: 2px solid #251105;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font: inherit;
+  font-weight: 900;
+  color: #251105;
+  background: #fffdf4;
+}
+
+.duel-chat-form button {
+  min-height: 42px;
+  padding: 9px 12px;
+  font-size: 14px;
 }
 
 .duel-scanner,
