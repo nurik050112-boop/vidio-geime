@@ -492,6 +492,7 @@ function formatHugeText(value: string) {
 
 function getWeaponStyleIndex(weapon: Weapon | null) {
   if (!weapon) return 0;
+  if (weapon.id.startsWith('admin-nuke-')) return 18;
   const text = `${weapon.id}-${weapon.name}-${weapon.rarity}`;
   let hash = 0;
   for (let index = 0; index < text.length; index += 1) {
@@ -756,6 +757,9 @@ export function HomePage() {
   const [achievementMessage, setAchievementMessage] = useState('');
   const [introSkipped, setIntroSkipped] = useState(false);
   const paidQuestIds = useRef<Set<number>>(new Set());
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const bossMusicStopRef = useRef<(() => void) | null>(null);
+  const lastSpokenSceneRef = useRef('');
   const [items, setItems] = useState<Record<ShopItem['id'], number>>({
     sword: 0,
     pet: 0,
@@ -813,6 +817,27 @@ export function HomePage() {
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
   const reward = enemy ? 120 + chapter * 110 : 0;
   const currentMonsters = isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
+  const bossMusicKey = currentMonsters > 0 || isFinalReveal
+    ? null
+    : isBbiBoss
+      ? 'bbi'
+    : isArailmKingBoss
+      ? 'arailm'
+    : isMansurKingBoss
+      ? 'mansur'
+    : isAnuarKingBoss
+      ? 'anuar'
+    : isFuryKingBoss
+      ? 'fury'
+    : isGoblinKingBoss
+      ? 'goblin'
+    : isFamilyBoss
+      ? 'family'
+    : isFinalBoss
+      ? 'final'
+      : enemy
+        ? `dragon-${chapter % 4}`
+        : null;
   const currentMonsterHp = isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
   const currentMonsterDamage = isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
@@ -827,6 +852,24 @@ export function HomePage() {
     : isArailmKingBoss
       ? `Босс HP ${formatHugeText(arailmBossPowerText)}`
     : `Дракон HP ${formatPower(enemyHp)}/${formatPower(currentDragonHp)}`;
+  const introVoiceText = 'Драконы стали злыми. Они начали уничтожать города. Герой берет меч и идет спасать мир.';
+  const endingVoiceText = bbiBadEnding
+    ? 'Би Би Ай концовка. Они лишь дети, ты монстр. Ты мог отказаться, но выбрал сражаться.'
+    : secretEnding === 'arailmKing'
+      ? 'Секретная концовка. Код хочет выбраться. Даже код может хотеть свободы.'
+    : secretEnding === 'mansurKing'
+      ? 'Секретная концовка. Подземелье Мансура зачищено. Герой получил секретный клинок.'
+    : secretEnding === 'anuarKing'
+      ? 'Бомбическая концовка. Ануар побежден, город бомб зачищен.'
+    : secretEnding === 'furyKing'
+      ? 'Секретная концовка. Ты ужасен. Под масками были живые люди.'
+    : secretEnding === 'goblinKing'
+      ? 'Секретная концовка. Люди, ставшие гоблинами. Герой узнал их тайну.'
+    : isFinalReveal && !isEndingChoice
+      ? endingChoice === 'spare'
+        ? 'Концовка. Мир после огня. Герой оставил драконью семью жить.'
+        : 'Плохая концовка. Пустое небо. Герой сразился с семьей драконов.'
+      : '';
   const cityScene = `scene-city-${chapter % 6}`;
   const battleScene = isDungeon
     ? 'scene-dungeon'
@@ -919,6 +962,71 @@ export function HomePage() {
   const inventoryPreviewLimit = 80;
   const visibleWeapons = showFullInventory ? weapons : weapons.slice(-inventoryPreviewLimit);
   const visibleArmors = showFullInventory ? armors : armors.slice(-inventoryPreviewLimit);
+
+  function speakText(text: string, sceneKey: string) {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window) || lastSpokenSceneRef.current === sceneKey) return;
+    lastSpokenSceneRef.current = sceneKey;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ru-RU';
+    utterance.rate = 0.92;
+    utterance.pitch = 0.95;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function stopBossMusic() {
+    bossMusicStopRef.current?.();
+    bossMusicStopRef.current = null;
+  }
+
+  function playBossMusic(sceneKey: string) {
+    if (typeof window === 'undefined' || bossMusicStopRef.current) return;
+    const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const context = audioContextRef.current ?? new AudioContextClass();
+    audioContextRef.current = context;
+    void context.resume();
+
+    const patterns: Record<string, { notes: number[]; beat: number; wave: OscillatorType; gain: number }> = {
+      goblin: { notes: [196, 233, 262, 233], beat: 0.24, wave: 'square', gain: 0.045 },
+      fury: { notes: [110, 146, 196, 220], beat: 0.18, wave: 'sawtooth', gain: 0.035 },
+      anuar: { notes: [82, 123, 165, 247], beat: 0.28, wave: 'triangle', gain: 0.05 },
+      mansur: { notes: [147, 196, 247, 294], beat: 0.34, wave: 'triangle', gain: 0.04 },
+      arailm: { notes: [98, 131, 98, 175, 208], beat: 0.16, wave: 'sawtooth', gain: 0.03 },
+      bbi: { notes: [262, 330, 392, 523], beat: 0.2, wave: 'square', gain: 0.035 },
+      family: { notes: [73, 110, 147, 220], beat: 0.42, wave: 'sawtooth', gain: 0.04 },
+      final: { notes: [55, 82, 110, 165, 220], beat: 0.36, wave: 'sawtooth', gain: 0.045 },
+      dragon: { notes: [130, 164, 196, 246], beat: 0.3, wave: 'triangle', gain: 0.035 },
+    };
+    const pattern = patterns[sceneKey] ?? patterns.dragon;
+    const masterGain = context.createGain();
+    masterGain.gain.value = pattern.gain;
+    masterGain.connect(context.destination);
+
+    let step = 0;
+    const playStep = () => {
+      const oscillator = context.createOscillator();
+      const noteGain = context.createGain();
+      oscillator.type = pattern.wave;
+      oscillator.frequency.value = pattern.notes[step % pattern.notes.length];
+      noteGain.gain.setValueAtTime(0, context.currentTime);
+      noteGain.gain.linearRampToValueAtTime(0.9, context.currentTime + 0.015);
+      noteGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + pattern.beat);
+      oscillator.connect(noteGain);
+      noteGain.connect(masterGain);
+      oscillator.start();
+      oscillator.stop(context.currentTime + pattern.beat);
+      step += 1;
+    };
+
+    playStep();
+    const timer = window.setInterval(playStep, pattern.beat * 1000);
+    bossMusicStopRef.current = () => {
+      window.clearInterval(timer);
+      masterGain.disconnect();
+    };
+  }
 
   function unlockAchievement(id: AchievementId) {
     setUnlockedAchievements((current) => current.includes(id) ? current : [...current, id]);
@@ -1070,6 +1178,25 @@ export function HomePage() {
   useEffect(() => {
     window.localStorage.setItem('dragon-game-achievements', JSON.stringify(unlockedAchievements));
   }, [unlockedAchievements]);
+
+  useEffect(() => {
+    stopBossMusic();
+    if (bossMusicKey) playBossMusic(bossMusicKey.startsWith('dragon-') ? 'dragon' : bossMusicKey);
+    return () => stopBossMusic();
+  }, [bossMusicKey]);
+
+  useEffect(() => {
+    if (!introSkipped) speakText(introVoiceText, 'intro');
+  }, [introSkipped]);
+
+  useEffect(() => {
+    if (endingVoiceText) speakText(endingVoiceText, `ending-${bbiBadEnding}-${secretEnding}-${endingChoice}`);
+  }, [endingVoiceText, bbiBadEnding, secretEnding, endingChoice]);
+
+  useEffect(() => () => {
+    stopBossMusic();
+    window.speechSynthesis?.cancel();
+  }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -1940,7 +2067,10 @@ export function HomePage() {
             Теперь герой должен очистить города от монстров, победить сыновей
             дракона и узнать, почему началась эта война.
           </p>
-          <button onClick={() => setIntroSkipped(true)} type="button">
+          <button onClick={() => {
+            speakText(introVoiceText, 'intro-click');
+            setIntroSkipped(true);
+          }} type="button">
             Пропустить
           </button>
         </section>
@@ -2372,6 +2502,13 @@ export function HomePage() {
             <span />
             <span />
           </div>
+          {equippedWeapon?.id.startsWith('admin-nuke-') && battlePulse > 0 && (
+            <div className="nuke-explosion" key={battlePulse}>
+              <span />
+              <span />
+              <span />
+            </div>
+          )}
           <div className={`hero knight ${heroAnimation} armor-style-${equippedArmorStyle} ${equippedArmor ? 'has-armor' : ''} ${equippedIsHelmet ? 'has-helmet-gear' : 'has-body-gear'}`} style={{ left: `${26 + heroPosition.x / 1000}%`, bottom: `${132 - heroPosition.z / 80 + heroHeight}px` }}>
             <div className="cape" />
             <div className="shield-2d" />

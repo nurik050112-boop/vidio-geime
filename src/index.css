@@ -1230,6 +1230,81 @@ button.secondary {
 .flames span:nth-child(3) { height: 18px; animation-delay: 80ms; }
 .flames span:nth-child(4) { height: 18px; animation-delay: 240ms; }
 
+.nuke-explosion {
+  position: absolute;
+  left: 50%;
+  bottom: 100px;
+  z-index: 18;
+  width: 240px;
+  height: 280px;
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: nuke-flash 900ms ease-out both;
+}
+
+.nuke-explosion::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -80px;
+  width: 900px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 242, 117, 0.92) 0 10%, rgba(255, 159, 28, 0.5) 11% 28%, rgba(208, 0, 0, 0.18) 29% 52%, transparent 53%);
+  transform: translateX(-50%);
+  animation: nuke-shockwave 900ms ease-out both;
+}
+
+.nuke-explosion::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 76px;
+  height: 190px;
+  border-radius: 999px 999px 32px 32px;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.92) 0 10px, transparent 11px),
+    linear-gradient(90deg, rgba(111, 44, 12, 0.85), #ff9f1c 48%, rgba(111, 44, 12, 0.85));
+  box-shadow: 0 0 34px #ff9f1c, 0 0 80px rgba(255, 107, 43, 0.75);
+  transform: translateX(-50%);
+  animation: nuke-column 900ms ease-out both;
+}
+
+.nuke-explosion span {
+  position: absolute;
+  left: 50%;
+  display: block;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 40% 35%, #fff8e8 0 8%, #ffd166 9% 24%, #ff6b2b 25% 52%, #5b1b12 53% 76%, transparent 77%);
+  box-shadow: 0 0 38px rgba(255, 209, 102, 0.8), 0 0 88px rgba(255, 107, 43, 0.75);
+  transform: translateX(-50%);
+}
+
+.nuke-explosion span:nth-child(1) {
+  bottom: 138px;
+  width: 210px;
+  height: 132px;
+  animation: nuke-cloud 900ms ease-out both;
+}
+
+.nuke-explosion span:nth-child(2) {
+  bottom: 112px;
+  width: 128px;
+  height: 88px;
+  margin-left: -58px;
+  animation: nuke-cloud 900ms ease-out 60ms both;
+}
+
+.nuke-explosion span:nth-child(3) {
+  bottom: 102px;
+  width: 132px;
+  height: 92px;
+  margin-left: 62px;
+  animation: nuke-cloud 900ms ease-out 90ms both;
+}
+
 .hero {
   position: absolute;
   left: 18%;
@@ -3812,6 +3887,7 @@ button.selected {
 .weapon-style-15 { --sword-w: 6px; --sword-h: 50px; --sword-guard: 30px; --sword-curve: 999px 999px 5px 5px; --sword-tilt: 16deg; --sword-blade: linear-gradient(180deg, #fef3c7, #ffffff); --sword-guard-color: #0f766e; }
 .weapon-style-16 { --sword-w: 11px; --sword-h: 43px; --sword-guard: 31px; --sword-curve: 4px 20px 12px 4px; --sword-tilt: 40deg; --sword-blade: linear-gradient(180deg, #fff, #ef4444 50%, #111827); --sword-guard-color: #ef4444; }
 .weapon-style-17 { --sword-w: 8px; --sword-h: 49px; --sword-guard: 27px; --sword-curve: 28px 28px 5px 5px; --sword-tilt: 60deg; --sword-blade: linear-gradient(180deg, #ffffff, #94a3b8, #e2e8f0); --sword-guard-color: #92400e; }
+.weapon-style-18 { --sword-w: 18px; --sword-h: 34px; --sword-guard: 34px; --sword-curve: 50% 50% 45% 45%; --sword-tilt: 88deg; --hero-sword-tilt: 82deg; --sword-blade: linear-gradient(90deg, #26391f, #5f6f55 45%, #1f321e); --sword-guard-color: #41513d; }
 
 .weapon-card .weapon-picture::before {
   width: var(--sword-w, 7px);
@@ -3831,6 +3907,75 @@ button.selected {
 
 .weapon-card .weapon-picture i {
   transform: rotate(var(--sword-tilt, 32deg));
+}
+
+.weapon-style-18 .weapon-picture::before {
+  left: 10px;
+  top: 24px;
+  width: 34px;
+  height: 16px;
+  border-radius: 50% 48% 48% 50%;
+  background:
+    linear-gradient(90deg, #26391f, #66745d 42%, #23361f);
+  transform: rotate(0deg);
+  box-shadow: inset -7px 0 8px rgba(255, 255, 255, 0.18), 0 0 12px rgba(47, 80, 42, 0.9);
+}
+
+.weapon-style-18 .weapon-picture::after {
+  left: 3px;
+  top: 27px;
+  width: 13px;
+  height: 11px;
+  border: 2px solid #1a2417;
+  border-radius: 0;
+  background: #7d8976;
+  clip-path: polygon(0 0, 100% 35%, 100% 65%, 0 100%);
+  transform: none;
+}
+
+.weapon-style-18 .weapon-picture i {
+  left: 34px;
+  top: 20px;
+  width: 12px;
+  height: 24px;
+  border: 0;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(90deg, #5f6f55, #26391f);
+  transform: none;
+}
+
+.weapon-style-18.sword {
+  right: -74px;
+  top: 68px;
+  width: 82px;
+  height: 30px;
+  border-radius: 50% 48% 48% 50%;
+  background:
+    linear-gradient(90deg, #25381f, #6a7861 45%, #22351f);
+  transform: rotate(var(--hero-sword-tilt, 82deg));
+  box-shadow: inset -13px 0 12px rgba(255, 255, 255, 0.18), 0 0 24px rgba(47, 80, 42, 0.75);
+}
+
+.weapon-style-18.sword::before {
+  left: -15px;
+  top: 5px;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #1a2417;
+  border-right: 0;
+  background: #7d8976;
+  clip-path: polygon(0 0, 100% 35%, 100% 65%, 0 100%);
+}
+
+.weapon-style-18.sword::after {
+  left: 70px;
+  bottom: 4px;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #1a2417;
+  border-left: 0;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(90deg, #5f6f55, #26391f);
 }
 
 .armor-card {
@@ -4586,6 +4731,31 @@ button.selected {
 @keyframes artifact-float {
   0%, 100% { transform: translateY(0) rotate(-4deg); }
   50% { transform: translateY(-14px) rotate(6deg); }
+}
+
+@keyframes nuke-flash {
+  0% { opacity: 0; filter: brightness(1); transform: translateX(-50%) scale(0.35); }
+  12% { opacity: 1; filter: brightness(2.7); transform: translateX(-50%) scale(1.08); }
+  72% { opacity: 1; filter: brightness(1.15); }
+  100% { opacity: 0; filter: brightness(0.8); transform: translateX(-50%) scale(1.28); }
+}
+
+@keyframes nuke-shockwave {
+  0% { opacity: 0; transform: translateX(-50%) scale(0.08); }
+  18% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateX(-50%) scale(1); }
+}
+
+@keyframes nuke-column {
+  0% { opacity: 0; height: 10px; transform: translateX(-50%) scaleX(0.45); }
+  20% { opacity: 1; height: 190px; }
+  100% { opacity: 0; height: 230px; transform: translateX(-50%) scaleX(1.25); }
+}
+
+@keyframes nuke-cloud {
+  0% { opacity: 0; transform: translateX(-50%) translateY(44px) scale(0.4); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-24px) scale(1.25); }
 }
 
 @keyframes heal-pulse {
