@@ -912,7 +912,7 @@ export function HomePage() {
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
   const currentDragonHp = isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
   const currentDragonDamage = isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
-  const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, Math.max(strongestNonBbiWeaponDamage * 1_000, currentDragonHp * 1_000));
+  const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 100);
   const weaponBonus = isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0;
   const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + weaponBonus;
   const playerName = nickname.trim() || 'BBI герой';
@@ -3142,7 +3142,7 @@ export function HomePage() {
               <div className="weapon-summary">
                 <p className="label">Оружие 12 500 видов</p>
                 <strong>{equippedWeapon ? getWeaponDisplayName(equippedWeapon) : 'Пока нет оружия'}</strong>
-                <span>{equippedWeapon ? `${equippedWeapon.rarity}, +${isBbiLegendaryWeapon(equippedWeapon) ? `${formatPower(bbiLegendaryDamage)} (x1000)` : equippedWeapon.displayDamage ? formatHugeText(equippedWeapon.displayDamage) : formatPower(equippedWeapon.damage)} урона, цена ${formatPower(equippedWeapon.price)}` : 'Выбивается с врагов и в подземельях'}</span>
+                <span>{equippedWeapon ? `${equippedWeapon.rarity}, +${isBbiLegendaryWeapon(equippedWeapon) ? `${formatPower(bbiLegendaryDamage)} (+10000%)` : equippedWeapon.displayDamage ? formatHugeText(equippedWeapon.displayDamage) : formatPower(equippedWeapon.damage)} урона, цена ${formatPower(equippedWeapon.price)}` : 'Выбивается с врагов и в подземельях'}</span>
               </div>
               <div className="weapon-summary armor-summary">
                 <p className="label">Броня 3375 видов</p>
@@ -3334,7 +3334,7 @@ export function HomePage() {
                     <i />
                   </span>
                   <span className="weapon-name">{getWeaponDisplayName(weapon)}</span>
-                  <small>{weapon.rarity} +{isBbiLegendaryWeapon(weapon) ? `${formatPower(bbiLegendaryDamage)} x1000` : weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | продажа {formatPower(weaponSellPrice[weapon.rarity])}</small>
+                  <small>{weapon.rarity} +{isBbiLegendaryWeapon(weapon) ? `${formatPower(bbiLegendaryDamage)} +10000%` : weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | продажа {formatPower(weaponSellPrice[weapon.rarity])}</small>
                   <span
                     className="sell-button"
                     onClick={(event) => {
