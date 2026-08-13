@@ -493,6 +493,7 @@ function formatHugeText(value: string) {
 function getWeaponStyleIndex(weapon: Weapon | null) {
   if (!weapon) return 0;
   if (weapon.id.startsWith('admin-nuke-')) return 18;
+  if (isBbiLegendaryWeapon(weapon)) return 19;
   const text = `${weapon.id}-${weapon.name}-${weapon.rarity}`;
   let hash = 0;
   for (let index = 0; index < text.length; index += 1) {
@@ -521,6 +522,7 @@ const weaponVisualNames = [
   'Красный молот',
   'Стальной кинжал',
   'Админская ядерка',
+  'BBI огненный легендарный меч',
 ];
 
 function getWeaponDisplayName(weapon: Weapon) {
@@ -843,11 +845,8 @@ export function HomePage() {
   const heroHealthPercent = Math.max(0, Math.min(100, (heroHp / currentHeroMaxHp) * 100));
 
   const worldBurn = useMemo(() => Math.max(0, 100 - savedCities.length * 13), [savedCities.length]);
-  const strongestNonBbiWeaponDamage = Math.max(1, ...weapons.filter((weapon) => !isBbiLegendaryWeapon(weapon)).map((weapon) => weapon.damage));
-  const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 1_000);
-  const weaponBonus = isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0;
   const equippedWeaponStyle = getWeaponStyleIndex(equippedWeapon);
-  const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + weaponBonus;
+  const strongestNonBbiWeaponDamage = Math.max(1, ...weapons.filter((weapon) => !isBbiLegendaryWeapon(weapon)).map((weapon) => weapon.damage));
   const armorBonus = equippedArmor?.defense ?? 0;
   const equippedArmorStyle = getArmorStyleIndex(equippedArmor);
   const equippedIsHelmet = isHelmetArmor(equippedArmor);
@@ -895,6 +894,9 @@ export function HomePage() {
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
   const currentDragonHp = isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
   const currentDragonDamage = isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
+  const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, Math.max(strongestNonBbiWeaponDamage * 1_000, currentDragonHp * 1_000));
+  const weaponBonus = isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0;
+  const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + weaponBonus;
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const dragonReactionSpeed = enemy?.attackSpeed ?? 1;
   const currentMonsterTotal = isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;

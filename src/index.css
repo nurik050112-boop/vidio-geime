@@ -3963,6 +3963,7 @@ button.selected {
 .weapon-style-16 { --sword-w: 11px; --sword-h: 43px; --sword-guard: 31px; --sword-curve: 4px 20px 12px 4px; --sword-tilt: 40deg; --sword-blade: linear-gradient(180deg, #fff, #ef4444 50%, #111827); --sword-guard-color: #ef4444; }
 .weapon-style-17 { --sword-w: 8px; --sword-h: 49px; --sword-guard: 27px; --sword-curve: 28px 28px 5px 5px; --sword-tilt: 60deg; --sword-blade: linear-gradient(180deg, #ffffff, #94a3b8, #e2e8f0); --sword-guard-color: #92400e; }
 .weapon-style-18 { --sword-w: 18px; --sword-h: 34px; --sword-guard: 34px; --sword-curve: 50% 50% 45% 45%; --sword-tilt: 88deg; --hero-sword-tilt: 82deg; --sword-blade: linear-gradient(90deg, #26391f, #5f6f55 45%, #1f321e); --sword-guard-color: #41513d; }
+.weapon-style-19 { --sword-w: 13px; --sword-h: 58px; --sword-guard: 32px; --sword-curve: 4px 28px 8px 22px; --sword-tilt: 38deg; --hero-sword-tilt: 46deg; --sword-blade: linear-gradient(180deg, #fff8e8 0 10%, #fff275 11% 22%, #ff9f1c 23% 55%, #d00000 56% 82%, #4b1208 83%); --sword-guard-color: #8f2d1d; }
 
 .weapon-card .weapon-picture::before {
   width: var(--sword-w, 7px);
@@ -4051,6 +4052,42 @@ button.selected {
   border-left: 0;
   border-radius: 0 999px 999px 0;
   background: linear-gradient(90deg, #5f6f55, #26391f);
+}
+
+.weapon-style-19 .weapon-picture {
+  background:
+    radial-gradient(circle at 50% 22%, rgba(255, 242, 117, 0.9), transparent 20px),
+    rgba(60, 9, 6, 0.35);
+}
+
+.weapon-style-19 .weapon-picture::before {
+  width: 14px;
+  height: 54px;
+  border-radius: 6px 24px 8px 18px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.94) 0 24%, transparent 25%),
+    linear-gradient(180deg, #fff8e8 0 8%, #fff275 9% 22%, #ff9f1c 23% 56%, #d00000 57% 86%, #4b1208 87%);
+  box-shadow: 0 0 18px #ff9f1c, 0 0 34px rgba(208, 0, 0, 0.9);
+}
+
+.weapon-style-19 .weapon-picture::after {
+  width: 34px;
+  height: 9px;
+  background: linear-gradient(180deg, #ff9f1c, #8f2d1d);
+  box-shadow: 0 0 14px #ff6b2b;
+}
+
+.weapon-style-19 .weapon-picture i {
+  background: linear-gradient(180deg, #3a1a10, #8f2d1d);
+}
+
+.weapon-style-19.sword {
+  box-shadow: 0 0 26px #ff9f1c, 0 0 52px rgba(208, 0, 0, 0.85);
+}
+
+.weapon-style-19.sword::after {
+  background: linear-gradient(180deg, #ff9f1c, #8f2d1d);
+  box-shadow: 0 0 18px #ff6b2b;
 }
 
 .armor-card {
