@@ -3405,6 +3405,19 @@ button.secondary {
   gap: 8px;
 }
 
+.creator-button {
+  width: min(320px, 100%);
+  min-height: 44px;
+  justify-self: start;
+  background: linear-gradient(180deg, #fff8e8, #ffd166);
+}
+
+.creator-button:disabled {
+  cursor: default;
+  opacity: 0.52;
+  filter: grayscale(0.65);
+}
+
 .achievement-code-form input {
   min-width: 0;
   width: 100%;
@@ -3418,6 +3431,77 @@ button.secondary {
 .achievement-message {
   margin: 0;
   font-weight: 900;
+}
+
+.creator-credits-page {
+  min-height: 100vh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: #fff8e8;
+  background: #000;
+}
+
+.creator-credits {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  padding: 24px;
+  text-align: center;
+}
+
+.creator-scroll {
+  display: grid;
+  gap: 18px;
+  min-height: 140vh;
+  align-content: center;
+  animation: creator-scroll-down 28s linear infinite;
+}
+
+.creator-scroll h1,
+.creator-scroll h2,
+.creator-scroll h3,
+.creator-scroll p,
+.creator-scroll strong {
+  margin: 0;
+  color: #fff8e8;
+  text-shadow: 0 0 18px rgba(255, 248, 232, 0.28);
+}
+
+.creator-scroll h1 {
+  font-size: clamp(42px, 8vw, 96px);
+}
+
+.creator-scroll strong {
+  font-size: clamp(28px, 5vw, 58px);
+}
+
+.creator-scroll p {
+  max-width: 820px;
+  font-size: clamp(18px, 3vw, 30px);
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.creator-scroll h2 {
+  margin-top: 12vh;
+  color: #ffd166;
+  font-size: clamp(64px, 13vw, 160px);
+}
+
+.creator-scroll h3 {
+  color: #ff2a1f;
+  font-size: clamp(32px, 7vw, 84px);
+}
+
+.creator-credits button {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 5;
 }
 
 .anuar-boss {
@@ -5989,6 +6073,11 @@ button.selected {
 @keyframes nuclear-pulse {
   0%, 100% { filter: brightness(1); transform: translateY(0); }
   50% { filter: brightness(1.28); transform: translateY(-2px) scale(1.02); }
+}
+
+@keyframes creator-scroll-down {
+  0% { transform: translateY(-42vh); }
+  100% { transform: translateY(42vh); }
 }
 
 @keyframes ais-water-surge {

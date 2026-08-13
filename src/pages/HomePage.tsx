@@ -1016,6 +1016,7 @@ export function HomePage() {
   const [achievementCheatActive, setAchievementCheatActive] = useState(false);
   const [achievementMessage, setAchievementMessage] = useState('');
   const [introSkipped, setIntroSkipped] = useState(false);
+  const [creatorCreditsOpen, setCreatorCreditsOpen] = useState(false);
   const paidQuestIds = useRef<Set<number>>(new Set());
   const audioContextRef = useRef<AudioContext | null>(null);
   const bossMusicStopRef = useRef<(() => void) | null>(null);
@@ -1286,6 +1287,7 @@ export function HomePage() {
   const visibleWeapons = showFullInventory ? weapons : weapons.slice(-inventoryPreviewLimit);
   const visibleArmors = showFullInventory ? armors : armors.slice(-inventoryPreviewLimit);
   const currentPlayerPower = Math.max(1_000, attackBonus + defenseBonus + currentHeroMaxHp);
+  const allAchievementsUnlocked = achievements.every((achievement) => unlockedAchievements.includes(achievement.id));
 
   function speakText(text: string, sceneKey: string) {
     if (typeof window === 'undefined' || !('speechSynthesis' in window) || lastSpokenSceneRef.current === sceneKey) return;
@@ -1576,6 +1578,13 @@ export function HomePage() {
   useEffect(() => {
     window.localStorage.setItem('dragon-game-achievements', JSON.stringify(unlockedAchievements));
   }, [unlockedAchievements]);
+
+  useEffect(() => {
+    if (!allAchievementsUnlocked || creatorCreditsOpen) return;
+    if (window.localStorage.getItem('dragon-game-creator-credits-seen') === 'yes') return;
+    window.localStorage.setItem('dragon-game-creator-credits-seen', 'yes');
+    setCreatorCreditsOpen(true);
+  }, [allAchievementsUnlocked, creatorCreditsOpen]);
 
   useEffect(() => {
     stopBossMusic();
@@ -2861,6 +2870,35 @@ export function HomePage() {
     );
   }
 
+  if (creatorCreditsOpen) {
+    return (
+      <main className="creator-credits-page" aria-label="Создатель">
+        <section className="creator-credits">
+          <div className="creator-scroll">
+            <p>Все концовки пройдены</p>
+            <h1>Спасибо за игру</h1>
+            <p>Помогавшие в разработке</p>
+            <strong>Нурали</strong>
+            <strong>Айсултан</strong>
+            <strong>Мансур</strong>
+            <strong>Арайлым</strong>
+            <strong>Ануар</strong>
+            <strong>Димаш</strong>
+            <p>Эти люди и мои учителя по поаити лагерю помогали, вдохновляли и были рядом.</p>
+            <h2>Нурдаулет</h2>
+            <h3>создатель</h3>
+          </div>
+          <button onClick={() => {
+            setCreatorCreditsOpen(false);
+            navigate('/achievements');
+          }} type="button">
+            Выйти
+          </button>
+        </section>
+      </main>
+    );
+  }
+
   if (isAchievementsPage) {
     return (
       <main className="achievements-page">
@@ -2880,6 +2918,14 @@ export function HomePage() {
             />
             <button type="submit">OK</button>
           </form>
+          <button
+            className="creator-button"
+            disabled={!allAchievementsUnlocked}
+            onClick={() => setCreatorCreditsOpen(true)}
+            type="button"
+          >
+            Показать создателя
+          </button>
           {achievementMessage && <p className="achievement-message">{achievementMessage}</p>}
           <div className="achievement-list">
             {achievements.map((achievement) => (
