@@ -85,6 +85,7 @@ type BbiBossStage = 'manager' | 'director' | 'final' | null;
 type DuelStatus = 'idle' | 'searching' | 'challenge' | 'fighting' | 'won' | 'declined';
 
 type DuelPlayer = {
+  id: string;
   name: string;
   power: number;
   title: string;
@@ -292,11 +293,11 @@ const nuraliBoss: CityStage = {
   reaction: 'рычит как лев и пугает котом',
 };
 const duelPlayers: DuelPlayer[] = [
-  { name: 'Темный рыцарь онлайн', power: 50_000, title: 'любит быстрые дуэли', weapon: { id: 'duel-dark-sword', name: 'Темный меч дуэлянта', rarity: 'Редкий', damage: 55_000, price: 2_000 }, armor: { id: 'duel-dark-armor', name: 'Темная броня дуэлянта', rarity: 'Редкий', defense: 18_000, price: 2_000 } },
-  { name: 'Игрок с огненным мечом', power: 250_000, title: 'ищет сильного врага', weapon: { id: 'duel-fire-sword', name: 'Огненный меч онлайн', rarity: 'Эпик', damage: 280_000, price: 10_000 }, armor: { id: 'duel-fire-armor', name: 'Огненный шлем онлайн', rarity: 'Эпик', defense: 75_000, price: 10_000 } },
-  { name: 'BBI чемпион', power: 1_000_000, title: 'кидает вызов на весь экран', weapon: { id: 'duel-bbi-blade', name: 'BBI клинок чемпиона', rarity: 'Легендарка', damage: 1_250_000, price: 100_000 }, armor: { id: 'duel-bbi-armor', name: 'BBI броня чемпиона', rarity: 'Легендарка', defense: 420_000, price: 100_000 } },
-  { name: 'Стальной воин', power: 5_000_000, title: 'в шлеме и броне', weapon: { id: 'duel-steel-sword', name: 'Стальной меч воина', rarity: 'Легендарка', damage: 5_800_000, price: 100_000 }, armor: { id: 'duel-steel-armor', name: 'Стальная броня воина', rarity: 'Легендарка', defense: 2_100_000, price: 100_000 } },
-  { name: 'Легендарный дуэлянт', power: 25_000_000, title: 'почти босс', weapon: { id: 'duel-secret-sword', name: 'Секретный меч дуэли', rarity: 'Секретное', damage: 30_000_000, price: 1_000_000 }, armor: { id: 'duel-secret-armor', name: 'Секретная броня дуэли', rarity: 'Секретное', defense: 12_000_000, price: 1_000_000 } },
+  { id: '1001', name: 'Темный рыцарь онлайн', power: 50_000, title: 'любит быстрые дуэли', weapon: { id: 'duel-dark-sword', name: 'Темный меч дуэлянта', rarity: 'Редкий', damage: 55_000, price: 2_000 }, armor: { id: 'duel-dark-armor', name: 'Темная броня дуэлянта', rarity: 'Редкий', defense: 18_000, price: 2_000 } },
+  { id: '2281', name: 'Игрок с огненным мечом', power: 250_000, title: 'ищет сильного врага', weapon: { id: 'duel-fire-sword', name: 'Огненный меч онлайн', rarity: 'Эпик', damage: 280_000, price: 10_000 }, armor: { id: 'duel-fire-armor', name: 'Огненный шлем онлайн', rarity: 'Эпик', defense: 75_000, price: 10_000 } },
+  { id: '3003', name: 'BBI чемпион', power: 1_000_000, title: 'кидает вызов на весь экран', weapon: { id: 'duel-bbi-blade', name: 'BBI клинок чемпиона', rarity: 'Легендарка', damage: 1_250_000, price: 100_000 }, armor: { id: 'duel-bbi-armor', name: 'BBI броня чемпиона', rarity: 'Легендарка', defense: 420_000, price: 100_000 } },
+  { id: '4444', name: 'Стальной воин', power: 5_000_000, title: 'в шлеме и броне', weapon: { id: 'duel-steel-sword', name: 'Стальной меч воина', rarity: 'Легендарка', damage: 5_800_000, price: 100_000 }, armor: { id: 'duel-steel-armor', name: 'Стальная броня воина', rarity: 'Легендарка', defense: 2_100_000, price: 100_000 } },
+  { id: '9999', name: 'Легендарный дуэлянт', power: 25_000_000, title: 'почти босс', weapon: { id: 'duel-secret-sword', name: 'Секретный меч дуэли', rarity: 'Секретное', damage: 30_000_000, price: 1_000_000 }, armor: { id: 'duel-secret-armor', name: 'Секретная броня дуэли', rarity: 'Секретное', defense: 12_000_000, price: 1_000_000 } },
 ];
 
 const bbiBosses: Record<Exclude<BbiBossStage, null>, CityStage> = {
@@ -830,6 +831,14 @@ export function HomePage() {
   const [duelOpponentHp, setDuelOpponentHp] = useState(0);
   const [duelTradeOpen, setDuelTradeOpen] = useState(false);
   const [nickname, setNickname] = useState(() => window.localStorage.getItem('hero-nickname') ?? 'BBI герой');
+  const [playerId] = useState(() => {
+    const savedId = window.localStorage.getItem('hero-player-id');
+    if (savedId) return savedId;
+    const nextId = String(Math.floor(100000 + Math.random() * 900000));
+    window.localStorage.setItem('hero-player-id', nextId);
+    return nextId;
+  });
+  const [duelTargetId, setDuelTargetId] = useState('');
   const [adminCode, setAdminCode] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState('');
@@ -2045,8 +2054,24 @@ export function HomePage() {
 
   function startDuelSearch() {
     if (duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting') return;
+    const requestedId = duelTargetId.trim();
+    if (requestedId === playerId) {
+      setMessage('Это твой ID. Впиши ID другого игрока, чтобы вызвать его.');
+      return;
+    }
+    const requestedPlayer = requestedId ? duelPlayers.find((player) => player.id === requestedId) : null;
+    if (requestedId && !requestedPlayer) {
+      setMessage(`Игрок с ID ${requestedId} не найден онлайн. Попробуй ID: ${duelPlayers.map((player) => player.id).join(', ')}.`);
+      return;
+    }
     setDuelOpponent(null);
     setDuelStatus('searching');
+    if (requestedPlayer) {
+      setDuelOpponent(requestedPlayer);
+      setDuelStatus('challenge');
+      setMessage(`${playerName} вызвал игрока ${requestedPlayer.name} по ID ${requestedPlayer.id}.`);
+      return;
+    }
     setMessage(`${playerName} ищет игроков в сети для дуэли...`);
   }
 
@@ -2130,7 +2155,7 @@ export function HomePage() {
       const player = duelPlayers[(duelWins + chapter + weapons.length + armors.length) % duelPlayers.length];
       setDuelOpponent(player);
       setDuelStatus('challenge');
-      setMessage(`${player.name} найден в сети и кинул вызов на дуэль.`);
+      setMessage(`${player.name} найден в сети. ID ${player.id}. Он кинул вызов на дуэль.`);
     }, 1100);
 
     return () => window.clearTimeout(searchTimer);
@@ -2816,6 +2841,7 @@ export function HomePage() {
             value={nickname}
           />
         </label>
+        <span className="player-id">ID {playerId}</span>
         {authUser ? (
           <>
             <span>{authUser.email}</span>
@@ -3066,7 +3092,7 @@ export function HomePage() {
             ) : duelStatus === 'challenge' && duelOpponent ? (
               <>
                 <h2>{duelOpponent.name} кинул вызов</h2>
-                <p>{playerName} против {duelOpponent.name}. {duelOpponent.title}. Сила: {formatPower(duelOpponent.power)}.</p>
+                <p>{playerName} ID {playerId} против {duelOpponent.name} ID {duelOpponent.id}. {duelOpponent.title}. Сила: {formatPower(duelOpponent.power)}.</p>
                 <div className="duel-loot">
                   <span>Оружие: {getWeaponDisplayName(duelOpponent.weapon)} +{formatPower(duelOpponent.weapon.damage)}</span>
                   <span>Броня: {duelOpponent.armor.name} +{formatPower(duelOpponent.armor.defense)}</span>
@@ -3147,6 +3173,14 @@ export function HomePage() {
           {currentMonsters === 0 && (
             <button onClick={strike} disabled={heroHp === 0}>Бить дракона</button>
           )}
+          <div className="duel-id-box">
+            <input
+              aria-label="ID игрока для дуэли"
+              onChange={(event) => setDuelTargetId(event.target.value)}
+              placeholder="ID игрока"
+              value={duelTargetId}
+            />
+          </div>
           <button className="duel-button" onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
             Дуэль
           </button>
@@ -3398,6 +3432,14 @@ export function HomePage() {
 
             <div className="actions">
               <button onClick={strike} disabled={heroHp === 0 || currentMonsters > 0}>Бить дракона</button>
+              <div className="duel-id-box">
+                <input
+                  aria-label="ID игрока для дуэли"
+                  onChange={(event) => setDuelTargetId(event.target.value)}
+                  placeholder="ID игрока"
+                  value={duelTargetId}
+                />
+              </div>
               <button className="duel-button" onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
                 {duelStatus === 'searching' ? 'Ищет игрока...' : duelStatus === 'fighting' ? 'Дуэль идет...' : 'Дуэль'}
               </button>

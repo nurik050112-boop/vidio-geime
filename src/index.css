@@ -542,7 +542,8 @@ button.secondary {
   color: #fff8e8;
 }
 
-.auth-panel > span {
+.auth-panel > span,
+.player-id {
   display: inline-grid;
   place-items: center;
   min-height: 38px;
@@ -557,6 +558,10 @@ button.secondary {
   white-space: nowrap;
   background: rgba(37, 17, 5, 0.74);
   box-shadow: 0 10px 26px rgba(20, 8, 4, 0.32);
+}
+
+.player-id {
+  color: #fff275;
 }
 
 .auth-panel button {
@@ -634,7 +639,7 @@ button.secondary {
   bottom: 14px;
   z-index: 40;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(160px, 220px) auto auto auto;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 220px) auto auto auto auto;
   gap: 10px;
   align-items: center;
   padding: 10px;
@@ -665,6 +670,23 @@ button.secondary {
   color: #fffdf4;
   background: linear-gradient(180deg, #2f80ed, #1d4ed8 55%, #251105);
   box-shadow: 0 5px 0 #0f245d, 0 18px 30px rgba(47, 128, 237, 0.28);
+}
+
+.duel-id-box {
+  min-width: 0;
+}
+
+.duel-id-box input {
+  width: 100%;
+  min-height: 38px;
+  border: 2px solid #251105;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  color: #251105;
+  background: #fffdf4;
 }
 
 .duel-overlay {
@@ -3907,7 +3929,7 @@ button.secondary {
 
 .actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(130px, 180px) minmax(0, 1fr) minmax(180px, 240px);
   gap: 8px;
 }
 
