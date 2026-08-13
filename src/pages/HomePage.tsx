@@ -621,14 +621,16 @@ function createWeapon(rarity: Rarity, level: number): Weapon {
   const material = weaponMaterials[Math.floor(Math.random() * weaponMaterials.length)];
   const enchant = weaponEnchants[Math.floor(Math.random() * weaponEnchants.length)];
   const rune = weaponRunes[Math.floor(Math.random() * weaponRunes.length)];
-  const damage = rarityDamage[rarity] + level * 6 + Math.floor(Math.random() * 12);
+  const cityMultiplier = Math.min(Number.MAX_SAFE_INTEGER, 10 ** Math.max(0, level - 1));
+  const baseDamage = rarityDamage[rarity] + level * 6 + Math.floor(Math.random() * 12);
+  const damage = Math.min(Number.MAX_SAFE_INTEGER, baseDamage * cityMultiplier);
 
   return {
     id: `${Date.now()}-${Math.random()}`,
     name: `${base} ${material} ${enchant} ${rune}`,
     rarity,
     damage,
-    price: rarityPrice[rarity] + damage * damage + level * 35,
+    price: Math.min(Number.MAX_SAFE_INTEGER, rarityPrice[rarity] + damage * 10 + level * 35),
   };
 }
 
@@ -2148,7 +2150,7 @@ export function HomePage() {
     setDuelOpponentHp(nextOpponentHp);
 
     if (nextOpponentHp === 0) {
-      const duelReward = Math.max(1_000, Math.floor((attackBonus + currentHeroMaxHp + duelOpponent.power) / 3));
+      const duelReward = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1_000, 1_000 + Math.floor(duelOpponent.power / 10)));
       setDuelWins((wins) => wins + 1);
       addGold(duelReward);
       setDuelStatus('won');
