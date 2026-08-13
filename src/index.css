@@ -262,6 +262,7 @@ button.secondary {
 .arailm-choice-page,
 .nurali-choice-page,
 .ais-choice-page,
+.admin-choice-page,
 .bbi-choice-page {
   min-height: 100vh;
   display: grid;
@@ -358,6 +359,20 @@ button.secondary {
     linear-gradient(180deg, #092435 0%, #0f5a73 48%, #031526 100%);
 }
 
+.admin-choice-page {
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 42, 31, 0.34), transparent 16rem),
+    repeating-linear-gradient(90deg, rgba(255, 248, 232, 0.08) 0 7px, transparent 8px 24px),
+    linear-gradient(135deg, #050308, #2b0713 48%, #050308);
+}
+
+.admin-choice-page.final {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 242, 117, 0.32), transparent 14rem),
+    radial-gradient(circle at 50% 52%, rgba(255, 42, 31, 0.34), transparent 22rem),
+    linear-gradient(135deg, #030205, #17030a 48%, #000);
+}
+
 .cave-choice {
   width: min(920px, 100%);
   padding: 38px;
@@ -428,6 +443,14 @@ button.secondary {
   background:
     radial-gradient(circle at 84% 18%, rgba(139, 216, 255, 0.22), transparent 10rem),
     linear-gradient(90deg, rgba(3, 21, 38, 0.94), rgba(15, 90, 115, 0.78));
+}
+
+.admin-choice {
+  border-color: rgba(255, 42, 31, 0.92);
+  color: #fff8e8;
+  background:
+    radial-gradient(circle at 84% 18%, rgba(255, 42, 31, 0.24), transparent 10rem),
+    linear-gradient(90deg, rgba(5, 3, 8, 0.96), rgba(55, 7, 18, 0.82));
 }
 
 .cave-choice h1 {
@@ -1429,6 +1452,32 @@ button.secondary {
     radial-gradient(circle at 44% 24%, rgba(190, 245, 255, 0.64) 0 16px, transparent 17px),
     radial-gradient(circle at 76% 34%, rgba(190, 245, 255, 0.7) 0 12px, transparent 13px),
     linear-gradient(180deg, #0b6077, #031827);
+}
+
+.sky.scene-admin {
+  background:
+    radial-gradient(circle at 50% 24%, rgba(255, 242, 117, 0.28), transparent 10rem),
+    radial-gradient(circle at 50% 55%, rgba(255, 42, 31, 0.3), transparent 18rem),
+    repeating-linear-gradient(90deg, rgba(255, 248, 232, 0.08) 0 4px, transparent 5px 32px),
+    linear-gradient(180deg, #07040a 0%, #330713 48%, #050205 100%);
+}
+
+.sky.scene-admin::before {
+  height: 100%;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 28px, rgba(255, 42, 31, 0.12) 29px 31px),
+    repeating-linear-gradient(90deg, transparent 0 58px, rgba(255, 248, 232, 0.08) 59px 62px);
+  box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.92);
+}
+
+.sky.scene-admin::after {
+  height: 136px;
+  border-top-color: #ff2a1f;
+  border-bottom-color: #050205;
+  background:
+    radial-gradient(circle at 18% 34%, rgba(255, 242, 117, 0.36) 0 28px, transparent 29px),
+    radial-gradient(circle at 70% 30%, rgba(255, 42, 31, 0.44) 0 46px, transparent 47px),
+    linear-gradient(180deg, #3b0712, #080205);
 }
 
 .sky.scene-nurali {
@@ -5052,6 +5101,57 @@ button.selected {
   border: 2px solid rgba(47, 128, 237, 0.5);
 }
 
+.artifact-icon.sea-pearl {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 54%, #e9ffff 0 6px, #65e7ff 7px 14px, transparent 15px),
+    conic-gradient(from 28deg, #053b63, #10b7ff, #e8ffff, #0f5a73, #053b63);
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.9), 0 0 22px rgba(16, 183, 255, 0.85), 0 7px 12px rgba(20, 8, 4, 0.2);
+}
+
+.artifact-icon.sea-pearl::before {
+  inset: 7px;
+  border: 4px solid rgba(232, 255, 255, 0.72);
+  border-left-color: rgba(16, 183, 255, 0.2);
+  border-radius: 50%;
+  animation: relic-float 1.4s ease-in-out infinite;
+}
+
+.artifact-icon.sea-pearl::after {
+  width: 46px;
+  height: 16px;
+  border: 4px solid rgba(255, 248, 232, 0.68);
+  border-left: 0;
+  border-right: 0;
+  border-radius: 50%;
+  transform: rotate(-24deg);
+}
+
+.artifact-icon.death-pendant {
+  border-radius: 46% 46% 50% 50%;
+  background:
+    radial-gradient(circle at 50% 34%, #fff8e8 0 5px, transparent 6px),
+    radial-gradient(circle at 50% 50%, #ff2a1f 0 14px, transparent 15px),
+    linear-gradient(135deg, #111827, #050205 58%, #3b0712);
+  box-shadow: inset 0 0 0 5px rgba(255, 42, 31, 0.34), 0 0 22px rgba(255, 42, 31, 0.82), 0 7px 12px rgba(20, 8, 4, 0.2);
+}
+
+.artifact-icon.death-pendant::before {
+  top: -14px;
+  width: 42px;
+  height: 28px;
+  border: 4px solid #251105;
+  border-bottom: 0;
+  border-radius: 50% 50% 0 0;
+}
+
+.artifact-icon.death-pendant::after {
+  width: 28px;
+  height: 30px;
+  background: #fff8e8;
+  clip-path: polygon(50% 0, 82% 22%, 72% 70%, 58% 70%, 58% 100%, 42% 100%, 42% 70%, 28% 70%, 18% 22%);
+}
+
 .artifact-icon.sun-orb {
   background: radial-gradient(circle, #8f2d1d 0 7px, #ffd166 8px 18px, #fff0bd 19px);
 }
@@ -6056,4 +6156,108 @@ button.selected {
   border-radius: 999px;
   background: #ffd166;
   box-shadow: -16px 0 0 -4px #ffd166, 16px 0 0 -4px #ffd166;
+}
+
+.monster-token.admin {
+  border-color: #050205;
+  background: linear-gradient(180deg, #ffb36d, #8a4b24);
+  box-shadow: 0 0 22px rgba(255, 42, 31, 0.78), inset 0 -18px 0 rgba(0, 0, 0, 0.24);
+}
+
+.monster-token.admin .monster-face {
+  background: #ffcf9c;
+}
+
+.monster-token.admin .monster-belt,
+.monster-token.admin .monster-boots {
+  background: #050205;
+}
+
+.admin-boss {
+  position: absolute;
+  right: 15%;
+  bottom: 132px;
+  z-index: 8;
+  width: 220px;
+  height: 300px;
+  animation: boss-float 1.05s ease-in-out infinite;
+  filter: drop-shadow(0 0 28px rgba(255, 42, 31, 0.84));
+}
+
+.admin-boss span {
+  position: absolute;
+  display: block;
+  border: 5px solid #050205;
+}
+
+.admin-boss .admin-head {
+  left: 74px;
+  top: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 32% 40%, #050205 0 4px, transparent 5px),
+    radial-gradient(circle at 66% 40%, #050205 0 4px, transparent 5px),
+    linear-gradient(180deg, #ffbe7a, #e58a3b);
+}
+
+.admin-boss .admin-body {
+  left: 54px;
+  top: 70px;
+  width: 112px;
+  height: 118px;
+  border-radius: 10px 10px 18px 18px;
+  background: linear-gradient(90deg, #7b4b27 0 24%, #ffd08a 25% 75%, #7b4b27 76%);
+}
+
+.admin-boss .admin-arm {
+  top: 82px;
+  width: 48px;
+  height: 112px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #9b5b2e, #5a2d18);
+}
+
+.admin-boss .admin-arm.left {
+  left: 10px;
+  transform: rotate(18deg);
+}
+
+.admin-boss .admin-arm.right {
+  right: 10px;
+  transform: rotate(-18deg);
+}
+
+.admin-boss .admin-leg {
+  top: 180px;
+  width: 54px;
+  height: 104px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #8a4b24, #24100a);
+}
+
+.admin-boss .admin-leg.left {
+  left: 50px;
+}
+
+.admin-boss .admin-leg.right {
+  right: 50px;
+}
+
+.admin-boss b {
+  position: absolute;
+  left: 50%;
+  top: -34px;
+  padding: 5px 8px;
+  border: 3px solid #fff8e8;
+  border-radius: 8px;
+  color: #fff8e8;
+  font-size: 14px;
+  background: #050205;
+  transform: translateX(-50%);
+}
+
+.admin-boss.all-bosses {
+  filter: drop-shadow(0 0 28px rgba(255, 242, 117, 0.9)) hue-rotate(35deg);
 }

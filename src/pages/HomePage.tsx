@@ -56,7 +56,7 @@ type Armor = {
   displayDefense?: string;
 };
 
-type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'seaPearl' | 'sunOrb' | 'impossibleMedallion';
+type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'seaPearl' | 'deathPendant' | 'sunOrb' | 'impossibleMedallion';
 
 type Artifact = {
   id: ArtifactId;
@@ -65,6 +65,9 @@ type Artifact = {
   bonusPercent: number;
   goldBonusPercent: number;
   attackSpeedPercent: number;
+  healthBonusPercent?: number;
+  defenseBonusPercent?: number;
+  luckBonusPercent?: number;
   icon: string;
   text: string;
 };
@@ -80,8 +83,8 @@ type Quest = {
 
 type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
 type EndingChoice = 'spare' | 'fight' | 'family' | null;
-type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | null;
-type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'bbiBadEnding' | 'impossibleEnding';
+type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | null;
+type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | 'bbiBadEnding' | 'impossibleEnding';
 type BbiBossStage = 'manager' | 'director' | 'final' | null;
 type DuelStatus = 'idle' | 'searching' | 'challenge' | 'fighting' | 'won' | 'declined';
 
@@ -291,6 +294,20 @@ const aisultanSeaGod: CityStage = {
   reaction: 'поднимает волну сильнее меча',
 };
 
+const adminBoss: CityStage = {
+  name: 'Админ',
+  city: '11 мир',
+  country: 'Админская сложность',
+  lair: 'Последний экран, где игра почти ломается',
+  monsterKind: 'admin',
+  monsterName: 'админские монстры',
+  title: 'создатель невозможного режима',
+  power: Number.MAX_SAFE_INTEGER,
+  color: '#ff2a1f',
+  attackSpeed: 0.22,
+  reaction: 'админ бьет так, будто нажал все кнопки сразу',
+};
+
 const worldLocations = [
   'Астана', 'Бишкек', 'Ташкент', 'Дубай', 'Каир', 'Афины', 'Берлин',
   'Мадрид', 'Прага', 'Сеул', 'Пекин', 'Сидней', 'Торонто', 'Мехико',
@@ -308,6 +325,10 @@ const aisultanMonsterTotal = 1_000_000_000;
 const aisultanMonsterHp = 10_000_000_000;
 const aisultanSharkHp = aisultanMonsterHp * 10;
 const aisultanSeaGodHp = aisultanSharkHp * 10;
+const adminWorldMonsterTotal = 1_000_000_000;
+const adminWorldMonsterHp = 1e25;
+const adminWorldBossesHp = Number.MAX_SAFE_INTEGER;
+const adminFinalBossHp = Number.MAX_SAFE_INTEGER;
 const baseMonsterHp = 10_000;
 const baseMonsterDamage = 20;
 const baseDragonHp = 100_000_000;
@@ -445,6 +466,7 @@ const achievements: { id: AchievementId; name: string }[] = [
   { id: 'mansurKing', name: 'Подземелье Мансура' },
   { id: 'arailmKing', name: 'Код хочет выбраться' },
   { id: 'aisultanSea', name: 'Воденой мир' },
+  { id: 'adminImpossible', name: 'Это невозможно пройти' },
   { id: 'bbiBadEnding', name: 'Они лишь дети' },
   { id: 'impossibleEnding', name: 'Невозможная концовка' },
 ];
@@ -457,7 +479,8 @@ const endingArtifacts: Artifact[] = [
   { id: 'greenRelic', name: 'Зеленая печать', ending: 'anuarKing', bonusPercent: 50, goldBonusPercent: 50, attackSpeedPercent: 50, icon: 'green-relic', text: 'Бомбическая концовка' },
   { id: 'snowGlobe', name: 'Снежный шлем', ending: 'mansurKing', bonusPercent: 60, goldBonusPercent: 60, attackSpeedPercent: 60, icon: 'snow-globe', text: 'Подземелье Мансура' },
   { id: 'moonCrystal', name: 'Лунный кристалл', ending: 'arailmKing', bonusPercent: 70, goldBonusPercent: 70, attackSpeedPercent: 70, icon: 'moon-crystal', text: 'Код хочет выбраться' },
-  { id: 'seaPearl', name: 'Жемчуг моря', ending: 'aisultanSea', bonusPercent: 90, goldBonusPercent: 90, attackSpeedPercent: 90, icon: 'snow-globe', text: 'Воденой мир' },
+  { id: 'seaPearl', name: 'Шар водного вихря', ending: 'aisultanSea', bonusPercent: 1000, goldBonusPercent: 10000, attackSpeedPercent: 1000, icon: 'sea-pearl', text: 'Воденой мир: усиливает воденой меч на 1000%' },
+  { id: 'deathPendant', name: 'Кулон смерти', ending: 'adminImpossible', bonusPercent: 100000, goldBonusPercent: 100000, attackSpeedPercent: 100000, healthBonusPercent: 100000, defenseBonusPercent: 100000, luckBonusPercent: 100000, icon: 'death-pendant', text: 'Админская сила заключена в кулоне смерти' },
   { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 80, goldBonusPercent: 80, attackSpeedPercent: 80, icon: 'sun-orb', text: 'BBI концовка' },
   { id: 'impossibleMedallion', name: 'Медальон невозможности', ending: 'impossibleEnding', bonusPercent: 1000, goldBonusPercent: 1000, attackSpeedPercent: 1000, icon: 'impossible-medallion', text: 'Невозможная концовка мира Нурали' },
 ];
@@ -915,6 +938,12 @@ export function HomePage() {
   const [aisSharkFightStarted, setAisSharkFightStarted] = useState(false);
   const [aisFinalChoiceOpen, setAisFinalChoiceOpen] = useState(false);
   const [aisGodFightStarted, setAisGodFightStarted] = useState(false);
+  const [adminWorldGateOpen, setAdminWorldGateOpen] = useState(false);
+  const [adminWorldEntered, setAdminWorldEntered] = useState(false);
+  const [adminWorldMonstersLeft, setAdminWorldMonstersLeft] = useState(adminWorldMonsterTotal);
+  const [adminWorldBossesStarted, setAdminWorldBossesStarted] = useState(false);
+  const [adminFinalChoiceOpen, setAdminFinalChoiceOpen] = useState(false);
+  const [adminBossFightStarted, setAdminBossFightStarted] = useState(false);
   const [bbiGateOpen, setBbiGateOpen] = useState(false);
   const [bbiWorldEntered, setBbiWorldEntered] = useState(false);
   const [bbiMonstersLeft, setBbiMonstersLeft] = useState(bbiMonsterTotal);
@@ -1024,21 +1053,27 @@ export function HomePage() {
   const isArailmKingBoss = arailmKingFightStarted;
   const isAisSharkBoss = aisSharkFightStarted;
   const isAisGodBoss = aisGodFightStarted;
+  const isAdminWorldBosses = adminWorldBossesStarted;
+  const isAdminBoss = adminBossFightStarted;
   const isNuraliKingBoss = nuraliBossFightStarted;
   const isFuryDungeon = furyDungeonEntered && !furyChoiceOpen && !furyKingFightStarted;
   const isAnuarWorld = anuarWorldEntered && !anuarKingFightStarted;
   const isMansurDungeon = mansurDungeonEntered && !mansurKingFightStarted;
   const isArailmWorld = arailmWorldEntered && !arailmChoiceOpen && !arailmKingFightStarted;
   const isAisWorld = aisWorldEntered && !aisSharkFightStarted && !aisFinalChoiceOpen && !aisGodFightStarted;
+  const isAdminWorld = adminWorldEntered && !adminWorldBossesStarted && !adminFinalChoiceOpen && !adminBossFightStarted;
   const isNuraliWorld = nuraliWorldEntered && !nuraliChoiceOpen && !nuraliBossFightStarted;
   const isBbiBoss = bbiBossStage !== null;
   const isBbiWorld = bbiWorldEntered && !isBbiBoss && !bbiFinalChoiceOpen;
-  const enemy = isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
+  const enemy = isAdminBoss ? adminBoss : isAdminWorldBosses ? adminBoss : isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
   const isDungeon = dungeon?.entered && !dungeon.cleared;
   const hasAdminHelmet = equippedArmor?.id.startsWith('admin-helmet-') ?? false;
-  const currentHeroMaxHp = hasAdminHelmet ? Number.MAX_SAFE_INTEGER : heroMaxHp + upgradePower(healthLevel, shopBasePower.health);
+  const unlockedArtifacts = endingArtifacts.filter((artifact) => unlockedAchievements.includes(artifact.ending));
+  const equippedArtifact = unlockedArtifacts.find((artifact) => artifact.id === equippedArtifactId) ?? null;
+  const artifactHealthMultiplier = equippedArtifact?.healthBonusPercent ? 1 + equippedArtifact.healthBonusPercent / 100 : 1;
+  const currentHeroMaxHp = hasAdminHelmet ? Number.MAX_SAFE_INTEGER : Math.floor((heroMaxHp + upgradePower(healthLevel, shopBasePower.health)) * artifactHealthMultiplier);
   const heroHealthText = hasAdminHelmet ? `${adminHelmetHealthText} / ${adminHelmetHealthText}` : `${heroHp} / ${currentHeroMaxHp}`;
   const heroHealthPercent = Math.max(0, Math.min(100, (heroHp / currentHeroMaxHp) * 100));
 
@@ -1048,16 +1083,19 @@ export function HomePage() {
   const armorBonus = equippedArmor?.defense ?? 0;
   const equippedArmorStyle = getArmorStyleIndex(equippedArmor);
   const equippedIsHelmet = isHelmetArmor(equippedArmor);
-  const defenseBonus = upgradePower(items.clothes, shopBasePower.clothes) + upgradePower(items.helmet, shopBasePower.helmet) + upgradePower(items.armor, shopBasePower.armor) + armorBonus;
-  const unlockedArtifacts = endingArtifacts.filter((artifact) => unlockedAchievements.includes(artifact.ending));
-  const equippedArtifact = unlockedArtifacts.find((artifact) => artifact.id === equippedArtifactId) ?? null;
+  const artifactDefenseMultiplier = equippedArtifact?.defenseBonusPercent ? 1 + equippedArtifact.defenseBonusPercent / 100 : 1;
+  const artifactLuckMultiplier = equippedArtifact?.luckBonusPercent ? 1 + equippedArtifact.luckBonusPercent / 100 : 1;
+  const defenseBonus = Math.floor((upgradePower(items.clothes, shopBasePower.clothes) + upgradePower(items.helmet, shopBasePower.helmet) + upgradePower(items.armor, shopBasePower.armor) + armorBonus) * artifactDefenseMultiplier);
   const artifactDamageMultiplier = equippedArtifact ? 1 + equippedArtifact.bonusPercent / 100 : 1;
   const artifactGoldMultiplier = equippedArtifact ? 1 + equippedArtifact.goldBonusPercent / 100 : 1;
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
+  const waterSwordArtifactMultiplier = equippedArtifactId === 'seaPearl' && isAisultanSword(equippedWeapon) ? 11 : 1;
   const reward = enemy ? 120 + chapter * 110 : 0;
-  const currentMonsters = isAisSharkBoss || isAisGodBoss || isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isAisWorld ? aisMonstersLeft : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
+  const currentMonsters = isAdminBoss || isAdminWorldBosses || isAisSharkBoss || isAisGodBoss || isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isAdminWorld ? adminWorldMonstersLeft : isAisWorld ? aisMonstersLeft : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
   const musicKey = isFinalReveal
     ? 'ending'
+    : isAdminBoss || isAdminWorldBosses
+      ? 'admin'
     : isAisGodBoss || isAisSharkBoss
       ? 'ais'
     : isNuraliKingBoss
@@ -1078,6 +1116,8 @@ export function HomePage() {
       ? 'family'
     : isFinalBoss
       ? 'final'
+    : isAdminWorld
+      ? 'admin-world'
     : isAisWorld
       ? 'ais-world'
     : isNuraliWorld
@@ -1095,19 +1135,19 @@ export function HomePage() {
     : isDungeon
       ? 'dungeon'
       : 'world';
-  const currentMonsterHp = isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
-  const currentMonsterDamage = isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
+  const currentMonsterHp = isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
+  const currentMonsterDamage = isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
-  const currentDragonHp = isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
-  const currentDragonDamage = isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
+  const currentDragonHp = isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
+  const currentDragonDamage = isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
   const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 100);
   const weaponBonus = isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0;
-  const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + weaponBonus;
+  const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + Math.floor(weaponBonus * waterSwordArtifactMultiplier);
   const playerName = nickname.trim() || 'BBI герой';
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const dragonReactionSpeed = enemy?.attackSpeed ?? 1;
-  const currentMonsterTotal = isAisWorld ? aisultanMonsterTotal : isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
+  const currentMonsterTotal = isAdminWorld ? adminWorldMonsterTotal : isAisWorld ? aisultanMonsterTotal : isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
   const currentEnemyHealthText = currentMonsters > 0
     ? `Враг HP ${formatPower(currentMonsterHp)}`
     : isArailmKingBoss
@@ -1118,6 +1158,8 @@ export function HomePage() {
     ? 'Невозможная концовка. Админская ядерка стала бесконечной. Получен медальон невозможности.'
     : bbiBadEnding
     ? 'Би Би Ай концовка. Они лишь дети, ты монстр. Ты мог отказаться, но выбрал сражаться.'
+    : secretEnding === 'adminImpossible'
+      ? 'Секретная концовка. Это невозможно пройти. Герой убил админа и стал уж слишком сильным.'
     : secretEnding === 'aisultanSea'
       ? 'Секретная концовка. Воденой мир. Бог моря Айсултан побежден, океан стал свободным.'
     : secretEnding === 'arailmKing'
@@ -1136,7 +1178,9 @@ export function HomePage() {
         : 'Плохая концовка. Пустое небо. Герой сразился с семьей драконов.'
       : '';
   const cityScene = `scene-city-${chapter % 6}`;
-  const battleScene = isAisWorld || isAisSharkBoss || isAisGodBoss || aisFinalChoiceOpen
+  const battleScene = isAdminWorld || isAdminWorldBosses || isAdminBoss || adminFinalChoiceOpen
+    ? 'scene-admin'
+    : isAisWorld || isAisSharkBoss || isAisGodBoss || aisFinalChoiceOpen
     ? 'scene-ais'
     : isDungeon
     ? 'scene-dungeon'
@@ -1163,7 +1207,9 @@ export function HomePage() {
             ? 'scene-boss-final'
             : `scene-boss-${chapter % 10}`
         : cityScene;
-  const dragonClass = isAisGodBoss
+  const dragonClass = isAdminBoss || isAdminWorldBosses
+    ? 'dragon-admin'
+    : isAisGodBoss
     ? 'dragon-ais-god'
     : isAisSharkBoss
       ? 'dragon-ais-shark'
@@ -1284,12 +1330,14 @@ export function HomePage() {
       'mansur-world': { notes: [147, 196, 247, 196], beat: 0.46, wave: 'triangle', gain: 0.024 },
       'arailm-world': { notes: [98, 131, 175, 131], beat: 0.28, wave: 'sawtooth', gain: 0.022 },
       'ais-world': { notes: [110, 147, 196, 247], beat: 0.42, wave: 'sine', gain: 0.025 },
+      'admin-world': { notes: [41, 55, 82, 110], beat: 0.24, wave: 'square', gain: 0.03 },
       goblin: { notes: [98, 196, 233, 196, 87], beat: 0.13, wave: 'square', gain: 0.07 },
       fury: { notes: [55, 110, 146, 196, 220], beat: 0.11, wave: 'sawtooth', gain: 0.065 },
       anuar: { notes: [41, 82, 123, 165, 247], beat: 0.14, wave: 'square', gain: 0.075 },
       mansur: { notes: [73, 147, 196, 247, 294], beat: 0.16, wave: 'sawtooth', gain: 0.068 },
       arailm: { notes: [49, 98, 131, 98, 175, 208], beat: 0.1, wave: 'sawtooth', gain: 0.06 },
       ais: { notes: [55, 110, 165, 220, 330], beat: 0.18, wave: 'triangle', gain: 0.065 },
+      admin: { notes: [33, 66, 99, 132, 198], beat: 0.08, wave: 'sawtooth', gain: 0.08 },
       bbi: { notes: [131, 262, 330, 392, 523], beat: 0.1, wave: 'square', gain: 0.07 },
       nurali: { notes: [55, 110, 165, 220, 330], beat: 0.12, wave: 'sawtooth', gain: 0.072 },
       family: { notes: [37, 73, 110, 147, 220], beat: 0.18, wave: 'sawtooth', gain: 0.075 },
@@ -1391,6 +1439,18 @@ export function HomePage() {
     setArailmWorldEntered(false);
     setArailmChoiceOpen(false);
     setArailmKingFightStarted(false);
+    setAisGateOpen(false);
+    setAisWorldEntered(false);
+    setAisMonstersLeft(aisultanMonsterTotal);
+    setAisSharkFightStarted(false);
+    setAisFinalChoiceOpen(false);
+    setAisGodFightStarted(false);
+    setAdminWorldGateOpen(false);
+    setAdminWorldEntered(false);
+    setAdminWorldMonstersLeft(adminWorldMonsterTotal);
+    setAdminWorldBossesStarted(false);
+    setAdminFinalChoiceOpen(false);
+    setAdminBossFightStarted(false);
     setBbiGateOpen(false);
     setBbiWorldEntered(false);
     setBbiMonstersLeft(bbiMonsterTotal);
@@ -1460,6 +1520,28 @@ export function HomePage() {
       setArailmKingFightStarted(true);
       setEnemyHp(Number.MAX_SAFE_INTEGER);
       setMessage(`Телепорт: босс Арайлым вышла на бой. HP и урон: ${formatHugeText(arailmBossPowerText)}.`);
+      navigate('/');
+      return;
+    }
+
+    if (id === 'aisultanSea') {
+      setAisGateOpen(true);
+      setAisWorldEntered(false);
+      setAisMonstersLeft(0);
+      setAisSharkFightStarted(false);
+      setAisFinalChoiceOpen(false);
+      setAisGodFightStarted(true);
+      setEnemyHp(aisultanSeaGodHp);
+      setMessage(`Телепорт: 10 водный мир. Бог моря Айсултан вышел на бой. HP: ${formatPower(aisultanSeaGodHp)}.`);
+      navigate('/');
+      return;
+    }
+
+    if (id === 'adminImpossible') {
+      setAdminWorldGateOpen(true);
+      setAdminBossFightStarted(true);
+      setEnemyHp(adminFinalBossHp);
+      setMessage('Телепорт: 11 мир. Админ вышел на финальный бой.');
       navigate('/');
       return;
     }
@@ -1669,6 +1751,14 @@ export function HomePage() {
         setMessage(`1 млрд рыб-монстров уничтожены. Промежуточный босс Акула вышла на бой: ${formatPower(aisultanSharkHp)} HP.`);
         return;
       }
+      if (isAdminWorld) {
+        setAdminWorldMonstersLeft(0);
+        setAdminWorldEntered(false);
+        setAdminWorldBossesStarted(true);
+        setEnemyHp(adminWorldBossesHp);
+        setMessage('1 млрд админских монстров уничтожен. Этап 2: все боссы концовок вышли вместе.');
+        return;
+      }
       if (isMansurDungeon) {
         setMansurMonstersLeft(0);
         setMansurDungeonEntered(false);
@@ -1715,12 +1805,14 @@ export function HomePage() {
     const baseMonstersPerHit = items.doubleStrike > 0 ? 2 + Math.max(0, shopLevels.doubleStrike - 1) : 1;
     const monstersPerHit = Math.max(1, Math.floor(baseMonstersPerHit * artifactAttackSpeedMultiplier));
     const nextMonsters = Math.max(0, currentMonsters - monstersPerHit);
-    const monsterWeapon = isNuraliWorld ? rollDungeonWeapon(chapter + 18) : isBbiWorld ? rollDungeonWeapon(chapter + 12) : isArailmWorld ? rollDungeonWeapon(chapter + 16) : isMansurDungeon ? rollDungeonWeapon(chapter + 14) : isAnuarWorld ? rollDungeonWeapon(chapter + 12) : isFuryDungeon ? rollDungeonWeapon(chapter + 10) : isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2, chapter + 1);
-    const monsterArmor = isNuraliWorld ? rollArmor(18, chapter + 18) : isBbiWorld ? rollArmor(12, chapter + 12) : isArailmWorld ? rollArmor(16, chapter + 16) : isMansurDungeon ? rollArmor(14, chapter + 14) : isAnuarWorld ? rollArmor(12, chapter + 12) : isFuryDungeon ? rollArmor(10, chapter + 10) : isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2, chapter + 1);
+    const monsterWeapon = isAdminWorld ? rollDungeonWeapon((chapter + 30) * artifactLuckMultiplier) : isNuraliWorld ? rollDungeonWeapon(chapter + 18) : isBbiWorld ? rollDungeonWeapon(chapter + 12) : isArailmWorld ? rollDungeonWeapon(chapter + 16) : isMansurDungeon ? rollDungeonWeapon(chapter + 14) : isAnuarWorld ? rollDungeonWeapon(chapter + 12) : isFuryDungeon ? rollDungeonWeapon(chapter + 10) : isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2 * artifactLuckMultiplier, chapter + 1);
+    const monsterArmor = isAdminWorld ? rollArmor((chapter + 30) * artifactLuckMultiplier, chapter + 30) : isNuraliWorld ? rollArmor(18, chapter + 18) : isBbiWorld ? rollArmor(12, chapter + 12) : isArailmWorld ? rollArmor(16, chapter + 16) : isMansurDungeon ? rollArmor(14, chapter + 14) : isAnuarWorld ? rollArmor(12, chapter + 12) : isFuryDungeon ? rollArmor(10, chapter + 10) : isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2 * artifactLuckMultiplier, chapter + 1);
     const nextCityMonsters = cityMonsters.map((count, index) => (index === chapter ? nextMonsters : count));
 
     setHeroHp(nextHeroHp);
-    if (isBbiWorld) {
+    if (isAdminWorld) {
+      setAdminWorldMonstersLeft(nextMonsters);
+    } else if (isBbiWorld) {
       setBbiMonstersLeft(nextMonsters);
     } else if (isNuraliWorld) {
       setNuraliMonstersLeft(nextMonsters);
@@ -1793,6 +1885,13 @@ export function HomePage() {
         setAisSharkFightStarted(true);
         setEnemyHp(aisultanSharkHp);
         setMessage(`1 млрд рыб-монстров побежден. Вышел промежуточный босс Акула: ${formatPower(aisultanSharkHp)} HP.`);
+        return;
+      }
+      if (isAdminWorld) {
+        setAdminWorldEntered(false);
+        setAdminWorldBossesStarted(true);
+        setEnemyHp(adminWorldBossesHp);
+        setMessage('1 млрд админских монстров побежден. Этап 2: все боссы концовок вышли вместе и бьют героя.');
         return;
       }
       if (isMansurDungeon) {
@@ -1895,6 +1994,30 @@ export function HomePage() {
       setChapter(dragonSons.length + 1);
       addGold(10_000_000);
       setMessage('Воденой мир открыт: бог моря Айсултан побежден.');
+      navigate('/world');
+      return;
+    }
+
+    if (isAdminWorldBosses) {
+      setAdminWorldBossesStarted(false);
+      setAdminFinalChoiceOpen(true);
+      setMessage('Все боссы концовок побеждены. На экране надпись: ты готов или не готов сразиться с админом?');
+      navigate('/world');
+      return;
+    }
+
+    if (isAdminBoss) {
+      setVictory(true);
+      setSecretEnding('adminImpossible');
+      unlockAchievement('adminImpossible');
+      setAdminWorldGateOpen(false);
+      setAdminWorldEntered(false);
+      setAdminWorldBossesStarted(false);
+      setAdminFinalChoiceOpen(false);
+      setAdminBossFightStarted(false);
+      setChapter(dragonSons.length + 1);
+      addGold(100_000_000);
+      setMessage('Концовка открыта: это невозможно пройти. Герой убил админа и стал уж слишком сильным.');
       navigate('/world');
       return;
     }
@@ -2205,6 +2328,18 @@ export function HomePage() {
       setAisGodFightStarted(false);
       setAdminCode('');
       setMessage('Код ais228198 открыл 10 мир: водный мир Айсултана. Выбери: войти или выйти.');
+      return;
+    }
+
+    if (code === 'admin2281') {
+      setAdminWorldGateOpen(true);
+      setAdminWorldEntered(false);
+      setAdminWorldMonstersLeft(adminWorldMonsterTotal);
+      setAdminWorldBossesStarted(false);
+      setAdminFinalChoiceOpen(false);
+      setAdminBossFightStarted(false);
+      setAdminCode('');
+      setMessage('Код ADMIN2281 открыл 11 мир: админская сложность.');
       return;
     }
 
@@ -2555,6 +2690,12 @@ export function HomePage() {
     setAisSharkFightStarted(false);
     setAisFinalChoiceOpen(false);
     setAisGodFightStarted(false);
+    setAdminWorldGateOpen(false);
+    setAdminWorldEntered(false);
+    setAdminWorldMonstersLeft(adminWorldMonsterTotal);
+    setAdminWorldBossesStarted(false);
+    setAdminFinalChoiceOpen(false);
+    setAdminBossFightStarted(false);
     setBbiGateOpen(false);
     setBbiWorldEntered(false);
     setBbiMonstersLeft(bbiMonsterTotal);
@@ -3004,6 +3145,77 @@ export function HomePage() {
     );
   }
 
+  if (adminWorldGateOpen && !adminWorldEntered && !adminWorldBossesStarted && !adminFinalChoiceOpen && !adminBossFightStarted) {
+    return (
+      <main className="admin-choice-page">
+        <section className="cave-choice admin-choice" aria-label="11 мир админская сложность">
+          <p className="intro-kicker">Код ADMIN2281</p>
+          <h1>11 мир: админская сложность</h1>
+          <p>
+            Внутри {formatPower(adminWorldMonsterTotal)} монстров. Здоровье каждого как у невозможного босса:
+            {formatPower(adminWorldMonsterHp)} HP.
+          </p>
+          <p>
+            После смерти монстров появятся все боссы концовок вместе.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setAdminWorldEntered(true);
+              setAdminWorldMonstersLeft(adminWorldMonsterTotal);
+              setMessage(`Ты вошел в 11 мир. Админская сложность: ${formatPower(adminWorldMonsterTotal)} монстров по ${formatPower(adminWorldMonsterHp)} HP.`);
+              navigate('/');
+            }} type="button">
+              Войти
+            </button>
+            <button className="secondary" onClick={() => {
+              setAdminWorldGateOpen(false);
+              setMessage('Ты вышел из 11 мира.');
+              navigate('/');
+            }} type="button">
+              Выйти
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (adminFinalChoiceOpen) {
+    return (
+      <main className="admin-choice-page final">
+        <section className="cave-choice admin-choice" aria-label="Финальный выбор админа">
+          <p className="intro-kicker">Этап 2 побежден</p>
+          <h1>Ты готов сразиться с админом?</h1>
+          <p>
+            У админа HP в 10 раз больше, чем у второго этапа.
+          </p>
+          <p>
+            После победы откроется концовка: это невозможно пройти.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setAdminFinalChoiceOpen(false);
+              setAdminBossFightStarted(true);
+              setEnemyHp(adminFinalBossHp);
+              setMessage('Админ вышел на бой. У него HP больше второго этапа в 10 раз.');
+              navigate('/');
+            }} type="button">
+              Готов
+            </button>
+            <button className="secondary" onClick={() => {
+              setAdminFinalChoiceOpen(false);
+              setAdminWorldGateOpen(false);
+              setMessage('Ты не готов сразиться с админом. 11 мир закрылся.');
+              navigate('/');
+            }} type="button">
+              Не готов
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   if (bbiFinalChoiceOpen) {
     return (
       <main className="bbi-choice-page final">
@@ -3352,7 +3564,7 @@ export function HomePage() {
           <div className="monster-pack" data-kind={enemy?.monsterKind ?? 'goblin'}>
             {Array.from({ length: Math.max(0, Math.min(4, Math.ceil(currentMonsters / 500))) }).map((_, index) => {
               const mixedMonster = monsterKinds[(chapter + index) % monsterKinds.length];
-              const monsterKind = isAisWorld ? 'fish' : isNuraliWorld ? 'nurali' : isBbiWorld ? 'shadow' : isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
+              const monsterKind = isAdminWorld ? 'admin' : isAisWorld ? 'fish' : isNuraliWorld ? 'nurali' : isBbiWorld ? 'shadow' : isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
               const monsterColumn = index % 8;
               const monsterRow = Math.floor(index / 8);
               return (
@@ -3513,7 +3725,18 @@ export function HomePage() {
               <span className="ais-trident" />
             </div>
           )}
-          {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && !isFuryKingBoss && !isAnuarKingBoss && !isMansurKingBoss && !isArailmKingBoss && !isAisSharkBoss && !isAisGodBoss && (
+          {!isFinalReveal && enemy && currentMonsters === 0 && (isAdminWorldBosses || isAdminBoss) && (
+            <div className={`admin-boss ${isAdminWorldBosses ? 'all-bosses' : ''}`}>
+              <span className="admin-head" />
+              <span className="admin-body" />
+              <span className="admin-arm left" />
+              <span className="admin-arm right" />
+              <span className="admin-leg left" />
+              <span className="admin-leg right" />
+              {isAdminWorldBosses && <b>ALL BOSSES</b>}
+            </div>
+          )}
+          {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && !isFuryKingBoss && !isAnuarKingBoss && !isMansurKingBoss && !isArailmKingBoss && !isAisSharkBoss && !isAisGodBoss && !isAdminWorldBosses && !isAdminBoss && (
             <div className={`boss ${isFinalBoss ? 'final-boss' : ''} ${dragonClass}`} style={{ '--dragon-color': enemy.color } as CSSProperties}>
               {enemyBurning && <div className="enemy-burn-effect" />}
               <div className="tail-2d" />
@@ -3749,6 +3972,21 @@ export function HomePage() {
             <p>
               Последний BBI босс был сильнее директора в 5 раз, но даже его победа
               не стала хорошей концовкой.
+            </p>
+            <div className="ending-actions">
+              <Link className="ending-link" href="/">Продолжать</Link>
+              <button onClick={restart}>Начать повторно</button>
+            </div>
+          </div>
+        ) : secretEnding === 'adminImpossible' ? (
+          <div className="reveal admin-ending">
+            <p className="eyebrow">Секретная концовка</p>
+            <h2>Это невозможно пройти</h2>
+            <p>
+              Герой прошел 11 мир, пережил всех боссов концовок вместе и убил админа.
+            </p>
+            <p>
+              Герой стал уж слишком сильный. Админская сила заключена в кулоне смерти.
             </p>
             <div className="ending-actions">
               <Link className="ending-link" href="/">Продолжать</Link>
@@ -4107,7 +4345,7 @@ export function HomePage() {
                         <span className={`artifact-icon ${artifact.icon}`}><span /></span>
                         <strong>{artifact.name}</strong>
                         <small>{unlocked ? artifact.text : 'Открой концовку'}</small>
-                        <b>{unlocked ? `${equipped ? 'Надет: ' : ''}+${artifact.bonusPercent}% урон, +${artifact.goldBonusPercent}% деньги, +${artifact.attackSpeedPercent}% скорость` : 'Закрыт'}</b>
+                        <b>{unlocked ? `${equipped ? 'Надет: ' : ''}+${artifact.bonusPercent}% урон, +${artifact.goldBonusPercent}% деньги, +${artifact.attackSpeedPercent}% скорость${artifact.healthBonusPercent ? `, +${artifact.healthBonusPercent}% здоровье` : ''}${artifact.defenseBonusPercent ? `, +${artifact.defenseBonusPercent}% защита` : ''}${artifact.luckBonusPercent ? `, +${artifact.luckBonusPercent}% удача` : ''}${artifact.id === 'seaPearl' ? ', воденой меч +1000%' : ''}` : 'Закрыт'}</b>
                       </button>
                     );
                   })}
