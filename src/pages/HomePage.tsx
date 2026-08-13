@@ -2196,7 +2196,7 @@ export function HomePage() {
       return;
     }
 
-    if (code === 'ais') {
+    if (code === 'ais228198') {
       setAisGateOpen(true);
       setAisWorldEntered(false);
       setAisMonstersLeft(aisultanMonsterTotal);
@@ -2204,7 +2204,7 @@ export function HomePage() {
       setAisFinalChoiceOpen(false);
       setAisGodFightStarted(false);
       setAdminCode('');
-      setMessage('Код ais открыл 10 мир: водный мир Айсултана. Выбери: войти или выйти.');
+      setMessage('Код ais228198 открыл 10 мир: водный мир Айсултана. Выбери: войти или выйти.');
       return;
     }
 
@@ -2929,8 +2929,8 @@ export function HomePage() {
   if (aisGateOpen && !aisWorldEntered && !aisSharkFightStarted && !aisFinalChoiceOpen && !aisGodFightStarted) {
     return (
       <main className="ais-choice-page">
-        <section className="cave-choice ais-choice" aria-label="10 водный мир ais">
-          <p className="intro-kicker">Код ais</p>
+        <section className="cave-choice ais-choice" aria-label="10 водный мир ais228198">
+          <p className="intro-kicker">Код ais228198</p>
           <h1>10 мир: водный мир</h1>
           <p>
             Открылся океанский фон. Внутри {formatPower(aisultanMonsterTotal)}
