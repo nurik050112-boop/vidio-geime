@@ -2102,6 +2102,15 @@ export function HomePage() {
     setMessage(`${player.name} выбран из списка онлайн игроков.`);
   }
 
+  function closeDuelList() {
+    setDuelStatus('idle');
+    setDuelOpponent(null);
+    setDuelTradeOpen(false);
+    setDuelChatMessages([]);
+    setDuelChatText('');
+    setMessage('Список игроков закрыт. Можно играть дальше.');
+  }
+
   function scheduleOnlineListReturn() {
     if (onlinePlayerScrollTimer.current) {
       window.clearTimeout(onlinePlayerScrollTimer.current);
@@ -3218,7 +3227,10 @@ export function HomePage() {
               </div>
             )}
             <div className="online-players">
-              <strong>Люди в сети</strong>
+              <div className="online-players-head">
+                <strong>Люди в сети</strong>
+                <button className="secondary" onClick={closeDuelList} type="button">Выйти из списка и играть</button>
+              </div>
               <div
                 className="online-player-list"
                 onScroll={scheduleOnlineListReturn}
