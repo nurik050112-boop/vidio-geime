@@ -260,6 +260,7 @@ button.secondary {
 .anuar-choice-page,
 .mansur-choice-page,
 .arailm-choice-page,
+.nurali-choice-page,
 .bbi-choice-page {
   min-height: 100vh;
   display: grid;
@@ -324,6 +325,23 @@ button.secondary {
     linear-gradient(135deg, #090205, #3c0508 48%, #060204);
 }
 
+.nurali-choice-page {
+  background:
+    linear-gradient(180deg, rgba(198, 226, 255, 0.82) 0 34%, transparent 35%),
+    linear-gradient(90deg, transparent 0 29%, #f8fbff 30% 70%, transparent 71%),
+    linear-gradient(135deg, transparent 0 38%, #d94b1f 39% 49%, transparent 50%),
+    radial-gradient(ellipse at 50% 78%, #50a35b 0 18rem, transparent 18.2rem),
+    linear-gradient(180deg, #dbeafe 0%, #eef7ff 42%, #68b36a 43%, #3d8a4c 100%);
+}
+
+.nurali-choice-page.final {
+  background:
+    radial-gradient(circle at 42% 42%, rgba(255, 255, 255, 0.82) 0 3rem, transparent 3.1rem),
+    radial-gradient(circle at 56% 38%, rgba(10, 10, 10, 0.78) 0 6rem, transparent 6.2rem),
+    radial-gradient(ellipse at 50% 78%, #363636 0 18rem, transparent 18.2rem),
+    linear-gradient(180deg, #d1d5db 0%, #6b7280 48%, #1f2937 100%);
+}
+
 .cave-choice {
   width: min(920px, 100%);
   padding: 38px;
@@ -370,6 +388,14 @@ button.secondary {
   color: #fff8e8;
   background:
     linear-gradient(180deg, rgba(58, 4, 8, 0.94), rgba(6, 2, 4, 0.94));
+}
+
+.nurali-choice {
+  border-color: rgba(255, 248, 232, 0.92);
+  color: #fff8e8;
+  background:
+    radial-gradient(circle at 86% 16%, rgba(255, 248, 232, 0.18), transparent 10rem),
+    linear-gradient(90deg, rgba(13, 18, 16, 0.94), rgba(33, 65, 42, 0.78));
 }
 
 .bbi-choice {
@@ -1148,6 +1174,34 @@ button.secondary {
     linear-gradient(180deg, #9ae0ad, #72c38d);
 }
 
+.sky.scene-nurali {
+  background:
+    linear-gradient(90deg, transparent 0 25%, #f8fbff 25% 72%, transparent 72%),
+    linear-gradient(135deg, transparent 0 32%, #d94b1f 33% 45%, transparent 46%),
+    radial-gradient(ellipse at 50% 78%, #4f9f5e 0 158px, transparent 159px),
+    linear-gradient(180deg, #dbeafe 0%, #eef7ff 42%, #77b96c 43%, #3f8d4c 100%);
+}
+
+.sky.scene-nurali::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 32%, rgba(255, 255, 255, 0.9) 32% 66%, transparent 66%),
+    linear-gradient(180deg, transparent 0 29%, #e65a27 30% 41%, transparent 42%),
+    radial-gradient(circle at 48% 45%, rgba(20, 20, 20, 0.75) 0 18px, transparent 19px),
+    radial-gradient(circle at 58% 45%, rgba(20, 20, 20, 0.75) 0 18px, transparent 19px);
+}
+
+.sky.scene-nurali::after {
+  height: 132px;
+  border-top-color: #f5f5f5;
+  border-bottom-color: #2f6b35;
+  background:
+    radial-gradient(circle at 18% 28%, #f4a261 0 16px, transparent 17px),
+    radial-gradient(circle at 42% 24%, #e9c46a 0 20px, transparent 21px),
+    radial-gradient(circle at 72% 27%, #2a9d8f 0 18px, transparent 19px),
+    linear-gradient(180deg, #7bc77d, #3d8a4c);
+}
+
 .sky.scene-fury {
   background:
     radial-gradient(circle at 72% 22%, rgba(255, 159, 28, 0.24) 0 82px, transparent 83px),
@@ -1901,6 +1955,13 @@ button.secondary {
   filter: drop-shadow(0 14px 10px rgba(20, 8, 4, 0.35)) hue-rotate(42deg);
 }
 
+.boss.dragon-nurali {
+  --dragon-color: #111827;
+  width: 344px;
+  height: 246px;
+  filter: grayscale(1) contrast(1.35) drop-shadow(0 18px 14px rgba(0, 0, 0, 0.48));
+}
+
 .boss.dragon-family {
   --dragon-color: #fff275;
   width: 410px;
@@ -2512,6 +2573,67 @@ button.secondary {
     radial-gradient(ellipse at 0 100%, transparent 0 18px, #9b8a68 19px 23px, transparent 24px),
     linear-gradient(90deg, transparent 0 70%, #9b8a68 71% 86%, transparent 87%);
   transform: rotate(-24deg);
+}
+
+.monster-token.nurali {
+  width: 92px;
+  height: 72px;
+  scale: 1.22;
+  border: 4px solid #0f0f0f;
+  border-radius: 48% 48% 36% 36%;
+  background:
+    radial-gradient(circle at 28% 43%, #f8fbff 0 8px, #0f0f0f 9px 12px, transparent 13px),
+    radial-gradient(circle at 70% 43%, #f8fbff 0 8px, #0f0f0f 9px 12px, transparent 13px),
+    linear-gradient(180deg, #3f3f46, #111827 72%, #050505);
+  filter: grayscale(1) contrast(1.25) drop-shadow(0 10px 0 rgba(0, 0, 0, 0.3));
+}
+
+.monster-token.nurali::before,
+.monster-token.nurali::after {
+  top: -16px;
+  width: 30px;
+  height: 28px;
+  border: 4px solid #0f0f0f;
+  border-radius: 50% 50% 10% 50%;
+  background: #3f3f46;
+}
+
+.monster-token.nurali::before {
+  left: 6px;
+  transform: rotate(-26deg);
+}
+
+.monster-token.nurali::after {
+  right: 6px;
+  transform: rotate(26deg) scaleX(-1);
+}
+
+.monster-token.nurali i,
+.monster-token.nurali b,
+.monster-token.nurali .monster-belt,
+.monster-token.nurali .monster-boots,
+.monster-token.nurali .monster-armor {
+  display: none;
+}
+
+.monster-token.nurali .monster-face {
+  left: 30px;
+  top: 48px;
+  width: 32px;
+  height: 10px;
+  border: 0;
+  border-radius: 0 0 20px 20px;
+  background: #f8fbff;
+}
+
+.monster-token.nurali .monster-nose {
+  left: 39px;
+  top: 36px;
+  width: 14px;
+  height: 10px;
+  border: 0;
+  border-radius: 50%;
+  background: #f8fbff;
 }
 
 .monster-token.mansur {

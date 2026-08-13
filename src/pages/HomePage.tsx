@@ -272,6 +272,23 @@ const bbiMonsterHp = 10_000_000_000_000_000;
 const bbiManagerHp = 10_000_000_000_000_000;
 const bbiDirectorHp = bbiManagerHp * 3;
 const bbiFinalBossHp = bbiDirectorHp * 5;
+const nuraliMonsterTotal = 100;
+const nuraliMonsterHp = 1e42;
+const nuraliBossHp = 1e42;
+
+const nuraliBoss: CityStage = {
+  name: 'Нурали',
+  city: 'Дом Нурали',
+  country: 'Новый мир',
+  lair: 'Зеленый двор у большого дома',
+  monsterKind: 'nurali',
+  monsterName: 'львы и коты',
+  title: 'главный босс нового мира',
+  power: nuraliBossHp,
+  color: '#111111',
+  attackSpeed: 0.38,
+  reaction: 'рычит как лев и пугает котом',
+};
 const duelPlayers: DuelPlayer[] = [
   { name: 'Темный рыцарь онлайн', power: 50_000, title: 'любит быстрые дуэли' },
   { name: 'Игрок с огненным мечом', power: 250_000, title: 'ищет сильного врага' },
@@ -776,6 +793,11 @@ export function HomePage() {
   const [bbiFinalChoiceOpen, setBbiFinalChoiceOpen] = useState(false);
   const [bbiCityReward, setBbiCityReward] = useState(false);
   const [bbiBadEnding, setBbiBadEnding] = useState(false);
+  const [nuraliGateOpen, setNuraliGateOpen] = useState(false);
+  const [nuraliWorldEntered, setNuraliWorldEntered] = useState(false);
+  const [nuraliMonstersLeft, setNuraliMonstersLeft] = useState(nuraliMonsterTotal);
+  const [nuraliChoiceOpen, setNuraliChoiceOpen] = useState(false);
+  const [nuraliBossFightStarted, setNuraliBossFightStarted] = useState(false);
   const [unlockedAchievements, setUnlockedAchievements] = useState<AchievementId[]>([]);
   const [gold, setGold] = useState(0);
   const [goldMultiplier, setGoldMultiplier] = useState(1);
@@ -847,13 +869,15 @@ export function HomePage() {
   const isAnuarKingBoss = anuarKingFightStarted;
   const isMansurKingBoss = mansurKingFightStarted;
   const isArailmKingBoss = arailmKingFightStarted;
+  const isNuraliKingBoss = nuraliBossFightStarted;
   const isFuryDungeon = furyDungeonEntered && !furyChoiceOpen && !furyKingFightStarted;
   const isAnuarWorld = anuarWorldEntered && !anuarKingFightStarted;
   const isMansurDungeon = mansurDungeonEntered && !mansurKingFightStarted;
   const isArailmWorld = arailmWorldEntered && !arailmChoiceOpen && !arailmKingFightStarted;
+  const isNuraliWorld = nuraliWorldEntered && !nuraliChoiceOpen && !nuraliBossFightStarted;
   const isBbiBoss = bbiBossStage !== null;
   const isBbiWorld = bbiWorldEntered && !isBbiBoss && !bbiFinalChoiceOpen;
-  const enemy = isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
+  const enemy = isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
   const isDungeon = dungeon?.entered && !dungeon.cleared;
@@ -874,9 +898,11 @@ export function HomePage() {
   const artifactDamageMultiplier = equippedArtifact ? 1 + equippedArtifact.bonusPercent / 100 : 1;
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
   const reward = enemy ? 120 + chapter * 110 : 0;
-  const currentMonsters = isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
+  const currentMonsters = isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
   const musicKey = isFinalReveal
     ? 'ending'
+    : isNuraliKingBoss
+      ? 'nurali'
     : isBbiBoss
       ? 'bbi'
     : isArailmKingBoss
@@ -893,6 +919,8 @@ export function HomePage() {
       ? 'family'
     : isFinalBoss
       ? 'final'
+    : isNuraliWorld
+      ? 'nurali-world'
     : isBbiWorld
       ? 'bbi-world'
     : isArailmWorld
@@ -906,19 +934,19 @@ export function HomePage() {
     : isDungeon
       ? 'dungeon'
       : 'world';
-  const currentMonsterHp = isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
-  const currentMonsterDamage = isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
+  const currentMonsterHp = isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
+  const currentMonsterDamage = isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
-  const currentDragonHp = isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
-  const currentDragonDamage = isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
+  const currentDragonHp = isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
+  const currentDragonDamage = isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
   const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 100);
   const weaponBonus = isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0;
   const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + weaponBonus;
   const playerName = nickname.trim() || 'BBI герой';
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const dragonReactionSpeed = enemy?.attackSpeed ?? 1;
-  const currentMonsterTotal = isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
+  const currentMonsterTotal = isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
   const currentEnemyHealthText = currentMonsters > 0
     ? `Враг HP ${formatPower(currentMonsterHp)}`
     : isArailmKingBoss
@@ -945,6 +973,10 @@ export function HomePage() {
   const cityScene = `scene-city-${chapter % 6}`;
   const battleScene = isDungeon
     ? 'scene-dungeon'
+    : isNuraliWorld || isNuraliKingBoss
+      ? 'scene-nurali'
+    : isNuraliWorld || isNuraliKingBoss || nuraliChoiceOpen
+      ? 'scene-nurali'
     : isBbiWorld || isBbiBoss || bbiCityReward
       ? 'scene-bbi'
     : isArailmWorld || isArailmKingBoss
@@ -966,6 +998,8 @@ export function HomePage() {
         : cityScene;
   const dragonClass = isBbiBoss
     ? 'dragon-bbi'
+    : isNuraliKingBoss
+      ? 'dragon-nurali'
     : isFamilyBoss
     ? 'dragon-family'
     : isArailmKingBoss
@@ -1072,6 +1106,7 @@ export function HomePage() {
       dungeon: { notes: [98, 123, 147, 123], beat: 0.42, wave: 'triangle', gain: 0.026 },
       ending: { notes: [220, 277, 330, 440], beat: 0.58, wave: 'triangle', gain: 0.024 },
       'bbi-world': { notes: [262, 330, 392, 330], beat: 0.38, wave: 'triangle', gain: 0.024 },
+      'nurali-world': { notes: [196, 247, 330, 247], beat: 0.4, wave: 'triangle', gain: 0.024 },
       'fury-world': { notes: [146, 196, 233, 196], beat: 0.34, wave: 'triangle', gain: 0.026 },
       'anuar-world': { notes: [123, 165, 247, 165], beat: 0.36, wave: 'square', gain: 0.024 },
       'mansur-world': { notes: [147, 196, 247, 196], beat: 0.46, wave: 'triangle', gain: 0.024 },
@@ -1082,6 +1117,7 @@ export function HomePage() {
       mansur: { notes: [73, 147, 196, 247, 294], beat: 0.16, wave: 'sawtooth', gain: 0.068 },
       arailm: { notes: [49, 98, 131, 98, 175, 208], beat: 0.1, wave: 'sawtooth', gain: 0.06 },
       bbi: { notes: [131, 262, 330, 392, 523], beat: 0.1, wave: 'square', gain: 0.07 },
+      nurali: { notes: [55, 110, 165, 220, 330], beat: 0.12, wave: 'sawtooth', gain: 0.072 },
       family: { notes: [37, 73, 110, 147, 220], beat: 0.18, wave: 'sawtooth', gain: 0.075 },
       final: { notes: [27, 55, 82, 110, 165, 220], beat: 0.15, wave: 'sawtooth', gain: 0.08 },
       dragon: { notes: [65, 130, 164, 196, 246], beat: 0.17, wave: 'sawtooth', gain: 0.065 },
@@ -1420,6 +1456,13 @@ export function HomePage() {
         setMessage('100 BBI монстров уничтожены. Появился босс Управляющий.');
         return;
       }
+      if (isNuraliWorld) {
+        setNuraliMonstersLeft(0);
+        setNuraliWorldEntered(false);
+        setNuraliChoiceOpen(true);
+        setMessage('100 монстров Нурали уничтожены. На весь экран вышла надпись: драться с Нурали или нет.');
+        return;
+      }
       if (isArailmWorld) {
         setArailmMonstersLeft(0);
         setArailmWorldEntered(false);
@@ -1473,13 +1516,15 @@ export function HomePage() {
     const baseMonstersPerHit = items.doubleStrike > 0 ? 2 + Math.max(0, shopLevels.doubleStrike - 1) : 1;
     const monstersPerHit = Math.max(1, Math.floor(baseMonstersPerHit * artifactAttackSpeedMultiplier));
     const nextMonsters = Math.max(0, currentMonsters - monstersPerHit);
-    const monsterWeapon = isBbiWorld ? rollDungeonWeapon(chapter + 12) : isArailmWorld ? rollDungeonWeapon(chapter + 16) : isMansurDungeon ? rollDungeonWeapon(chapter + 14) : isAnuarWorld ? rollDungeonWeapon(chapter + 12) : isFuryDungeon ? rollDungeonWeapon(chapter + 10) : isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2, chapter + 1);
-    const monsterArmor = isBbiWorld ? rollArmor(12, chapter + 12) : isArailmWorld ? rollArmor(16, chapter + 16) : isMansurDungeon ? rollArmor(14, chapter + 14) : isAnuarWorld ? rollArmor(12, chapter + 12) : isFuryDungeon ? rollArmor(10, chapter + 10) : isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2, chapter + 1);
+    const monsterWeapon = isNuraliWorld ? rollDungeonWeapon(chapter + 18) : isBbiWorld ? rollDungeonWeapon(chapter + 12) : isArailmWorld ? rollDungeonWeapon(chapter + 16) : isMansurDungeon ? rollDungeonWeapon(chapter + 14) : isAnuarWorld ? rollDungeonWeapon(chapter + 12) : isFuryDungeon ? rollDungeonWeapon(chapter + 10) : isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2, chapter + 1);
+    const monsterArmor = isNuraliWorld ? rollArmor(18, chapter + 18) : isBbiWorld ? rollArmor(12, chapter + 12) : isArailmWorld ? rollArmor(16, chapter + 16) : isMansurDungeon ? rollArmor(14, chapter + 14) : isAnuarWorld ? rollArmor(12, chapter + 12) : isFuryDungeon ? rollArmor(10, chapter + 10) : isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2, chapter + 1);
     const nextCityMonsters = cityMonsters.map((count, index) => (index === chapter ? nextMonsters : count));
 
     setHeroHp(nextHeroHp);
     if (isBbiWorld) {
       setBbiMonstersLeft(nextMonsters);
+    } else if (isNuraliWorld) {
+      setNuraliMonstersLeft(nextMonsters);
     } else if (isArailmWorld) {
       setArailmMonstersLeft(nextMonsters);
     } else if (isMansurDungeon) {
@@ -1516,10 +1561,10 @@ export function HomePage() {
 
     setMessage(
       monsterWeapon
-        ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${getWeaponDisplayName(monsterWeapon)} (${monsterWeapon.rarity}).`
+        ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${currentMonsterTotal}. Выпало оружие: ${getWeaponDisplayName(monsterWeapon)} (${monsterWeapon.rarity}).`
         : monsterArmor
-          ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
-        : `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Получено золото.`
+          ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${currentMonsterTotal}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
+        : `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${currentMonsterTotal}. Получено золото.`
     );
 
     if (nextMonsters === 0) {
@@ -1528,6 +1573,12 @@ export function HomePage() {
         setBbiBossStage('manager');
         setEnemyHp(bbiManagerHp);
         setMessage('100 BBI монстров побеждены. Появился босс Управляющий.');
+        return;
+      }
+      if (isNuraliWorld) {
+        setNuraliWorldEntered(false);
+        setNuraliChoiceOpen(true);
+        setMessage('100 монстров Нурали побеждены. Появилась надпись: драться с Нурали или нет.');
         return;
       }
       if (isArailmWorld) {
@@ -1597,6 +1648,17 @@ export function HomePage() {
       setChapter(dragonSons.length + 1);
       addGold(5_000_000);
       setMessage('Последний BBI босс побежден. Концовка: они лишь дети, ты монстр.');
+      navigate('/world');
+      return;
+    }
+
+    if (isNuraliKingBoss) {
+      setNuraliGateOpen(false);
+      setNuraliWorldEntered(false);
+      setNuraliChoiceOpen(false);
+      setNuraliBossFightStarted(false);
+      addGold(2_281_000);
+      setMessage('Босс Нурали побежден. Новый мир у дома очищен.');
       navigate('/world');
       return;
     }
@@ -1873,6 +1935,17 @@ export function HomePage() {
       return;
     }
 
+    if (code === 'nurali2281') {
+      setNuraliGateOpen(true);
+      setNuraliWorldEntered(false);
+      setNuraliMonstersLeft(nuraliMonsterTotal);
+      setNuraliChoiceOpen(false);
+      setNuraliBossFightStarted(false);
+      setAdminCode('');
+      setMessage('Код nurali2281 открыл новый мир Нурали. Выбери: войти или выйти.');
+      return;
+    }
+
     if (code === 'arailm' || code === 'arailym') {
       openArailmWorld();
       return;
@@ -2046,6 +2119,11 @@ export function HomePage() {
     setBbiFinalChoiceOpen(false);
     setBbiCityReward(false);
     setBbiBadEnding(false);
+    setNuraliGateOpen(false);
+    setNuraliWorldEntered(false);
+    setNuraliMonstersLeft(nuraliMonsterTotal);
+    setNuraliChoiceOpen(false);
+    setNuraliBossFightStarted(false);
     setGold(0);
     setGoldMultiplier(1);
     setInfiniteGold(false);
@@ -2321,6 +2399,78 @@ export function HomePage() {
               navigate('/');
             }} type="button">
               Не входить
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (nuraliGateOpen && !nuraliWorldEntered && !nuraliChoiceOpen && !nuraliBossFightStarted) {
+    return (
+      <main className="nurali-choice-page">
+        <section className="cave-choice nurali-choice" aria-label="Новый мир Нурали">
+          <p className="intro-kicker">Код nurali2281</p>
+          <h1>Новый мир Нурали</h1>
+          <p>
+            На фоне появился дом с красной крышей и зеленым двором.
+            Внутри ждут {formatPower(nuraliMonsterTotal)} монстров.
+          </p>
+          <p>
+            У каждого монстра {formatPower(nuraliMonsterHp)} HP. После победы над всеми
+            появится надпись: драться с Нурали или нет.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setNuraliWorldEntered(true);
+              setNuraliMonstersLeft(nuraliMonsterTotal);
+              setMessage(`Ты вошел в мир Нурали. Внутри ${formatPower(nuraliMonsterTotal)} монстров по ${formatPower(nuraliMonsterHp)} HP.`);
+              navigate('/');
+            }} type="button">
+              Войти
+            </button>
+            <button className="secondary" onClick={() => {
+              setNuraliGateOpen(false);
+              setMessage('Ты вышел из мира Нурали.');
+              navigate('/');
+            }} type="button">
+              Выйти
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (nuraliChoiceOpen) {
+    return (
+      <main className="nurali-choice-page final">
+        <section className="cave-choice nurali-choice" aria-label="Выбор Нурали">
+          <p className="intro-kicker">100 монстров побеждены</p>
+          <h1>Драться с Нурали?</h1>
+          <p>
+            После смерти 100 монстров на весь экран вышла надпись: драться с Нурали или нет.
+          </p>
+          <p>
+            Нурали главный босс. У него {formatPower(nuraliBossHp)} HP.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setNuraliChoiceOpen(false);
+              setNuraliBossFightStarted(true);
+              setEnemyHp(nuraliBossHp);
+              setMessage(`Нурали вышел на бой. HP босса: ${formatPower(nuraliBossHp)}.`);
+              navigate('/');
+            }} type="button">
+              Драться
+            </button>
+            <button className="secondary" onClick={() => {
+              setNuraliChoiceOpen(false);
+              setNuraliGateOpen(false);
+              setMessage('Ты отказался драться с Нурали. Новый мир закрылся.');
+              navigate('/');
+            }} type="button">
+              Нет
             </button>
           </div>
         </section>
@@ -2674,7 +2824,7 @@ export function HomePage() {
           <div className="monster-pack" data-kind={enemy?.monsterKind ?? 'goblin'}>
             {Array.from({ length: Math.max(0, Math.min(4, Math.ceil(currentMonsters / 500))) }).map((_, index) => {
               const mixedMonster = monsterKinds[(chapter + index) % monsterKinds.length];
-              const monsterKind = isBbiWorld ? 'shadow' : isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
+              const monsterKind = isNuraliWorld ? 'nurali' : isBbiWorld ? 'shadow' : isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
               const monsterColumn = index % 8;
               const monsterRow = Math.floor(index / 8);
               return (
@@ -3172,7 +3322,7 @@ export function HomePage() {
                 <p className="label">Монстры города</p>
                 <strong>{enemy.city}: разные монстры {formatPower(currentMonsters)} / {formatPower(currentMonsterTotal)}</strong>
                 <p>{currentMonsters === 0 ? `Все монстры побеждены. Теперь бей ${isBbiBoss ? 'босса' : 'дракона'}.` : `Победи ${formatPower(currentMonsterTotal)} монстров, чтобы появился ${isBbiWorld ? 'Управляющий' : 'дракон'}.`}</p>
-                <p>{isBbiWorld ? `BBI монстр: ${formatPower(bbiMonsterHp)} HP. Всего монстров: ${formatPower(bbiMonsterTotal)}.` : 'Первый город: 100 HP и 10 урона. Каждый следующий город сильнее в 100 раз.'}</p>
+                <p>{isNuraliWorld ? `Монстр Нурали: ${formatPower(nuraliMonsterHp)} HP. Всего монстров: ${formatPower(nuraliMonsterTotal)}.` : isBbiWorld ? `BBI монстр: ${formatPower(bbiMonsterHp)} HP. Всего монстров: ${formatPower(bbiMonsterTotal)}.` : 'Первый город: 100 HP и 10 урона. Каждый следующий город сильнее в 100 раз.'}</p>
               </div>
             </div>
 
