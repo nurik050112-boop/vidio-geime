@@ -284,7 +284,7 @@ const bbiDirectorHp = bbiManagerHp * 3;
 const bbiFinalBossHp = bbiDirectorHp * 5;
 const nuraliMonsterTotal = 100;
 const nuraliMonsterHp = 1e42;
-const nuraliBossHp = 1e42;
+const nuraliBossHp = 1e26;
 
 const nuraliBoss: CityStage = {
   name: 'Нурали',
