@@ -1257,6 +1257,11 @@ export function HomePage() {
     setBbiFinalChoiceOpen(false);
     setBbiCityReward(false);
     setBbiBadEnding(false);
+    setNuraliGateOpen(false);
+    setNuraliWorldEntered(false);
+    setNuraliMonstersLeft(nuraliMonsterTotal);
+    setNuraliChoiceOpen(false);
+    setNuraliBossFightStarted(false);
     setImpossibleEnding(false);
     setHeroHp(currentHeroMaxHp);
 
@@ -1322,6 +1327,14 @@ export function HomePage() {
       setBbiFinalChoiceOpen(true);
       setEnemyHp(bbiFinalBossHp);
       setMessage('Телепорт: BBI финальный выбор. Можно сражаться или отказаться.');
+      navigate('/');
+      return;
+    }
+
+    if (id === 'impossibleEnding') {
+      setNuraliBossFightStarted(true);
+      setEnemyHp(nuraliBossHp);
+      setMessage(`Телепорт: Нурали вышел на бой за невозможную концовку. HP босса: ${formatPower(nuraliBossHp)}.`);
       navigate('/');
     }
   }
