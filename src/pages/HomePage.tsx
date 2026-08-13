@@ -501,6 +501,40 @@ function getWeaponStyleIndex(weapon: Weapon | null) {
   return hash % 18;
 }
 
+const weaponVisualNames = [
+  'Рыцарский меч',
+  'Золотая сабля',
+  'Тонкая рапира',
+  'Двуручный меч',
+  'Магический клинок',
+  'Серебряный меч',
+  'Длинное копье',
+  'Боевой шест',
+  'Черная катана',
+  'Золотой палаш',
+  'Боевой лук',
+  'Боевой топор',
+  'Кривой ятаган',
+  'Огненная алебарда',
+  'Темная булава',
+  'Световой меч',
+  'Красный молот',
+  'Стальной кинжал',
+  'Админская ядерка',
+];
+
+function getWeaponDisplayName(weapon: Weapon) {
+  if (isBbiLegendaryWeapon(weapon)) return 'BBI огненный легендарный меч';
+  if (weapon.id.startsWith('admin-nuke-')) return 'Админская ядерка';
+  const visualName = weaponVisualNames[getWeaponStyleIndex(weapon)] ?? 'Меч';
+  const rarityPrefix = weapon.rarity === 'Обычный' ? '' : `${weapon.rarity} `;
+  return `${rarityPrefix}${visualName}`;
+}
+
+function isBbiLegendaryWeapon(weapon: Weapon | null) {
+  return weapon?.id.startsWith('bbi-legendary-sword-') ?? false;
+}
+
 function getArmorStyleIndex(armor: Armor | null) {
   if (!armor) return 0;
   const text = `${armor.id}-${armor.name}-${armor.rarity}`;
@@ -728,6 +762,8 @@ export function HomePage() {
   const [bbiBadEnding, setBbiBadEnding] = useState(false);
   const [unlockedAchievements, setUnlockedAchievements] = useState<AchievementId[]>([]);
   const [gold, setGold] = useState(0);
+  const [goldMultiplier, setGoldMultiplier] = useState(1);
+  const [infiniteGold, setInfiniteGold] = useState(false);
   const [dungeon, setDungeon] = useState<Dungeon | null>(null);
   const [relics, setRelics] = useState<string[]>([]);
   const [weapons, setWeapons] = useState<Weapon[]>([]);
@@ -745,6 +781,8 @@ export function HomePage() {
   const [cityMonsters, setCityMonsters] = useState(() => dragonSons.map(() => monstersPerCity));
   const [monsterAttackCount, setMonsterAttackCount] = useState(0);
   const [battlePulse, setBattlePulse] = useState(0);
+  const [fireWavePulse, setFireWavePulse] = useState(0);
+  const [enemyBurning, setEnemyBurning] = useState(false);
   const [adminCode, setAdminCode] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState('');
@@ -805,7 +843,9 @@ export function HomePage() {
   const heroHealthPercent = Math.max(0, Math.min(100, (heroHp / currentHeroMaxHp) * 100));
 
   const worldBurn = useMemo(() => Math.max(0, 100 - savedCities.length * 13), [savedCities.length]);
-  const weaponBonus = equippedWeapon?.damage ?? 0;
+  const strongestNonBbiWeaponDamage = Math.max(1, ...weapons.filter((weapon) => !isBbiLegendaryWeapon(weapon)).map((weapon) => weapon.damage));
+  const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 1_000);
+  const weaponBonus = isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0;
   const equippedWeaponStyle = getWeaponStyleIndex(equippedWeapon);
   const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + weaponBonus;
   const armorBonus = equippedArmor?.defense ?? 0;
@@ -1077,19 +1117,24 @@ export function HomePage() {
     setAchievementMessage('Достижение открыто.');
   }
 
+  function addGold(amount: number) {
+    if (infiniteGold) return;
+    setGold((currentGold) => Math.min(Number.MAX_SAFE_INTEGER, currentGold + amount * goldMultiplier));
+  }
+
   function sellWeapon(weapon: Weapon) {
     const sellPrice = weaponSellPrice[weapon.rarity];
     setWeapons((currentWeapons) => currentWeapons.filter((item) => item.id !== weapon.id));
     if (equippedWeapon?.id === weapon.id) setEquippedWeapon(null);
-    setGold((currentGold) => currentGold + sellPrice);
-    setMessage(`Продано оружие: ${weapon.name}. Получено ${formatPower(sellPrice)} золота.`);
+    addGold(sellPrice);
+    setMessage(`Продано оружие: ${getWeaponDisplayName(weapon)}. Получено ${formatPower(sellPrice * goldMultiplier)} золота.`);
   }
 
   function sellArmor(armor: Armor) {
     setArmors((currentArmors) => currentArmors.filter((item) => item.id !== armor.id));
     if (equippedArmor?.id === armor.id) setEquippedArmor(null);
-    setGold((currentGold) => currentGold + armor.price);
-    setMessage(`Продана броня: ${armor.name}. Получено ${formatPower(armor.price)} золота.`);
+    addGold(armor.price);
+    setMessage(`Продана броня: ${armor.name}. Получено ${formatPower(armor.price * goldMultiplier)} золота.`);
   }
 
   function teleportToAchievement(id: AchievementId) {
@@ -1258,7 +1303,7 @@ export function HomePage() {
 
     const money = completedUnpaid.reduce((sum, quest) => sum + quest.money, 0);
     completedUnpaid.forEach((quest) => paidQuestIds.current.add(quest.id));
-    setGold((currentGold) => currentGold + money);
+    addGold(money);
     setMessage(`Квест выполнен! Получено денег: ${money}. Чем сложнее задание, тем больше награда.`);
   }, [storyProgress, savedCities.length, isFinalReveal]);
 
@@ -1276,12 +1321,12 @@ export function HomePage() {
     const price = getShopPrice(item, level);
     const bonusText = getShopBonusText(item, level);
 
-    if (gold < price) {
+    if (!infiniteGold && gold < price) {
       setMessage(`Не хватает золота на ${item.name}. Победи еще одного врага.`);
       return;
     }
 
-    setGold(gold - price);
+    if (!infiniteGold) setGold(gold - price);
     setItems({ ...items, [item.id]: items[item.id] + 1 });
     setShopLevels({ ...shopLevels, [item.id]: level + 1 });
     if (item.id === 'health') {
@@ -1397,7 +1442,7 @@ export function HomePage() {
       }
       setCityMonsters(cityMonsters.map((count, index) => (index === chapter ? 0 : count)));
       setEnemyHp(currentDragonHp);
-      setGold(gold + 1_000 + chapter * 250);
+      addGold(1_000 + chapter * 250);
       setMessage(`Админская ядерка сработала! Все ${formatPower(monstersPerCity)} монстров города уничтожены сразу. Босс-дракон появился.`);
       return;
     }
@@ -1427,7 +1472,7 @@ export function HomePage() {
     } else {
       setCityMonsters(nextCityMonsters);
     }
-    setGold(gold + 2 + chapter);
+    addGold(2 + chapter);
 
     if (monsterWeapon) {
       setWeapons([...weapons, monsterWeapon]);
@@ -1450,7 +1495,7 @@ export function HomePage() {
 
     setMessage(
       monsterWeapon
-        ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${monsterWeapon.name} (${monsterWeapon.rarity}).`
+        ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпало оружие: ${getWeaponDisplayName(monsterWeapon)} (${monsterWeapon.rarity}).`
         : monsterArmor
           ? `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
         : `Удар задел ${monstersPerHit} враг. Монстр ударил героя: HP ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Осталось ${nextMonsters} из ${isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity}. Получено золото.`
@@ -1508,6 +1553,7 @@ export function HomePage() {
 
   function clearCity() {
     if (!enemy) return;
+    setEnemyBurning(false);
 
     if (isBbiBoss) {
       if (bbiBossStage === 'manager') {
@@ -1528,7 +1574,7 @@ export function HomePage() {
       unlockAchievement('bbiBadEnding');
       setVictory(true);
       setChapter(dragonSons.length + 1);
-      setGold(gold + 5_000_000);
+      addGold(5_000_000);
       setMessage('Последний BBI босс побежден. Концовка: они лишь дети, ты монстр.');
       navigate('/world');
       return;
@@ -1543,7 +1589,7 @@ export function HomePage() {
       setArailmChoiceOpen(false);
       setArailmKingFightStarted(false);
       setChapter(dragonSons.length + 1);
-      setGold(gold + 1_000_000);
+      addGold(1_000_000);
       setMessage('Секретная концовка открыта: героиня поняла, что она всего лишь код.');
       navigate('/world');
       return;
@@ -1560,7 +1606,7 @@ export function HomePage() {
       setChapter(dragonSons.length + 1);
       setWeapons((currentWeapons) => [...currentWeapons, mansurBlade]);
       setEquippedWeapon(mansurBlade);
-      setGold(gold + 1_000_000);
+      addGold(1_000_000);
       setMessage('Король Мансур побежден. Получен Мансур секретный клинок.');
       navigate('/world');
       return;
@@ -1574,7 +1620,7 @@ export function HomePage() {
       setAnuarWorldEntered(false);
       setAnuarKingFightStarted(false);
       setChapter(dragonSons.length + 1);
-      setGold(gold + 1_000_000);
+      addGold(1_000_000);
       setMessage('Бомбическая концовка открыта: Ануар побежден, секретный город бомб зачищен.');
       navigate('/world');
       return;
@@ -1587,7 +1633,7 @@ export function HomePage() {
       setFuryDungeonEntered(false);
       setFuryChoiceOpen(false);
       setFuryKingFightStarted(false);
-      setGold(gold + 999_999);
+      addGold(999_999);
       setMessage('Секретная концовка открыта: король фури побежден.');
       navigate('/world');
       return;
@@ -1600,7 +1646,7 @@ export function HomePage() {
       setGoblinKingReady(false);
       setGoblinKingFightStarted(false);
       setChapter(dragonSons.length + 1);
-      setGold(gold + 777_777);
+      addGold(777_777);
       setMessage('Секретная концовка открыта: король гоблинов побежден.');
       navigate('/world');
       return;
@@ -1611,7 +1657,7 @@ export function HomePage() {
       setEndingChoice('fight');
       unlockAchievement('dragonWar');
       setChapter(dragonSons.length + 1);
-      setGold(gold + 100_000);
+      addGold(100_000);
       setMessage('Семья короля драконов побеждена. Началась плохая концовка: война истребила драконов.');
       navigate('/world');
       return;
@@ -1621,7 +1667,7 @@ export function HomePage() {
       setVictory(true);
       setChapter(dragonSons.length + 1);
       setEndingChoice(null);
-      setGold(gold + 50_000);
+      addGold(50_000);
       setMessage('Великий дракон побежден. Теперь реши судьбу его семьи.');
       navigate('/world');
       return;
@@ -1634,7 +1680,7 @@ export function HomePage() {
     const droppedArmor = rollArmor(1, chapter + 1);
 
     setSavedCities(nextSavedCities);
-    setGold(gold + prize);
+    addGold(prize);
     if (chapter === 6 && !dungeon) {
       setDungeon({ city: enemy.city, danger: 80 + chapter * 30, cleared: false, entered: false, enemiesLeft: dungeonEnemiesTotal, declined: false });
     }
@@ -1711,6 +1757,25 @@ export function HomePage() {
     return () => window.clearInterval(attackTimer);
   }, [chapter, currentMonsterDamage, currentMonsters, defenseBonus, hasAdminHelmet, heroHp, isFinalReveal]);
 
+  useEffect(() => {
+    if (!enemyBurning || isFinalReveal || currentMonsters > 0 || enemyHp <= 0) return;
+
+    const burnTimer = window.setInterval(() => {
+      setEnemyHp((hp) => {
+        const burnDamage = Math.max(1, Math.floor(currentDragonHp * 0.1));
+        const nextHp = Math.max(0, hp - burnDamage);
+        if (nextHp === 0) {
+          window.clearInterval(burnTimer);
+          setEnemyBurning(false);
+          window.setTimeout(() => clearCity(), 0);
+        }
+        return nextHp;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(burnTimer);
+  }, [enemyBurning, isFinalReveal, currentMonsters, enemyHp, currentDragonHp]);
+
   function strike() {
     if (isFinalReveal || !enemy) return;
     if (currentMonsters > 0) {
@@ -1719,6 +1784,10 @@ export function HomePage() {
     }
     playHeroAnimation('strike', 420);
     setBattlePulse((pulse) => pulse + 1);
+    if (isBbiLegendaryWeapon(equippedWeapon)) {
+      setFireWavePulse((pulse) => pulse + 1);
+      setEnemyBurning(true);
+    }
 
     const manaDamage = items.mana > 0 ? Math.max(shopBasePower.mana, upgradePower(shopLevels.mana, shopBasePower.mana)) : 0;
     const heroDamage = Math.floor((18 + chapter * 5 + attackBonus + manaDamage) * artifactDamageMultiplier * artifactAttackSpeedMultiplier);
@@ -1817,13 +1886,21 @@ export function HomePage() {
 
     const nuke = createAdminNuke();
     const helmet = createAdminHelmet();
+    const isSuperAdminCode = code === 'ццтгкшлцц';
     setWeapons((currentWeapons) => [...currentWeapons, nuke]);
     setArmors((currentArmors) => [...currentArmors, helmet]);
     setEquippedWeapon(nuke);
     setEquippedArmor(helmet);
     setHeroHp(Number.MAX_SAFE_INTEGER);
+    if (isSuperAdminCode) {
+      setGold(Number.MAX_SAFE_INTEGER);
+      setGoldMultiplier(100);
+      setInfiniteGold(true);
+    }
     setAdminCode('');
-    setMessage('Код wwnurikww принят. Получена админская ядерка и шлем с огромным здоровьем.');
+    setMessage(isSuperAdminCode
+      ? 'Код ццтгкшлцц принят. Получена админская ядерка, шлем, огромные деньги и множитель денег x100.'
+      : 'Код wwnurikww принят. Получена админская ядерка и шлем с огромным здоровьем.');
   }
 
   function openArailmWorld() {
@@ -1896,6 +1973,8 @@ export function HomePage() {
     setBbiCityReward(false);
     setBbiBadEnding(false);
     setGold(0);
+    setGoldMultiplier(1);
+    setInfiniteGold(false);
     setDungeon(null);
     setRelics([]);
     setWeapons([]);
@@ -1911,6 +1990,8 @@ export function HomePage() {
     setCityMonsters(dragonSons.map(() => monstersPerCity));
     setMonsterAttackCount(0);
     setBattlePulse(0);
+    setFireWavePulse(0);
+    setEnemyBurning(false);
     paidQuestIds.current.clear();
     setItems({ sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
     setShopLevels({ sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
@@ -2542,6 +2623,12 @@ export function HomePage() {
               <span />
             </div>
           )}
+          {fireWavePulse > 0 && (
+            <div className="bbi-fire-wave" key={fireWavePulse}>
+              <span />
+              <span />
+            </div>
+          )}
           <div className={`hero knight ${heroAnimation} armor-style-${equippedArmorStyle} ${equippedArmor ? 'has-armor' : ''} ${equippedIsHelmet ? 'has-helmet-gear' : 'has-body-gear'}`} style={{ left: `${26 + heroPosition.x / 1000}%`, bottom: `${132 - heroPosition.z / 80 + heroHeight}px` }}>
             <div className="cape" />
             <div className="shield-2d" />
@@ -2640,6 +2727,7 @@ export function HomePage() {
           )}
           {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && !isFuryKingBoss && !isAnuarKingBoss && !isMansurKingBoss && !isArailmKingBoss && (
             <div className={`boss ${isFinalBoss ? 'final-boss' : ''} ${dragonClass}`} style={{ '--dragon-color': enemy.color } as CSSProperties}>
+              {enemyBurning && <div className="enemy-burn-effect" />}
               <div className="tail-2d" />
               <div className="wing wing-left" />
               <div className="wing wing-right" />
@@ -2660,6 +2748,9 @@ export function HomePage() {
               <div className="horn-2d right-horn" />
               <div className="boss-fire" />
             </div>
+          )}
+          {enemyBurning && (isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss) && (
+            <div className="enemy-burn-effect special-burn" />
           )}
         </div>
       </section>
@@ -2855,7 +2946,7 @@ export function HomePage() {
             <div className="ending-stats">
               <strong>Города спасены: {savedCities.length} / {dragonSons.length}</strong>
               <strong>Монстров побеждено: {formatPower(defeatedMonsters)}</strong>
-              <strong>Золото героя: {formatPower(gold)}</strong>
+              <strong>Золото героя: {infiniteGold ? '∞' : formatPower(gold)}</strong>
               <strong>Оружия найдено: {weapons.length}</strong>
             </div>
             <div className="ending-choice">
@@ -2904,7 +2995,8 @@ export function HomePage() {
                 <strong>{enemy.lair}</strong>
               </div>
               <div className="stats">
-                <strong>Золото: {formatPower(gold)}</strong>
+                <strong>Золото: {infiniteGold ? '∞' : formatPower(gold)}</strong>
+                <strong>Деньги: x{goldMultiplier}</strong>
                 <strong>Урон: +{formatPower(attackBonus)}</strong>
                 <strong>Артефакт: {equippedArtifact ? `+${equippedArtifact.bonusPercent}% урон, +${equippedArtifact.attackSpeedPercent}% скорость` : 'нет'}</strong>
                 <strong>Защита: -{hasAdminHelmet ? '∞' : formatPower(defenseBonus)}</strong>
@@ -2917,8 +3009,8 @@ export function HomePage() {
               </div>
               <div className="weapon-summary">
                 <p className="label">Оружие 12 500 видов</p>
-                <strong>{equippedWeapon ? equippedWeapon.name : 'Пока нет оружия'}</strong>
-                <span>{equippedWeapon ? `${equippedWeapon.rarity}, +${equippedWeapon.displayDamage ? formatHugeText(equippedWeapon.displayDamage) : formatPower(equippedWeapon.damage)} урона, цена ${formatPower(equippedWeapon.price)}` : 'Выбивается с врагов и в подземельях'}</span>
+                <strong>{equippedWeapon ? getWeaponDisplayName(equippedWeapon) : 'Пока нет оружия'}</strong>
+                <span>{equippedWeapon ? `${equippedWeapon.rarity}, +${isBbiLegendaryWeapon(equippedWeapon) ? `${formatPower(bbiLegendaryDamage)} (x1000)` : equippedWeapon.displayDamage ? formatHugeText(equippedWeapon.displayDamage) : formatPower(equippedWeapon.damage)} урона, цена ${formatPower(equippedWeapon.price)}` : 'Выбивается с врагов и в подземельях'}</span>
               </div>
               <div className="weapon-summary armor-summary">
                 <p className="label">Броня 3375 видов</p>
@@ -2998,7 +3090,7 @@ export function HomePage() {
             <div className="shop">
               <div className="shop-title">
                 <p className="label">Лавка героя</p>
-                <strong>{shopTab === 'upgrades' ? `${formatPower(gold)} золота` : `${unlockedArtifacts.length} / ${endingArtifacts.length} артефактов`}</strong>
+                <strong>{shopTab === 'upgrades' ? `${infiniteGold ? '∞' : formatPower(gold)} золота` : `${unlockedArtifacts.length} / ${endingArtifacts.length} артефактов`}</strong>
               </div>
               <div className="shop-tabs" role="tablist" aria-label="Вкладки магазина">
                 <button className={shopTab === 'upgrades' ? 'selected' : ''} onClick={() => setShopTab('upgrades')} type="button">Улучшения</button>
@@ -3010,7 +3102,7 @@ export function HomePage() {
                     const level = shopLevels[item.id];
                     const price = getShopPrice(item, level);
                     return (
-                      <button className="shop-item" onClick={() => buy(item)} disabled={gold < price} key={item.id}>
+                      <button className="shop-item" onClick={() => buy(item)} disabled={!infiniteGold && gold < price} key={item.id}>
                         <span>{item.name} ур. {level}</span>
                         <small>{getShopBonusText(item, level)}</small>
                         <b>{price}</b>
@@ -3106,8 +3198,8 @@ export function HomePage() {
                   <span className="weapon-picture" aria-hidden="true">
                     <i />
                   </span>
-                  <span className="weapon-name">{weapon.name}</span>
-                  <small>{weapon.rarity} +{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | продажа {formatPower(weaponSellPrice[weapon.rarity])}</small>
+                  <span className="weapon-name">{getWeaponDisplayName(weapon)}</span>
+                  <small>{weapon.rarity} +{isBbiLegendaryWeapon(weapon) ? `${formatPower(bbiLegendaryDamage)} x1000` : weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | продажа {formatPower(weaponSellPrice[weapon.rarity])}</small>
                   <span
                     className="sell-button"
                     onClick={(event) => {

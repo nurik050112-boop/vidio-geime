@@ -1305,6 +1305,80 @@ button.secondary {
   animation: nuke-cloud 900ms ease-out 90ms both;
 }
 
+.bbi-fire-wave {
+  position: absolute;
+  left: 30%;
+  right: 10%;
+  bottom: 170px;
+  z-index: 20;
+  height: 130px;
+  pointer-events: none;
+  animation: bbi-wave-fade 920ms ease-out both;
+}
+
+.bbi-fire-wave::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 42px;
+  width: 100%;
+  height: 42px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 85% 50%, #fff8e8 0 10px, transparent 11px),
+    linear-gradient(90deg, rgba(255, 242, 117, 0), #fff275 18%, #ff9f1c 48%, #d00000 78%, rgba(208, 0, 0, 0));
+  box-shadow: 0 0 32px #ff9f1c, 0 0 82px rgba(208, 0, 0, 0.72);
+  transform-origin: left center;
+  animation: bbi-fire-wave 920ms ease-out both;
+}
+
+.bbi-fire-wave span {
+  position: absolute;
+  top: 16px;
+  width: 70px;
+  height: 88px;
+  border-radius: 62% 38% 58% 42%;
+  background:
+    radial-gradient(circle at 42% 34%, #fff8e8 0 8px, transparent 9px),
+    linear-gradient(180deg, #fff275, #ff9f1c 42%, #d00000 76%, transparent);
+  filter: blur(0.2px);
+  animation: bbi-flame-hop 920ms ease-out both;
+}
+
+.bbi-fire-wave span:nth-child(1) {
+  left: 58%;
+}
+
+.bbi-fire-wave span:nth-child(2) {
+  left: 76%;
+  animation-delay: 80ms;
+}
+
+.enemy-burn-effect {
+  position: absolute;
+  left: 28%;
+  right: 16%;
+  bottom: 10px;
+  height: 245px;
+  z-index: 12;
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 42% 38%, rgba(255, 248, 232, 0.9) 0 8px, transparent 9px),
+    radial-gradient(circle at 55% 28%, rgba(255, 209, 102, 0.92) 0 15px, transparent 16px),
+    radial-gradient(circle at 48% 54%, rgba(255, 107, 43, 0.72) 0 48px, transparent 49px);
+  box-shadow: 0 0 34px rgba(255, 159, 28, 0.9), inset 0 -80px 60px rgba(208, 0, 0, 0.35);
+  animation: enemy-burn 620ms ease-in-out infinite alternate;
+}
+
+.enemy-burn-effect.special-burn {
+  left: auto;
+  right: 9%;
+  bottom: 128px;
+  width: 250px;
+  height: 250px;
+}
+
 .hero {
   position: absolute;
   left: 18%;
@@ -4757,6 +4831,29 @@ button.selected {
   0% { opacity: 0; transform: translateX(-50%) translateY(44px) scale(0.4); }
   18% { opacity: 1; }
   100% { opacity: 0; transform: translateX(-50%) translateY(-24px) scale(1.25); }
+}
+
+@keyframes bbi-wave-fade {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes bbi-fire-wave {
+  0% { transform: scaleX(0.08) translateX(-80px); filter: brightness(1.8); }
+  42% { transform: scaleX(0.82) translateX(30px); filter: brightness(1.35); }
+  100% { transform: scaleX(1.18) translateX(110px); filter: brightness(0.9); }
+}
+
+@keyframes bbi-flame-hop {
+  0% { opacity: 0; transform: translateX(-200px) scale(0.5) rotate(-12deg); }
+  28% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(120px) translateY(-35px) scale(1.35) rotate(12deg); }
+}
+
+@keyframes enemy-burn {
+  0% { opacity: 0.72; transform: translateY(8px) scale(0.95); filter: brightness(1); }
+  100% { opacity: 1; transform: translateY(-8px) scale(1.06); filter: brightness(1.45); }
 }
 
 @keyframes heal-pulse {
