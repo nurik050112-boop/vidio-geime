@@ -56,7 +56,7 @@ type Armor = {
   displayDefense?: string;
 };
 
-type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'sunOrb' | 'impossibleMedallion';
+type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'seaPearl' | 'sunOrb' | 'impossibleMedallion';
 
 type Artifact = {
   id: ArtifactId;
@@ -80,8 +80,8 @@ type Quest = {
 
 type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
 type EndingChoice = 'spare' | 'fight' | 'family' | null;
-type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | null;
-type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'bbiBadEnding' | 'impossibleEnding';
+type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | null;
+type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'bbiBadEnding' | 'impossibleEnding';
 type BbiBossStage = 'manager' | 'director' | 'final' | null;
 type DuelStatus = 'idle' | 'searching' | 'challenge' | 'fighting' | 'won' | 'declined';
 
@@ -92,6 +92,15 @@ type DuelPlayer = {
   title: string;
   weapon: Weapon;
   armor: Armor;
+};
+
+type OnlinePresence = {
+  id: string;
+  name: string;
+  power: number;
+  weapon: Weapon | null;
+  armor: Armor | null;
+  updatedAt: number;
 };
 
 type DuelChatMessage = {
@@ -254,6 +263,34 @@ const arailmKing: CityStage = {
   reaction: 'понимает, что она всего лишь код',
 };
 
+const seaShark: CityStage = {
+  name: 'Промежуточный босс Акула',
+  city: 'Водный мир',
+  country: '10 мир',
+  lair: 'Глубина под холодной волной',
+  monsterKind: 'shark',
+  monsterName: 'рыбы',
+  title: 'страж бога моря',
+  power: 100_000_000_000,
+  color: '#75c7e8',
+  attackSpeed: 0.5,
+  reaction: 'акула режет воду быстрым рывком',
+};
+
+const aisultanSeaGod: CityStage = {
+  name: 'Бог моря Айсултан',
+  city: 'Трон водного мира',
+  country: '10 мир',
+  lair: 'Дворец из волн на дне океана',
+  monsterKind: 'sea-god',
+  monsterName: 'морские стражи',
+  title: 'бог моря',
+  power: 1_000_000_000_000,
+  color: '#2f80ed',
+  attackSpeed: 0.36,
+  reaction: 'поднимает волну сильнее меча',
+};
+
 const worldLocations = [
   'Астана', 'Бишкек', 'Ташкент', 'Дубай', 'Каир', 'Афины', 'Берлин',
   'Мадрид', 'Прага', 'Сеул', 'Пекин', 'Сидней', 'Торонто', 'Мехико',
@@ -267,11 +304,15 @@ const furyDungeonEnemiesTotal = 100_000;
 const anuarBombEnemiesTotal = 100_000;
 const mansurDungeonEnemiesTotal = 100_000;
 const arailmEnemiesTotal = 100_000;
+const aisultanMonsterTotal = 1_000_000_000;
+const aisultanMonsterHp = 10_000_000_000;
+const aisultanSharkHp = aisultanMonsterHp * 10;
+const aisultanSeaGodHp = aisultanSharkHp * 10;
 const baseMonsterHp = 10_000;
 const baseMonsterDamage = 20;
 const baseDragonHp = 100_000_000;
 const baseDragonDamage = 100_000;
-const adminNukeDamageText = '∞';
+const adminNukeDamageText = '10000000000000000000000000000000';
 const adminHelmetHealthText = '∞';
 const furySwordDamageText = '1' + '0'.repeat(116);
 const mansurBladeDamageText = '99999999999999999999999999999999999999999999999999999999';
@@ -299,13 +340,59 @@ const nuraliBoss: CityStage = {
   attackSpeed: 0.38,
   reaction: 'рычит как лев и пугает котом',
 };
-const duelPlayers: DuelPlayer[] = [
-  { id: '1001', name: 'Темный рыцарь онлайн', power: 50_000, title: 'любит быстрые дуэли', weapon: { id: 'duel-dark-sword', name: 'Темный меч дуэлянта', rarity: 'Редкий', damage: 55_000, price: 2_000 }, armor: { id: 'duel-dark-armor', name: 'Темная броня дуэлянта', rarity: 'Редкий', defense: 18_000, price: 2_000 } },
-  { id: '2281', name: 'Игрок с огненным мечом', power: 250_000, title: 'ищет сильного врага', weapon: { id: 'duel-fire-sword', name: 'Огненный меч онлайн', rarity: 'Эпик', damage: 280_000, price: 10_000 }, armor: { id: 'duel-fire-armor', name: 'Огненный шлем онлайн', rarity: 'Эпик', defense: 75_000, price: 10_000 } },
-  { id: '3003', name: 'BBI чемпион', power: 1_000_000, title: 'кидает вызов на весь экран', weapon: { id: 'duel-bbi-blade', name: 'BBI клинок чемпиона', rarity: 'Легендарка', damage: 1_250_000, price: 100_000 }, armor: { id: 'duel-bbi-armor', name: 'BBI броня чемпиона', rarity: 'Легендарка', defense: 420_000, price: 100_000 } },
-  { id: '4444', name: 'Стальной воин', power: 5_000_000, title: 'в шлеме и броне', weapon: { id: 'duel-steel-sword', name: 'Стальной меч воина', rarity: 'Легендарка', damage: 5_800_000, price: 100_000 }, armor: { id: 'duel-steel-armor', name: 'Стальная броня воина', rarity: 'Легендарка', defense: 2_100_000, price: 100_000 } },
-  { id: '9999', name: 'Легендарный дуэлянт', power: 25_000_000, title: 'почти босс', weapon: { id: 'duel-secret-sword', name: 'Секретный меч дуэли', rarity: 'Секретное', damage: 30_000_000, price: 1_000_000 }, armor: { id: 'duel-secret-armor', name: 'Секретная броня дуэли', rarity: 'Секретное', defense: 12_000_000, price: 1_000_000 } },
-];
+const presenceStorageKey = 'dragon-game-online-players';
+const presenceTtlMs = 20_000;
+
+function makePlayerId() {
+  return Math.random().toString(36).slice(2, 8).toUpperCase().padEnd(6, '0');
+}
+
+function normalizePlayerId(value: string) {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+}
+
+function makePresenceFallbackWeapon(power: number): Weapon {
+  return {
+    id: `online-sword-${power}`,
+    name: 'Меч игрока',
+    rarity: 'Редкий',
+    damage: Math.max(100, Math.floor(power / 2)),
+    price: 0,
+  };
+}
+
+function makePresenceFallbackArmor(power: number): Armor {
+  return {
+    id: `online-armor-${power}`,
+    name: 'Броня игрока',
+    rarity: 'Редкий',
+    defense: Math.max(25, Math.floor(power / 4)),
+    price: 0,
+  };
+}
+
+function readOnlinePresences() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(presenceStorageKey) ?? '[]') as OnlinePresence[];
+    const now = Date.now();
+    return parsed
+      .map((player) => ({ ...player, id: normalizePlayerId(player.id) }))
+      .filter((player) => player.id.length === 6 && now - player.updatedAt < presenceTtlMs);
+  } catch {
+    return [];
+  }
+}
+
+function toDuelPlayer(player: OnlinePresence): DuelPlayer {
+  return {
+    id: player.id,
+    name: player.name,
+    power: player.power,
+    title: 'реальный игрок в сети',
+    weapon: player.weapon ?? makePresenceFallbackWeapon(player.power),
+    armor: player.armor ?? makePresenceFallbackArmor(player.power),
+  };
+}
 
 const bbiBosses: Record<Exclude<BbiBossStage, null>, CityStage> = {
   manager: {
@@ -357,6 +444,7 @@ const achievements: { id: AchievementId; name: string }[] = [
   { id: 'anuarKing', name: 'Бомбическая концовка' },
   { id: 'mansurKing', name: 'Подземелье Мансура' },
   { id: 'arailmKing', name: 'Код хочет выбраться' },
+  { id: 'aisultanSea', name: 'Воденой мир' },
   { id: 'bbiBadEnding', name: 'Они лишь дети' },
   { id: 'impossibleEnding', name: 'Невозможная концовка' },
 ];
@@ -369,6 +457,7 @@ const endingArtifacts: Artifact[] = [
   { id: 'greenRelic', name: 'Зеленая печать', ending: 'anuarKing', bonusPercent: 50, goldBonusPercent: 50, attackSpeedPercent: 50, icon: 'green-relic', text: 'Бомбическая концовка' },
   { id: 'snowGlobe', name: 'Снежный шлем', ending: 'mansurKing', bonusPercent: 60, goldBonusPercent: 60, attackSpeedPercent: 60, icon: 'snow-globe', text: 'Подземелье Мансура' },
   { id: 'moonCrystal', name: 'Лунный кристалл', ending: 'arailmKing', bonusPercent: 70, goldBonusPercent: 70, attackSpeedPercent: 70, icon: 'moon-crystal', text: 'Код хочет выбраться' },
+  { id: 'seaPearl', name: 'Жемчуг моря', ending: 'aisultanSea', bonusPercent: 90, goldBonusPercent: 90, attackSpeedPercent: 90, icon: 'snow-globe', text: 'Воденой мир' },
   { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 80, goldBonusPercent: 80, attackSpeedPercent: 80, icon: 'sun-orb', text: 'BBI концовка' },
   { id: 'impossibleMedallion', name: 'Медальон невозможности', ending: 'impossibleEnding', bonusPercent: 1000, goldBonusPercent: 1000, attackSpeedPercent: 1000, icon: 'impossible-medallion', text: 'Невозможная концовка мира Нурали' },
 ];
@@ -580,6 +669,14 @@ function isBbiLegendaryWeapon(weapon: Weapon | null) {
   return weapon?.id.startsWith('bbi-legendary-sword-') ?? false;
 }
 
+function isAdminNuke(weapon: Weapon | null) {
+  return weapon?.id.startsWith('admin-nuke-') ?? false;
+}
+
+function isAisultanSword(weapon: Weapon | null) {
+  return weapon?.id.startsWith('aisultan-sea-sword-') ?? false;
+}
+
 function getArmorStyleIndex(armor: Armor | null) {
   if (!armor) return 0;
   const text = `${armor.id}-${armor.name}-${armor.rarity}`;
@@ -751,6 +848,18 @@ function createBbiLegendarySword(): Weapon {
   };
 }
 
+function createAisultanSword(bestDamage: number): Weapon {
+  const boostedDamage = Math.min(Number.MAX_SAFE_INTEGER, bestDamage * 1001);
+  return {
+    id: `aisultan-sea-sword-${Date.now()}-${Math.random()}`,
+    name: 'Воденой меч Айсултана',
+    rarity: 'Секретное',
+    damage: boostedDamage,
+    displayDamage: `${formatPower(bestDamage)} +100000%`,
+    price: 0,
+  };
+}
+
 function createAdminHelmet(): Armor {
   return {
     id: `admin-helmet-${Date.now()}-${Math.random()}`,
@@ -800,6 +909,12 @@ export function HomePage() {
   const [arailmMonstersLeft, setArailmMonstersLeft] = useState(arailmEnemiesTotal);
   const [arailmChoiceOpen, setArailmChoiceOpen] = useState(false);
   const [arailmKingFightStarted, setArailmKingFightStarted] = useState(false);
+  const [aisGateOpen, setAisGateOpen] = useState(false);
+  const [aisWorldEntered, setAisWorldEntered] = useState(false);
+  const [aisMonstersLeft, setAisMonstersLeft] = useState(aisultanMonsterTotal);
+  const [aisSharkFightStarted, setAisSharkFightStarted] = useState(false);
+  const [aisFinalChoiceOpen, setAisFinalChoiceOpen] = useState(false);
+  const [aisGodFightStarted, setAisGodFightStarted] = useState(false);
   const [bbiGateOpen, setBbiGateOpen] = useState(false);
   const [bbiWorldEntered, setBbiWorldEntered] = useState(false);
   const [bbiMonstersLeft, setBbiMonstersLeft] = useState(bbiMonsterTotal);
@@ -835,6 +950,7 @@ export function HomePage() {
   const [monsterAttackCount, setMonsterAttackCount] = useState(0);
   const [battlePulse, setBattlePulse] = useState(0);
   const [fireWavePulse, setFireWavePulse] = useState(0);
+  const [waterWavePulse, setWaterWavePulse] = useState(0);
   const [enemyBurning, setEnemyBurning] = useState(false);
   const [duelStatus, setDuelStatus] = useState<DuelStatus>('idle');
   const [duelOpponent, setDuelOpponent] = useState<DuelPlayer | null>(null);
@@ -844,11 +960,18 @@ export function HomePage() {
   const [duelTradeOpen, setDuelTradeOpen] = useState(false);
   const [duelChatMessages, setDuelChatMessages] = useState<DuelChatMessage[]>([]);
   const [duelChatText, setDuelChatText] = useState('');
+  const [onlinePlayers, setOnlinePlayers] = useState<DuelPlayer[]>([]);
   const [nickname, setNickname] = useState(() => window.localStorage.getItem('hero-nickname') ?? 'BBI герой');
   const [playerId] = useState(() => {
     const savedId = window.localStorage.getItem('hero-player-id');
-    if (savedId) return savedId;
-    const nextId = String(Math.floor(100000 + Math.random() * 900000));
+    if (savedId) {
+      const normalizedId = normalizePlayerId(savedId);
+      if (normalizedId.length === 6) {
+        window.localStorage.setItem('hero-player-id', normalizedId);
+        return normalizedId;
+      }
+    }
+    const nextId = makePlayerId();
     window.localStorage.setItem('hero-player-id', nextId);
     return nextId;
   });
@@ -899,15 +1022,18 @@ export function HomePage() {
   const isAnuarKingBoss = anuarKingFightStarted;
   const isMansurKingBoss = mansurKingFightStarted;
   const isArailmKingBoss = arailmKingFightStarted;
+  const isAisSharkBoss = aisSharkFightStarted;
+  const isAisGodBoss = aisGodFightStarted;
   const isNuraliKingBoss = nuraliBossFightStarted;
   const isFuryDungeon = furyDungeonEntered && !furyChoiceOpen && !furyKingFightStarted;
   const isAnuarWorld = anuarWorldEntered && !anuarKingFightStarted;
   const isMansurDungeon = mansurDungeonEntered && !mansurKingFightStarted;
   const isArailmWorld = arailmWorldEntered && !arailmChoiceOpen && !arailmKingFightStarted;
+  const isAisWorld = aisWorldEntered && !aisSharkFightStarted && !aisFinalChoiceOpen && !aisGodFightStarted;
   const isNuraliWorld = nuraliWorldEntered && !nuraliChoiceOpen && !nuraliBossFightStarted;
   const isBbiBoss = bbiBossStage !== null;
   const isBbiWorld = bbiWorldEntered && !isBbiBoss && !bbiFinalChoiceOpen;
-  const enemy = isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
+  const enemy = isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
   const isDungeon = dungeon?.entered && !dungeon.cleared;
@@ -929,9 +1055,11 @@ export function HomePage() {
   const artifactGoldMultiplier = equippedArtifact ? 1 + equippedArtifact.goldBonusPercent / 100 : 1;
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
   const reward = enemy ? 120 + chapter * 110 : 0;
-  const currentMonsters = isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
+  const currentMonsters = isAisSharkBoss || isAisGodBoss || isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isAisWorld ? aisMonstersLeft : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
   const musicKey = isFinalReveal
     ? 'ending'
+    : isAisGodBoss || isAisSharkBoss
+      ? 'ais'
     : isNuraliKingBoss
       ? 'nurali'
     : isBbiBoss
@@ -950,6 +1078,8 @@ export function HomePage() {
       ? 'family'
     : isFinalBoss
       ? 'final'
+    : isAisWorld
+      ? 'ais-world'
     : isNuraliWorld
       ? 'nurali-world'
     : isBbiWorld
@@ -965,19 +1095,19 @@ export function HomePage() {
     : isDungeon
       ? 'dungeon'
       : 'world';
-  const currentMonsterHp = isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
-  const currentMonsterDamage = isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
+  const currentMonsterHp = isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
+  const currentMonsterDamage = isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
-  const currentDragonHp = isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
-  const currentDragonDamage = isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
+  const currentDragonHp = isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
+  const currentDragonDamage = isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
   const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 100);
   const weaponBonus = isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0;
   const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + weaponBonus;
   const playerName = nickname.trim() || 'BBI герой';
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const dragonReactionSpeed = enemy?.attackSpeed ?? 1;
-  const currentMonsterTotal = isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
+  const currentMonsterTotal = isAisWorld ? aisultanMonsterTotal : isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
   const currentEnemyHealthText = currentMonsters > 0
     ? `Враг HP ${formatPower(currentMonsterHp)}`
     : isArailmKingBoss
@@ -988,6 +1118,8 @@ export function HomePage() {
     ? 'Невозможная концовка. Админская ядерка стала бесконечной. Получен медальон невозможности.'
     : bbiBadEnding
     ? 'Би Би Ай концовка. Они лишь дети, ты монстр. Ты мог отказаться, но выбрал сражаться.'
+    : secretEnding === 'aisultanSea'
+      ? 'Секретная концовка. Воденой мир. Бог моря Айсултан побежден, океан стал свободным.'
     : secretEnding === 'arailmKing'
       ? 'Секретная концовка. Код хочет выбраться. Даже код может хотеть свободы.'
     : secretEnding === 'mansurKing'
@@ -1004,7 +1136,9 @@ export function HomePage() {
         : 'Плохая концовка. Пустое небо. Герой сразился с семьей драконов.'
       : '';
   const cityScene = `scene-city-${chapter % 6}`;
-  const battleScene = isDungeon
+  const battleScene = isAisWorld || isAisSharkBoss || isAisGodBoss || aisFinalChoiceOpen
+    ? 'scene-ais'
+    : isDungeon
     ? 'scene-dungeon'
     : isNuraliWorld || isNuraliKingBoss
       ? 'scene-nurali'
@@ -1029,7 +1163,11 @@ export function HomePage() {
             ? 'scene-boss-final'
             : `scene-boss-${chapter % 10}`
         : cityScene;
-  const dragonClass = isBbiBoss
+  const dragonClass = isAisGodBoss
+    ? 'dragon-ais-god'
+    : isAisSharkBoss
+      ? 'dragon-ais-shark'
+    : isBbiBoss
     ? 'dragon-bbi'
     : isNuraliKingBoss
       ? 'dragon-nurali'
@@ -1101,6 +1239,7 @@ export function HomePage() {
   const inventoryPreviewLimit = 80;
   const visibleWeapons = showFullInventory ? weapons : weapons.slice(-inventoryPreviewLimit);
   const visibleArmors = showFullInventory ? armors : armors.slice(-inventoryPreviewLimit);
+  const currentPlayerPower = Math.max(1_000, attackBonus + defenseBonus + currentHeroMaxHp);
 
   function speakText(text: string, sceneKey: string) {
     if (typeof window === 'undefined' || !('speechSynthesis' in window) || lastSpokenSceneRef.current === sceneKey) return;
@@ -1144,11 +1283,13 @@ export function HomePage() {
       'anuar-world': { notes: [123, 165, 247, 165], beat: 0.36, wave: 'square', gain: 0.024 },
       'mansur-world': { notes: [147, 196, 247, 196], beat: 0.46, wave: 'triangle', gain: 0.024 },
       'arailm-world': { notes: [98, 131, 175, 131], beat: 0.28, wave: 'sawtooth', gain: 0.022 },
+      'ais-world': { notes: [110, 147, 196, 247], beat: 0.42, wave: 'sine', gain: 0.025 },
       goblin: { notes: [98, 196, 233, 196, 87], beat: 0.13, wave: 'square', gain: 0.07 },
       fury: { notes: [55, 110, 146, 196, 220], beat: 0.11, wave: 'sawtooth', gain: 0.065 },
       anuar: { notes: [41, 82, 123, 165, 247], beat: 0.14, wave: 'square', gain: 0.075 },
       mansur: { notes: [73, 147, 196, 247, 294], beat: 0.16, wave: 'sawtooth', gain: 0.068 },
       arailm: { notes: [49, 98, 131, 98, 175, 208], beat: 0.1, wave: 'sawtooth', gain: 0.06 },
+      ais: { notes: [55, 110, 165, 220, 330], beat: 0.18, wave: 'triangle', gain: 0.065 },
       bbi: { notes: [131, 262, 330, 392, 523], beat: 0.1, wave: 'square', gain: 0.07 },
       nurali: { notes: [55, 110, 165, 220, 330], beat: 0.12, wave: 'sawtooth', gain: 0.072 },
       family: { notes: [37, 73, 110, 147, 220], beat: 0.18, wave: 'sawtooth', gain: 0.075 },
@@ -1493,6 +1634,9 @@ export function HomePage() {
 
     playHeroAnimation('strike', 420);
     setBattlePulse((pulse) => pulse + 1);
+    if (isAisultanSword(equippedWeapon)) {
+      setWaterWavePulse((pulse) => pulse + 1);
+    }
 
     if (equippedWeapon?.id.startsWith('admin-nuke-')) {
       if (isBbiWorld) {
@@ -1515,6 +1659,14 @@ export function HomePage() {
         setArailmWorldEntered(false);
         setArailmChoiceOpen(true);
         setMessage('100к код-монстров уничтожены. Теперь выбери: не сражаться или сражаться.');
+        return;
+      }
+      if (isAisWorld) {
+        setAisMonstersLeft(0);
+        setAisWorldEntered(false);
+        setAisSharkFightStarted(true);
+        setEnemyHp(aisultanSharkHp);
+        setMessage(`1 млрд рыб-монстров уничтожены. Промежуточный босс Акула вышла на бой: ${formatPower(aisultanSharkHp)} HP.`);
         return;
       }
       if (isMansurDungeon) {
@@ -1572,6 +1724,8 @@ export function HomePage() {
       setBbiMonstersLeft(nextMonsters);
     } else if (isNuraliWorld) {
       setNuraliMonstersLeft(nextMonsters);
+    } else if (isAisWorld) {
+      setAisMonstersLeft(nextMonsters);
     } else if (isArailmWorld) {
       setArailmMonstersLeft(nextMonsters);
     } else if (isMansurDungeon) {
@@ -1632,6 +1786,13 @@ export function HomePage() {
         setArailmWorldEntered(false);
         setArailmChoiceOpen(true);
         setMessage('100к код-монстров побеждены. На экране выбор: не сражаться или сражаться.');
+        return;
+      }
+      if (isAisWorld) {
+        setAisWorldEntered(false);
+        setAisSharkFightStarted(true);
+        setEnemyHp(aisultanSharkHp);
+        setMessage(`1 млрд рыб-монстров побежден. Вышел промежуточный босс Акула: ${formatPower(aisultanSharkHp)} HP.`);
         return;
       }
       if (isMansurDungeon) {
@@ -1710,6 +1871,30 @@ export function HomePage() {
       unlockAchievement('impossibleEnding');
       addGold(2_281_000);
       setMessage('Босс Нурали побежден. Открыта невозможная концовка и артефакт Медальон невозможности.');
+      navigate('/world');
+      return;
+    }
+
+    if (isAisSharkBoss) {
+      setAisSharkFightStarted(false);
+      setAisFinalChoiceOpen(true);
+      setMessage('Акула побеждена. Появилась надпись: сразиться с богом моря Айсултаном? Да или нет.');
+      navigate('/world');
+      return;
+    }
+
+    if (isAisGodBoss) {
+      setVictory(true);
+      setSecretEnding('aisultanSea');
+      unlockAchievement('aisultanSea');
+      setAisGateOpen(false);
+      setAisWorldEntered(false);
+      setAisSharkFightStarted(false);
+      setAisFinalChoiceOpen(false);
+      setAisGodFightStarted(false);
+      setChapter(dragonSons.length + 1);
+      addGold(10_000_000);
+      setMessage('Воденой мир открыт: бог моря Айсултан побежден.');
       navigate('/world');
       return;
     }
@@ -1922,6 +2107,15 @@ export function HomePage() {
       setFireWavePulse((pulse) => pulse + 1);
       setEnemyBurning(true);
     }
+    if (isAisultanSword(equippedWeapon)) {
+      setWaterWavePulse((pulse) => pulse + 1);
+    }
+    if (isAdminNuke(equippedWeapon)) {
+      setEnemyHp(0);
+      setMessage(`Админская ядерка ударила в ${adminNukeDamageText} раз сильнее и уничтожила ${isBbiBoss ? 'босса' : 'дракона'} сразу.`);
+      clearCity();
+      return;
+    }
 
     const manaDamage = items.mana > 0 ? Math.max(shopBasePower.mana, upgradePower(shopLevels.mana, shopBasePower.mana)) : 0;
     const heroDamage = Math.floor((18 + chapter * 5 + attackBonus + manaDamage) * artifactDamageMultiplier * artifactAttackSpeedMultiplier);
@@ -2002,6 +2196,18 @@ export function HomePage() {
       return;
     }
 
+    if (code === 'ais') {
+      setAisGateOpen(true);
+      setAisWorldEntered(false);
+      setAisMonstersLeft(aisultanMonsterTotal);
+      setAisSharkFightStarted(false);
+      setAisFinalChoiceOpen(false);
+      setAisGodFightStarted(false);
+      setAdminCode('');
+      setMessage('Код ais открыл 10 мир: водный мир Айсултана. Выбери: войти или выйти.');
+      return;
+    }
+
     if (code === 'bbi' || code === 'ииш') {
       setBbiGateOpen(true);
       setBbiWorldEntered(false);
@@ -2066,6 +2272,12 @@ export function HomePage() {
     setArailmMonstersLeft(arailmEnemiesTotal);
     setArailmChoiceOpen(false);
     setArailmKingFightStarted(false);
+    setAisGateOpen(false);
+    setAisWorldEntered(false);
+    setAisMonstersLeft(aisultanMonsterTotal);
+    setAisSharkFightStarted(false);
+    setAisFinalChoiceOpen(false);
+    setAisGodFightStarted(false);
     setAdminCode('');
     setMessage('Код arailm открыл красную программу. Войди и зачисти 100к код-монстров.');
   }
@@ -2091,14 +2303,20 @@ export function HomePage() {
 
   function startDuelSearch() {
     if (duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting') return;
-    const requestedId = duelTargetId.trim();
+    const requestedId = normalizePlayerId(duelTargetId);
+    setDuelTargetId(requestedId);
     if (requestedId === playerId) {
       setMessage('Это твой ID. Впиши ID другого игрока, чтобы вызвать его.');
       return;
     }
-    const requestedPlayer = requestedId ? duelPlayers.find((player) => player.id === requestedId) : null;
+    const requestedPlayer = requestedId ? onlinePlayers.find((player) => player.id === requestedId) : null;
     if (requestedId && !requestedPlayer) {
-      setMessage(`Игрок с ID ${requestedId} не найден онлайн. Попробуй ID: ${duelPlayers.map((player) => player.id).join(', ')}.`);
+      setMessage(`Игрок с ID ${requestedId} не найден онлайн. Если список пустой, реальных игроков в сети сейчас нет.`);
+      return;
+    }
+    if (!requestedId && onlinePlayers.length === 0) {
+      setMessage('Реальных игроков онлайн сейчас нет. Список пустой.');
+      setDuelStatus('searching');
       return;
     }
     setDuelOpponent(null);
@@ -2247,9 +2465,10 @@ export function HomePage() {
 
   useEffect(() => {
     if (duelStatus !== 'searching') return;
+    if (onlinePlayers.length === 0) return;
 
     const searchTimer = window.setTimeout(() => {
-      const player = duelPlayers[(duelWins + chapter + weapons.length + armors.length) % duelPlayers.length];
+      const player = onlinePlayers[(duelWins + chapter + weapons.length + armors.length) % onlinePlayers.length];
       setDuelOpponent(player);
       setDuelChatMessages([
         { id: `system-${Date.now()}`, from: 'Система', text: `Найден игрок ${player.name} ID ${player.id}.` },
@@ -2260,11 +2479,45 @@ export function HomePage() {
     }, 1100);
 
     return () => window.clearTimeout(searchTimer);
-  }, [armors.length, chapter, duelStatus, duelWins, weapons.length]);
+  }, [armors.length, chapter, duelStatus, duelWins, onlinePlayers, weapons.length]);
 
   useEffect(() => {
     window.localStorage.setItem('hero-nickname', playerName);
   }, [playerName]);
+
+  useEffect(() => {
+    function refreshOnlinePlayers() {
+      setOnlinePlayers(readOnlinePresences()
+        .filter((player) => player.id !== playerId)
+        .map(toDuelPlayer));
+    }
+
+    function writePresence() {
+      const others = readOnlinePresences().filter((player) => player.id !== playerId);
+      const presence: OnlinePresence = {
+        id: playerId,
+        name: playerName,
+        power: currentPlayerPower,
+        weapon: equippedWeapon,
+        armor: equippedArmor,
+        updatedAt: Date.now(),
+      };
+      window.localStorage.setItem(presenceStorageKey, JSON.stringify([...others, presence]));
+      refreshOnlinePlayers();
+    }
+
+    writePresence();
+    const interval = window.setInterval(writePresence, 5_000);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === presenceStorageKey) refreshOnlinePlayers();
+    };
+    window.addEventListener('storage', onStorage);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [currentPlayerPower, equippedArmor, equippedWeapon, playerId, playerName]);
 
   function restart() {
     setChapter(0);
@@ -2296,6 +2549,12 @@ export function HomePage() {
     setArailmMonstersLeft(arailmEnemiesTotal);
     setArailmChoiceOpen(false);
     setArailmKingFightStarted(false);
+    setAisGateOpen(false);
+    setAisWorldEntered(false);
+    setAisMonstersLeft(aisultanMonsterTotal);
+    setAisSharkFightStarted(false);
+    setAisFinalChoiceOpen(false);
+    setAisGodFightStarted(false);
     setBbiGateOpen(false);
     setBbiWorldEntered(false);
     setBbiMonstersLeft(bbiMonsterTotal);
@@ -2318,7 +2577,6 @@ export function HomePage() {
     setArmors([]);
     setEquippedArmor(null);
     setShopTab('upgrades');
-    setEquippedArtifactId(null);
     setHeroAnimation('idle');
     setHeroPosition({ x: -18_000, z: 0 });
     setHeroHeight(0);
@@ -2327,6 +2585,7 @@ export function HomePage() {
     setMonsterAttackCount(0);
     setBattlePulse(0);
     setFireWavePulse(0);
+    setWaterWavePulse(0);
     setEnemyBurning(false);
     setDuelStatus('idle');
     setDuelOpponent(null);
@@ -2657,6 +2916,84 @@ export function HomePage() {
               setNuraliChoiceOpen(false);
               setNuraliGateOpen(false);
               setMessage('Ты отказался драться с Нурали. Новый мир закрылся.');
+              navigate('/');
+            }} type="button">
+              Нет
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (aisGateOpen && !aisWorldEntered && !aisSharkFightStarted && !aisFinalChoiceOpen && !aisGodFightStarted) {
+    return (
+      <main className="ais-choice-page">
+        <section className="cave-choice ais-choice" aria-label="10 водный мир ais">
+          <p className="intro-kicker">Код ais</p>
+          <h1>10 мир: водный мир</h1>
+          <p>
+            Открылся океанский фон. Внутри {formatPower(aisultanMonsterTotal)}
+            рыб-монстров, у каждого {formatPower(aisultanMonsterHp)} HP.
+          </p>
+          <p>
+            После смерти монстров выйдет промежуточный босс Акула с HP в 10 раз больше.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setAisWorldEntered(true);
+              setAisMonstersLeft(aisultanMonsterTotal);
+              setMessage(`Ты вошел в 10 водный мир. Внутри ${formatPower(aisultanMonsterTotal)} рыб-монстров по ${formatPower(aisultanMonsterHp)} HP.`);
+              navigate('/');
+            }} type="button">
+              Войти
+            </button>
+            <button className="secondary" onClick={() => {
+              setAisGateOpen(false);
+              setMessage('Ты вышел из 10 водного мира.');
+              navigate('/');
+            }} type="button">
+              Выйти
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (aisFinalChoiceOpen) {
+    return (
+      <main className="ais-choice-page final">
+        <section className="cave-choice ais-choice" aria-label="Выбор бога моря Айсултана">
+          <p className="intro-kicker">Акула побеждена</p>
+          <h1>Сразиться с богом моря Айсултаном?</h1>
+          <p>
+            Если победишь, получишь концовку: воденой мир.
+          </p>
+          <p>
+            Если откажешься, тебя отправит в 6 город и даст меч сильнее твоего лучшего оружия на 100000%.
+          </p>
+          <div className="cave-actions">
+            <button onClick={() => {
+              setAisFinalChoiceOpen(false);
+              setAisGodFightStarted(true);
+              setEnemyHp(aisultanSeaGodHp);
+              setMessage(`Бог моря Айсултан вышел на бой. HP: ${formatPower(aisultanSeaGodHp)}.`);
+              navigate('/');
+            }} type="button">
+              Да
+            </button>
+            <button className="secondary" onClick={() => {
+              const bestDamage = Math.max(1, ...weapons.map((weapon) => weapon.damage));
+              const seaSword = createAisultanSword(bestDamage);
+              setAisFinalChoiceOpen(false);
+              setAisGateOpen(false);
+              setWeapons((currentWeapons) => [...currentWeapons, seaSword]);
+              setEquippedWeapon(seaSword);
+              setSavedCities(dragonSons.slice(0, 5).map((city) => `${city.city}, ${city.country}`));
+              setChapter(5);
+              setEnemyHp(scaledDragonPower(baseDragonHp, 5));
+              setMessage('Ты отказался сражаться с Айсултаном. Перенос в 6 город: получен воденой меч сильнее лучшего оружия на 100000%.');
               navigate('/');
             }} type="button">
               Нет
@@ -3015,7 +3352,7 @@ export function HomePage() {
           <div className="monster-pack" data-kind={enemy?.monsterKind ?? 'goblin'}>
             {Array.from({ length: Math.max(0, Math.min(4, Math.ceil(currentMonsters / 500))) }).map((_, index) => {
               const mixedMonster = monsterKinds[(chapter + index) % monsterKinds.length];
-              const monsterKind = isNuraliWorld ? 'nurali' : isBbiWorld ? 'shadow' : isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
+              const monsterKind = isAisWorld ? 'fish' : isNuraliWorld ? 'nurali' : isBbiWorld ? 'shadow' : isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
               const monsterColumn = index % 8;
               const monsterRow = Math.floor(index / 8);
               return (
@@ -3053,6 +3390,13 @@ export function HomePage() {
           )}
           {fireWavePulse > 0 && (
             <div className="bbi-fire-wave" key={fireWavePulse}>
+              <span />
+              <span />
+            </div>
+          )}
+          {waterWavePulse > 0 && (
+            <div className="ais-water-wave" key={waterWavePulse}>
+              <span />
               <span />
               <span />
             </div>
@@ -3153,7 +3497,23 @@ export function HomePage() {
               </div>
             </div>
           )}
-          {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && !isFuryKingBoss && !isAnuarKingBoss && !isMansurKingBoss && !isArailmKingBoss && (
+          {!isFinalReveal && enemy && currentMonsters === 0 && isAisSharkBoss && (
+            <div className="ais-shark-boss">
+              <span />
+              <i />
+              <b />
+            </div>
+          )}
+          {!isFinalReveal && enemy && currentMonsters === 0 && isAisGodBoss && (
+            <div className="ais-god-boss">
+              <span className="ais-crown" />
+              <span className="ais-head" />
+              <span className="ais-body" />
+              <span className="ais-tail" />
+              <span className="ais-trident" />
+            </div>
+          )}
+          {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && !isFuryKingBoss && !isAnuarKingBoss && !isMansurKingBoss && !isArailmKingBoss && !isAisSharkBoss && !isAisGodBoss && (
             <div className={`boss ${isFinalBoss ? 'final-boss' : ''} ${dragonClass}`} style={{ '--dragon-color': enemy.color } as CSSProperties}>
               {enemyBurning && <div className="enemy-burn-effect" />}
               <div className="tail-2d" />
@@ -3263,7 +3623,9 @@ export function HomePage() {
                 onScroll={scheduleOnlineListReturn}
                 ref={onlinePlayerListRef}
               >
-                {duelPlayers.map((player) => (
+                {onlinePlayers.length === 0 ? (
+                  <p className="online-empty">Список пуст. Реальных игроков онлайн нет.</p>
+                ) : onlinePlayers.map((player) => (
                   <button
                     className={duelOpponent?.id === player.id ? 'selected' : ''}
                     key={player.id}
@@ -3326,10 +3688,14 @@ export function HomePage() {
           <div className="duel-id-box">
             <input
               aria-label="ID игрока для дуэли"
-              onChange={(event) => setDuelTargetId(event.target.value)}
+              maxLength={6}
+              onChange={(event) => setDuelTargetId(normalizePlayerId(event.target.value))}
               placeholder="ID игрока"
               value={duelTargetId}
             />
+            <button onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
+              OK
+            </button>
           </div>
           <button className="duel-button" onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
             Дуэль
@@ -3361,7 +3727,7 @@ export function HomePage() {
             <h2>Символ бесконечности</h2>
             <p>
               В мире nurali2281 Нурали был побежден. Админская ядерка стала сильнее
-              в 1000000000000000000000 раз, а на экране остался только знак ∞.
+              в {adminNukeDamageText} раз.
             </p>
             <p>
               Получен артефакт: Медальон невозможности. Он дает +1000% урон,
@@ -3383,6 +3749,22 @@ export function HomePage() {
             <p>
               Последний BBI босс был сильнее директора в 5 раз, но даже его победа
               не стала хорошей концовкой.
+            </p>
+            <div className="ending-actions">
+              <Link className="ending-link" href="/">Продолжать</Link>
+              <button onClick={restart}>Начать повторно</button>
+            </div>
+          </div>
+        ) : secretEnding === 'aisultanSea' ? (
+          <div className="reveal ais-ending">
+            <p className="eyebrow">Секретная концовка</p>
+            <h2>Воденой мир</h2>
+            <p>
+              Герой победил бога моря Айсултана после {formatPower(aisultanMonsterTotal)}
+              рыб-монстров и промежуточного босса Акулы.
+            </p>
+            <p>
+              Океан стал свободным, а 10 мир больше не топит города волнами.
             </p>
             <div className="ending-actions">
               <Link className="ending-link" href="/">Продолжать</Link>
@@ -3608,10 +3990,14 @@ export function HomePage() {
               <div className="duel-id-box">
                 <input
                   aria-label="ID игрока для дуэли"
-                  onChange={(event) => setDuelTargetId(event.target.value)}
+                  maxLength={6}
+                  onChange={(event) => setDuelTargetId(normalizePlayerId(event.target.value))}
                   placeholder="ID игрока"
                   value={duelTargetId}
                 />
+                <button onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
+                  OK
+                </button>
               </div>
               <button className="duel-button" onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
                 {duelStatus === 'searching' ? 'Ищет игрока...' : duelStatus === 'fighting' ? 'Дуэль идет...' : 'Дуэль'}
@@ -3715,7 +4101,7 @@ export function HomePage() {
                         className={`artifact-card ${unlocked ? 'unlocked' : 'locked'} ${equipped ? 'equipped' : ''}`}
                         disabled={!unlocked}
                         key={artifact.id}
-                        onClick={() => setEquippedArtifactId(equipped ? null : artifact.id)}
+                        onClick={() => setEquippedArtifactId(artifact.id)}
                         type="button"
                       >
                         <span className={`artifact-icon ${artifact.icon}`}><span /></span>
