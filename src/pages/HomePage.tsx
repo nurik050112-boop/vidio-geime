@@ -88,6 +88,8 @@ type DuelPlayer = {
   name: string;
   power: number;
   title: string;
+  weapon: Weapon;
+  armor: Armor;
 };
 
 const firstDragonCities: CityStage[] = [
@@ -290,11 +292,11 @@ const nuraliBoss: CityStage = {
   reaction: 'рычит как лев и пугает котом',
 };
 const duelPlayers: DuelPlayer[] = [
-  { name: 'Темный рыцарь онлайн', power: 50_000, title: 'любит быстрые дуэли' },
-  { name: 'Игрок с огненным мечом', power: 250_000, title: 'ищет сильного врага' },
-  { name: 'BBI чемпион', power: 1_000_000, title: 'кидает вызов на весь экран' },
-  { name: 'Стальной воин', power: 5_000_000, title: 'в шлеме и броне' },
-  { name: 'Легендарный дуэлянт', power: 25_000_000, title: 'почти босс' },
+  { name: 'Темный рыцарь онлайн', power: 50_000, title: 'любит быстрые дуэли', weapon: { id: 'duel-dark-sword', name: 'Темный меч дуэлянта', rarity: 'Редкий', damage: 55_000, price: 2_000 }, armor: { id: 'duel-dark-armor', name: 'Темная броня дуэлянта', rarity: 'Редкий', defense: 18_000, price: 2_000 } },
+  { name: 'Игрок с огненным мечом', power: 250_000, title: 'ищет сильного врага', weapon: { id: 'duel-fire-sword', name: 'Огненный меч онлайн', rarity: 'Эпик', damage: 280_000, price: 10_000 }, armor: { id: 'duel-fire-armor', name: 'Огненный шлем онлайн', rarity: 'Эпик', defense: 75_000, price: 10_000 } },
+  { name: 'BBI чемпион', power: 1_000_000, title: 'кидает вызов на весь экран', weapon: { id: 'duel-bbi-blade', name: 'BBI клинок чемпиона', rarity: 'Легендарка', damage: 1_250_000, price: 100_000 }, armor: { id: 'duel-bbi-armor', name: 'BBI броня чемпиона', rarity: 'Легендарка', defense: 420_000, price: 100_000 } },
+  { name: 'Стальной воин', power: 5_000_000, title: 'в шлеме и броне', weapon: { id: 'duel-steel-sword', name: 'Стальной меч воина', rarity: 'Легендарка', damage: 5_800_000, price: 100_000 }, armor: { id: 'duel-steel-armor', name: 'Стальная броня воина', rarity: 'Легендарка', defense: 2_100_000, price: 100_000 } },
+  { name: 'Легендарный дуэлянт', power: 25_000_000, title: 'почти босс', weapon: { id: 'duel-secret-sword', name: 'Секретный меч дуэли', rarity: 'Секретное', damage: 30_000_000, price: 1_000_000 }, armor: { id: 'duel-secret-armor', name: 'Секретная броня дуэли', rarity: 'Секретное', defense: 12_000_000, price: 1_000_000 } },
 ];
 
 const bbiBosses: Record<Exclude<BbiBossStage, null>, CityStage> = {
@@ -824,6 +826,9 @@ export function HomePage() {
   const [duelStatus, setDuelStatus] = useState<DuelStatus>('idle');
   const [duelOpponent, setDuelOpponent] = useState<DuelPlayer | null>(null);
   const [duelWins, setDuelWins] = useState(0);
+  const [duelHeroHp, setDuelHeroHp] = useState(0);
+  const [duelOpponentHp, setDuelOpponentHp] = useState(0);
+  const [duelTradeOpen, setDuelTradeOpen] = useState(false);
   const [nickname, setNickname] = useState(() => window.localStorage.getItem('hero-nickname') ?? 'BBI герой');
   const [adminCode, setAdminCode] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
@@ -2047,22 +2052,75 @@ export function HomePage() {
 
   function declineDuel() {
     setDuelStatus('declined');
+    setDuelTradeOpen(false);
     setMessage('Ты отказался от дуэли. Вызов закрыт.');
   }
 
   function acceptDuel() {
     if (!duelOpponent) return;
     setDuelStatus('fighting');
+    setDuelTradeOpen(false);
+    setDuelHeroHp(Math.max(currentHeroMaxHp, 1_000 + defenseBonus + attackBonus));
+    setDuelOpponentHp(duelOpponent.power * 4);
     setBattlePulse((pulse) => pulse + 1);
     playHeroAnimation('strike', 500);
+    setMessage(`Дуэль началась: ${playerName} против ${duelOpponent.name}. Бей соперника кнопкой удара.`);
+  }
 
-    window.setTimeout(() => {
+  function duelHit() {
+    if (!duelOpponent || duelStatus !== 'fighting') return;
+
+    const heroDuelDamage = Math.max(50, Math.floor((attackBonus + 100 + weapons.length * 30) * artifactDamageMultiplier));
+    const opponentDuelDamage = Math.max(1, Math.floor(duelOpponent.power / 12 - defenseBonus));
+    const nextOpponentHp = Math.max(0, duelOpponentHp - heroDuelDamage);
+    setBattlePulse((pulse) => pulse + 1);
+    playHeroAnimation('strike', 420);
+    setDuelOpponentHp(nextOpponentHp);
+
+    if (nextOpponentHp === 0) {
       const duelReward = Math.max(1_000, Math.floor((attackBonus + currentHeroMaxHp + duelOpponent.power) / 3));
       setDuelWins((wins) => wins + 1);
       addGold(duelReward);
       setDuelStatus('won');
-      setMessage(`${playerName} выиграл дуэль против ${duelOpponent.name}. Награда: ${formatPower(duelReward)} золота.`);
-    }, 1300);
+      setMessage(`${playerName} победил ${duelOpponent.name} в настоящей дуэли. Награда: ${formatPower(duelReward)} золота.`);
+      return;
+    }
+
+    const nextHeroDuelHp = Math.max(0, duelHeroHp - opponentDuelDamage);
+    setDuelHeroHp(nextHeroDuelHp);
+    if (nextHeroDuelHp === 0) {
+      setDuelStatus('declined');
+      setMessage(`${duelOpponent.name} победил в дуэли. Можно найти другого игрока.`);
+      return;
+    }
+
+    setMessage(`${playerName} ударил: -${formatPower(heroDuelDamage)} HP. ${duelOpponent.name} ответил: -${formatPower(opponentDuelDamage)} HP.`);
+  }
+
+  function tradeDuelWeapon() {
+    if (!duelOpponent || weapons.length === 0) {
+      setMessage('Для обмена нужен хотя бы один меч в инвентаре.');
+      return;
+    }
+    const offeredWeapon = weapons[weapons.length - 1];
+    const receivedWeapon = { ...duelOpponent.weapon, id: `${duelOpponent.weapon.id}-${Date.now()}` };
+    setWeapons((currentWeapons) => [...currentWeapons.filter((weapon) => weapon.id !== offeredWeapon.id), receivedWeapon]);
+    if (equippedWeapon?.id === offeredWeapon.id) setEquippedWeapon(receivedWeapon);
+    setDuelTradeOpen(false);
+    setMessage(`Обмен: ты отдал ${getWeaponDisplayName(offeredWeapon)} и получил ${getWeaponDisplayName(receivedWeapon)} от ${duelOpponent.name}.`);
+  }
+
+  function tradeDuelArmor() {
+    if (!duelOpponent || armors.length === 0) {
+      setMessage('Для обмена нужна хотя бы одна броня в инвентаре.');
+      return;
+    }
+    const offeredArmor = armors[armors.length - 1];
+    const receivedArmor = { ...duelOpponent.armor, id: `${duelOpponent.armor.id}-${Date.now()}` };
+    setArmors((currentArmors) => [...currentArmors.filter((armor) => armor.id !== offeredArmor.id), receivedArmor]);
+    if (equippedArmor?.id === offeredArmor.id) setEquippedArmor(receivedArmor);
+    setDuelTradeOpen(false);
+    setMessage(`Обмен: ты отдал ${offeredArmor.name} и получил ${receivedArmor.name} от ${duelOpponent.name}.`);
   }
 
   useEffect(() => {
@@ -2147,6 +2205,9 @@ export function HomePage() {
     setDuelStatus('idle');
     setDuelOpponent(null);
     setDuelWins(0);
+    setDuelHeroHp(0);
+    setDuelOpponentHp(0);
+    setDuelTradeOpen(false);
     paidQuestIds.current.clear();
     setItems({ sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
     setShopLevels({ sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
@@ -3006,17 +3067,39 @@ export function HomePage() {
               <>
                 <h2>{duelOpponent.name} кинул вызов</h2>
                 <p>{playerName} против {duelOpponent.name}. {duelOpponent.title}. Сила: {formatPower(duelOpponent.power)}.</p>
+                <div className="duel-loot">
+                  <span>Оружие: {getWeaponDisplayName(duelOpponent.weapon)} +{formatPower(duelOpponent.weapon.damage)}</span>
+                  <span>Броня: {duelOpponent.armor.name} +{formatPower(duelOpponent.armor.defense)}</span>
+                </div>
                 <strong>Драться?</strong>
                 <div className="duel-actions">
                   <button onClick={acceptDuel} type="button">Драться</button>
                   <button className="secondary" onClick={declineDuel} type="button">Нет</button>
+                  <button className="secondary" onClick={() => setDuelTradeOpen((open) => !open)} type="button">Обмен</button>
                 </div>
               </>
             ) : duelStatus === 'fighting' && duelOpponent ? (
               <>
                 <h2>Дуэль началась</h2>
                 <p>{playerName} сражается против {duelOpponent.name}.</p>
+                <div className="duel-fighters">
+                  <div>
+                    <strong>{playerName}</strong>
+                    <div className="bar"><span style={{ width: `${Math.max(0, Math.min(100, (duelHeroHp / Math.max(1, currentHeroMaxHp + defenseBonus + attackBonus)) * 100))}%` }} /></div>
+                    <small>HP {formatPower(duelHeroHp)}</small>
+                  </div>
+                  <div>
+                    <strong>{duelOpponent.name}</strong>
+                    <div className="bar enemy"><span style={{ width: `${Math.max(0, Math.min(100, (duelOpponentHp / Math.max(1, duelOpponent.power * 4)) * 100))}%` }} /></div>
+                    <small>HP {formatPower(duelOpponentHp)}</small>
+                  </div>
+                </div>
                 <div className="duel-clash"><span /><span /></div>
+                <div className="duel-actions">
+                  <button onClick={duelHit} type="button">Удар</button>
+                  <button className="secondary" onClick={() => setDuelTradeOpen((open) => !open)} type="button">Обмен</button>
+                  <button className="secondary" onClick={declineDuel} type="button">Выйти</button>
+                </div>
               </>
             ) : (
               <>
@@ -3027,6 +3110,18 @@ export function HomePage() {
                   <button className="secondary" onClick={() => setDuelStatus('idle')} type="button">Закрыть</button>
                 </div>
               </>
+            )}
+            {duelTradeOpen && duelOpponent && (
+              <div className="duel-trade">
+                <strong>Обмен предметами</strong>
+                <p>Твой последний предмет меняется на предмет соперника.</p>
+                <button onClick={tradeDuelWeapon} disabled={weapons.length === 0} type="button">
+                  Меч на {getWeaponDisplayName(duelOpponent.weapon)}
+                </button>
+                <button onClick={tradeDuelArmor} disabled={armors.length === 0} type="button">
+                  Броню на {duelOpponent.armor.name}
+                </button>
+              </div>
             )}
           </div>
         </div>

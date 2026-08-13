@@ -713,13 +713,53 @@ button.secondary {
 
 .duel-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
 .duel-actions button {
   min-height: 52px;
   font-size: 18px;
+}
+
+.duel-loot,
+.duel-fighters,
+.duel-trade {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 2px solid rgba(255, 248, 232, 0.46);
+  border-radius: 8px;
+  background: rgba(255, 248, 232, 0.12);
+}
+
+.duel-loot span,
+.duel-fighters small {
+  color: #fff8e8;
+  font-weight: 900;
+}
+
+.duel-fighters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  text-align: left;
+}
+
+.duel-fighters .bar {
+  margin: 6px 0;
+  background: rgba(255, 248, 232, 0.24);
+}
+
+.duel-trade {
+  text-align: left;
+}
+
+.duel-trade p {
+  font-size: 14px;
+}
+
+.duel-trade button {
+  min-height: 42px;
+  font-size: 15px;
 }
 
 .duel-scanner,
