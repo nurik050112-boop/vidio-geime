@@ -1317,6 +1317,57 @@ button.secondary {
   display: block;
 }
 
+.hero.has-armor .helm-2d {
+  background: var(--armor-helmet-bg, linear-gradient(180deg, #edf2f7, #76859a));
+  border-color: var(--armor-edge, #1a1022);
+  box-shadow: 0 0 14px var(--armor-glow, rgba(255, 255, 255, 0));
+}
+
+.hero.has-helmet-gear .helm-2d {
+  height: var(--armor-helmet-h, 43px);
+  border-radius: var(--armor-helmet-radius, 50% 50% 28% 28%);
+}
+
+.hero.has-helmet-gear .helm-2d::before {
+  content: "";
+  position: absolute;
+  left: var(--armor-visor-left, 7px);
+  right: var(--armor-visor-right, 7px);
+  top: var(--armor-visor-top, 18px);
+  height: var(--armor-visor-h, 9px);
+  border-radius: 999px;
+  background: var(--armor-visor, #111827);
+  box-shadow: 0 0 10px var(--armor-glow, transparent);
+}
+
+.hero.has-body-gear .body {
+  background:
+    var(--armor-mark, linear-gradient(90deg, transparent 0 43%, rgba(47, 128, 237, 0.55) 44% 56%, transparent 57%)),
+    var(--armor-body-bg, linear-gradient(90deg, #98a6b8, #e3e8ef 48%, #607089));
+  border-color: var(--armor-edge, #1a1022);
+  box-shadow: inset 0 -16px 0 var(--armor-shadow, rgba(47, 128, 237, 0.35)), 0 0 14px var(--armor-glow, transparent);
+}
+
+.hero.has-body-gear .body::before,
+.hero.has-body-gear .body::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  width: 24px;
+  height: 18px;
+  border: 3px solid var(--armor-edge, #1a1022);
+  border-radius: 50%;
+  background: var(--armor-shoulder, #7b8794);
+}
+
+.hero.has-body-gear .body::before {
+  left: -21px;
+}
+
+.hero.has-body-gear .body::after {
+  right: -21px;
+}
+
 .shield-2d {
   position: absolute;
   left: -17px;
@@ -1383,14 +1434,14 @@ button.secondary {
   position: absolute;
   right: -54px;
   top: 17px;
-  width: 16px;
-  height: 158px;
+  width: calc(var(--sword-w, 7px) * 2.2);
+  height: calc(var(--sword-h, 43px) * 3.55);
   border: 3px solid #1a1022;
-  border-radius: 10px 10px 4px 4px;
+  border-radius: var(--sword-curve, 10px 10px 4px 4px);
   background:
     linear-gradient(90deg, transparent 0 23%, rgba(255, 255, 255, 0.9) 24% 45%, transparent 46%),
-    linear-gradient(90deg, #d7fbff, #73d2de 48%, #e9fbff);
-  transform: rotate(48deg);
+    var(--sword-blade, linear-gradient(90deg, #d7fbff, #73d2de 48%, #e9fbff));
+  transform: rotate(var(--hero-sword-tilt, 48deg));
   box-shadow: 0 0 22px rgba(115, 210, 222, 0.92), 0 0 42px rgba(255, 242, 117, 0.35);
 }
 
@@ -1404,7 +1455,7 @@ button.secondary {
   height: 12px;
   border: 3px solid #1a1022;
   border-radius: 999px;
-  background: linear-gradient(180deg, #ffe66d, #b5651d);
+  background: var(--sword-guard-color, linear-gradient(180deg, #ffe66d, #b5651d));
   box-shadow: 0 0 12px rgba(255, 230, 109, 0.65);
 }
 
@@ -1455,8 +1506,8 @@ button.secondary {
 
 .hero-artifact {
   position: absolute;
-  right: -42px;
-  top: 42px;
+  right: -58px;
+  top: 18px;
   z-index: 12;
   pointer-events: none;
   animation: artifact-float 1.4s ease-in-out infinite;
@@ -3620,9 +3671,268 @@ button.selected {
   box-shadow: 0 4px 0 rgba(37, 17, 5, 0.45), 0 10px 18px rgba(20, 8, 4, 0.18);
 }
 
+.weapon-card {
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+}
+
 .weapon span {
   font-weight: 900;
 }
+
+.weapon-card small,
+.weapon-card .sell-button {
+  grid-column: 2;
+}
+
+.weapon-picture {
+  grid-row: 1 / span 3;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 74px;
+  border: 2px solid rgba(255, 248, 232, 0.74);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 255, 255, 0.42), transparent 17px),
+    rgba(37, 17, 5, 0.22);
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.16);
+}
+
+.weapon-picture::before,
+.weapon-picture::after,
+.weapon-picture i,
+.weapon-picture i::before,
+.weapon-picture i::after {
+  content: "";
+  position: absolute;
+  display: block;
+}
+
+.weapon-picture::before {
+  left: 21px;
+  top: 8px;
+  width: 7px;
+  height: 43px;
+  border: 2px solid #1a1022;
+  border-radius: 9px 9px 3px 3px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.88) 0 38%, transparent 39%),
+    linear-gradient(180deg, #d7fbff, #73d2de);
+  transform: rotate(32deg);
+  box-shadow: 0 0 12px rgba(115, 210, 222, 0.72);
+}
+
+.weapon-picture::after {
+  left: 16px;
+  top: 45px;
+  width: 25px;
+  height: 7px;
+  border: 2px solid #1a1022;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffe66d, #b5651d);
+  transform: rotate(32deg);
+}
+
+.weapon-picture i {
+  left: 15px;
+  top: 56px;
+  width: 12px;
+  height: 17px;
+  border: 2px solid #1a1022;
+  border-radius: 999px;
+  background: #5b3d38;
+  transform: rotate(32deg);
+}
+
+.weapon-picture i::before {
+  left: 2px;
+  top: -58px;
+  width: 8px;
+  height: 12px;
+  background: #f8fbff;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.weapon.uncommon .weapon-picture::before {
+  background: linear-gradient(180deg, #b9ffd6, #2fbf71);
+  box-shadow: 0 0 14px rgba(47, 191, 113, 0.9);
+}
+
+.weapon.rare .weapon-picture::before {
+  background: linear-gradient(180deg, #ffffff, #2f80ed);
+  box-shadow: 0 0 15px rgba(47, 128, 237, 0.95);
+}
+
+.weapon.epic .weapon-picture::before {
+  background: linear-gradient(180deg, #ffffff, #c77dff);
+  box-shadow: 0 0 17px rgba(199, 125, 255, 1);
+}
+
+.weapon.legendary .weapon-picture {
+  border-color: rgba(37, 17, 5, 0.42);
+  background:
+    radial-gradient(circle at 50% 26%, rgba(255, 255, 255, 0.7), transparent 18px),
+    rgba(255, 248, 232, 0.5);
+}
+
+.weapon.legendary .weapon-picture::before {
+  background: linear-gradient(180deg, #fff8e8, #ffd166 45%, #ff6b2b);
+  box-shadow: 0 0 18px rgba(255, 209, 102, 1), 0 0 30px rgba(255, 107, 43, 0.7);
+}
+
+.weapon.secret .weapon-picture {
+  border-color: rgba(255, 255, 255, 0.8);
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 0, 76, 0.68), transparent 20px),
+    rgba(0, 0, 0, 0.44);
+}
+
+.weapon.secret .weapon-picture::before {
+  background: linear-gradient(180deg, #ffffff, #ff004c 42%, #111111);
+  box-shadow: 0 0 20px rgba(255, 0, 76, 1), 0 0 34px rgba(255, 255, 255, 0.7);
+}
+
+.weapon-style-0 { --sword-w: 7px; --sword-h: 43px; --sword-guard: 25px; --sword-curve: 9px 9px 3px 3px; --sword-tilt: 32deg; --hero-sword-tilt: 48deg; --sword-blade: linear-gradient(180deg, #f8fbff, #73d2de); --sword-guard-color: #ffd166; }
+.weapon-style-1 { --sword-w: 10px; --sword-h: 39px; --sword-guard: 31px; --sword-curve: 50% 50% 10px 10px; --sword-tilt: 38deg; --sword-blade: linear-gradient(180deg, #fff7d6, #b9903f 52%, #e9fbff); --sword-guard-color: #b5651d; }
+.weapon-style-2 { --sword-w: 6px; --sword-h: 48px; --sword-guard: 22px; --sword-curve: 999px 999px 4px 4px; --sword-tilt: 24deg; --sword-blade: linear-gradient(90deg, #ffffff, #9aa6b2, #ffffff); --sword-guard-color: #3a3230; }
+.weapon-style-3 { --sword-w: 8px; --sword-h: 52px; --sword-guard: 34px; --sword-curve: 3px 18px 4px 12px; --sword-tilt: 48deg; --sword-blade: linear-gradient(180deg, #ffffff, #c8d0d8, #5f6d7a); --sword-guard-color: #1a1022; }
+.weapon-style-4 { --sword-w: 13px; --sword-h: 36px; --sword-guard: 30px; --sword-curve: 18px 18px 6px 6px; --sword-tilt: 30deg; --sword-blade: linear-gradient(180deg, #ffffff, #7dd3fc 42%, #8338ec); --sword-guard-color: #111111; }
+.weapon-style-5 { --sword-w: 9px; --sword-h: 50px; --sword-guard: 28px; --sword-curve: 6px; --sword-tilt: 34deg; --sword-blade: repeating-linear-gradient(90deg, #e9fbff 0 2px, #7b8794 3px 5px); --sword-guard-color: #59606b; }
+.weapon-style-6 { --sword-w: 6px; --sword-h: 55px; --sword-guard: 26px; --sword-curve: 999px 999px 2px 2px; --sword-tilt: 54deg; --sword-blade: linear-gradient(180deg, #ffffff, #dce5ed); --sword-guard-color: #d69b23; }
+.weapon-style-7 { --sword-w: 5px; --sword-h: 45px; --sword-guard: 36px; --sword-curve: 999px; --sword-tilt: 18deg; --sword-blade: linear-gradient(180deg, #ffffff, #e5e7eb); --sword-guard-color: #f5d54a; }
+.weapon-style-8 { --sword-w: 7px; --sword-h: 46px; --sword-guard: 25px; --sword-curve: 20px 20px 4px 4px; --sword-tilt: 42deg; --sword-blade: linear-gradient(180deg, #ffffff, #111111); --sword-guard-color: #8f2d1d; }
+.weapon-style-9 { --sword-w: 8px; --sword-h: 44px; --sword-guard: 28px; --sword-curve: 2px; --sword-tilt: 58deg; --sword-blade: linear-gradient(180deg, #fff0bd, #b88718); --sword-guard-color: #ffd166; }
+.weapon-style-10 { --sword-w: 10px; --sword-h: 42px; --sword-guard: 26px; --sword-curve: 14px 4px 14px 4px; --sword-tilt: 28deg; --sword-blade: linear-gradient(180deg, #ffffff, #a7f3d0, #2f80ed); --sword-guard-color: #164c9a; }
+.weapon-style-11 { --sword-w: 4px; --sword-h: 56px; --sword-guard: 33px; --sword-curve: 999px; --sword-tilt: 36deg; --sword-blade: linear-gradient(180deg, #fff8e8, #f43f5e); --sword-guard-color: #8338ec; }
+.weapon-style-12 { --sword-w: 12px; --sword-h: 38px; --sword-guard: 22px; --sword-curve: 4px 24px 4px 24px; --sword-tilt: 46deg; --sword-blade: linear-gradient(180deg, #c7d2fe, #4338ca); --sword-guard-color: #3a2415; }
+.weapon-style-13 { --sword-w: 7px; --sword-h: 47px; --sword-guard: 38px; --sword-curve: 9px; --sword-tilt: 22deg; --sword-blade: linear-gradient(180deg, #fff, #60a5fa 45%, #22d3ee); --sword-guard-color: #f97316; }
+.weapon-style-14 { --sword-w: 14px; --sword-h: 41px; --sword-guard: 24px; --sword-curve: 18px 4px 18px 4px; --sword-tilt: 50deg; --sword-blade: linear-gradient(180deg, #ffffff, #334155); --sword-guard-color: #7f1d1d; }
+.weapon-style-15 { --sword-w: 6px; --sword-h: 50px; --sword-guard: 30px; --sword-curve: 999px 999px 5px 5px; --sword-tilt: 16deg; --sword-blade: linear-gradient(180deg, #fef3c7, #ffffff); --sword-guard-color: #0f766e; }
+.weapon-style-16 { --sword-w: 11px; --sword-h: 43px; --sword-guard: 31px; --sword-curve: 4px 20px 12px 4px; --sword-tilt: 40deg; --sword-blade: linear-gradient(180deg, #fff, #ef4444 50%, #111827); --sword-guard-color: #ef4444; }
+.weapon-style-17 { --sword-w: 8px; --sword-h: 49px; --sword-guard: 27px; --sword-curve: 28px 28px 5px 5px; --sword-tilt: 60deg; --sword-blade: linear-gradient(180deg, #ffffff, #94a3b8, #e2e8f0); --sword-guard-color: #92400e; }
+
+.weapon-card .weapon-picture::before {
+  width: var(--sword-w, 7px);
+  height: var(--sword-h, 43px);
+  border-radius: var(--sword-curve, 9px 9px 3px 3px);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.88) 0 38%, transparent 39%),
+    var(--sword-blade, linear-gradient(180deg, #d7fbff, #73d2de));
+  transform: rotate(var(--sword-tilt, 32deg));
+}
+
+.weapon-card .weapon-picture::after {
+  width: var(--sword-guard, 25px);
+  background: var(--sword-guard-color, #ffd166);
+  transform: rotate(var(--sword-tilt, 32deg));
+}
+
+.weapon-card .weapon-picture i {
+  transform: rotate(var(--sword-tilt, 32deg));
+}
+
+.armor-card {
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+}
+
+.armor-card small,
+.armor-card .sell-button {
+  grid-column: 2;
+}
+
+.armor-picture {
+  grid-row: 1 / span 3;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 74px;
+  border: 2px solid rgba(255, 248, 232, 0.74);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 24%, rgba(255, 255, 255, 0.36), transparent 16px),
+    rgba(37, 17, 5, 0.22);
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.16);
+}
+
+.armor-picture::before,
+.armor-picture::after,
+.armor-picture i,
+.armor-picture i::before,
+.armor-picture i::after {
+  content: "";
+  position: absolute;
+  display: block;
+}
+
+.helmet-card .armor-picture::before {
+  left: 8px;
+  top: 14px;
+  width: 32px;
+  height: 28px;
+  border: 3px solid #1a1022;
+  border-radius: var(--armor-helmet-radius, 50% 50% 25% 25%);
+  background: var(--armor-helmet-bg, linear-gradient(180deg, #dce5ed, #59606b));
+  box-shadow: 0 0 12px var(--armor-glow, transparent);
+}
+
+.helmet-card .armor-picture::after {
+  left: 13px;
+  top: 30px;
+  width: 22px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--armor-visor, #111827);
+}
+
+.helmet-card .armor-picture i {
+  left: 8px;
+  top: 40px;
+  width: 33px;
+  height: 19px;
+  border: 3px solid var(--armor-edge, #1a1022);
+  border-top: 0;
+  border-radius: 0 0 18px 18px;
+}
+
+.body-card .armor-picture::before {
+  left: 12px;
+  top: 18px;
+  width: 24px;
+  height: 39px;
+  border: 3px solid var(--armor-edge, #1a1022);
+  border-radius: 14px 14px 8px 8px;
+  background:
+    var(--armor-mark, linear-gradient(90deg, transparent 0 43%, rgba(47, 128, 237, 0.55) 44% 56%, transparent 57%)),
+    var(--armor-body-bg, linear-gradient(180deg, #dce5ed, #59606b));
+  box-shadow: 0 0 12px var(--armor-glow, transparent);
+}
+
+.body-card .armor-picture::after {
+  left: 4px;
+  top: 24px;
+  width: 40px;
+  height: 14px;
+  border: 3px solid var(--armor-edge, #1a1022);
+  border-radius: 50%;
+  background: var(--armor-shoulder, #7b8794);
+}
+
+.armor-style-0 { --armor-edge: #1a1022; --armor-helmet-bg: linear-gradient(180deg, #dce5ed, #59606b); --armor-body-bg: linear-gradient(180deg, #dce5ed, #59606b); --armor-visor: #111827; --armor-shoulder: #7b8794; --armor-shadow: rgba(47, 128, 237, 0.25); }
+.armor-style-1 { --armor-edge: #1f2937; --armor-helmet-bg: linear-gradient(180deg, #171717, #4b5563); --armor-body-bg: linear-gradient(180deg, #111827, #374151); --armor-visor: #020617; --armor-shoulder: #111827; --armor-glow: rgba(255, 255, 255, 0.18); }
+.armor-style-2 { --armor-edge: #4a3724; --armor-helmet-bg: linear-gradient(180deg, #d9c29d, #8d806b); --armor-body-bg: linear-gradient(180deg, #d9c29d, #7c6f5a); --armor-visor: #2d2a24; --armor-shoulder: #a38b64; }
+.armor-style-3 { --armor-edge: #0f3f89; --armor-helmet-bg: linear-gradient(180deg, #2f80ed, #164c9a); --armor-body-bg: linear-gradient(180deg, #56ccf2, #2f80ed); --armor-visor: #dff7ff; --armor-shoulder: #164c9a; --armor-glow: rgba(86, 204, 242, 0.5); }
+.armor-style-4 { --armor-edge: #1d3557; --armor-helmet-bg: linear-gradient(180deg, #f8fbff, #8ecae6); --armor-body-bg: linear-gradient(180deg, #f8fbff, #8ecae6); --armor-visor: #1d3557; --armor-shoulder: #dce5ed; }
+.armor-style-5 { --armor-edge: #111827; --armor-helmet-bg: linear-gradient(180deg, #6b7280, #111827); --armor-body-bg: linear-gradient(180deg, #6b7280, #111827); --armor-visor: #f8fbff; --armor-shoulder: #374151; }
+.armor-style-6 { --armor-edge: #7f1d1d; --armor-helmet-bg: linear-gradient(180deg, #ff7a7a, #8f2d1d); --armor-body-bg: linear-gradient(180deg, #fb923c, #8f2d1d); --armor-visor: #111827; --armor-shoulder: #ef4444; --armor-glow: rgba(255, 107, 43, 0.55); }
+.armor-style-7 { --armor-edge: #b88718; --armor-helmet-bg: linear-gradient(180deg, #fff0bd, #d69b23); --armor-body-bg: linear-gradient(180deg, #fff0bd, #d69b23); --armor-visor: #4a3724; --armor-shoulder: #ffd166; --armor-glow: rgba(255, 209, 102, 0.65); }
+.armor-style-8 { --armor-edge: #3c096c; --armor-helmet-bg: linear-gradient(180deg, #c77dff, #3c096c); --armor-body-bg: linear-gradient(180deg, #8338ec, #1a1022); --armor-visor: #fff8e8; --armor-shoulder: #8338ec; --armor-glow: rgba(199, 125, 255, 0.75); }
+.armor-style-9 { --armor-edge: #064e3b; --armor-helmet-bg: linear-gradient(180deg, #a7f3d0, #047857); --armor-body-bg: linear-gradient(180deg, #2fbf71, #064e3b); --armor-visor: #d1fae5; --armor-shoulder: #10b981; --armor-glow: rgba(47, 191, 113, 0.55); }
+.armor-style-10 { --armor-edge: #0f172a; --armor-helmet-bg: linear-gradient(180deg, #ffffff, #0f172a); --armor-body-bg: linear-gradient(180deg, #94a3b8, #020617); --armor-visor: #ff004c; --armor-shoulder: #334155; --armor-glow: rgba(255, 0, 76, 0.7); }
+.armor-style-11 { --armor-edge: #164e63; --armor-helmet-bg: linear-gradient(180deg, #cffafe, #0891b2); --armor-body-bg: linear-gradient(180deg, #67e8f9, #164e63); --armor-visor: #ecfeff; --armor-shoulder: #06b6d4; --armor-glow: rgba(103, 232, 249, 0.65); }
 
 .weapon small {
   font-weight: 900;
