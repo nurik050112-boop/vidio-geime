@@ -639,7 +639,7 @@ button.secondary {
   bottom: 14px;
   z-index: 40;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(160px, 220px) auto auto auto auto;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 220px) auto auto auto auto auto;
   gap: 10px;
   align-items: center;
   padding: 10px;
@@ -747,7 +747,8 @@ button.secondary {
 .duel-loot,
 .duel-fighters,
 .duel-trade,
-.duel-chat {
+.duel-chat,
+.online-players {
   display: grid;
   gap: 8px;
   padding: 10px;
@@ -787,6 +788,37 @@ button.secondary {
 
 .duel-chat {
   text-align: left;
+}
+
+.online-players {
+  text-align: left;
+}
+
+.online-player-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.online-player-list button {
+  display: grid;
+  gap: 3px;
+  min-height: 54px;
+  padding: 8px 10px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.online-player-list span,
+.online-player-list small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.online-player-list small {
+  color: #fff8e8;
+  font-weight: 900;
 }
 
 .duel-chat-log {

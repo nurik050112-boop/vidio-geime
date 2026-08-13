@@ -2088,6 +2088,18 @@ export function HomePage() {
     setMessage(`${playerName} ищет игроков в сети для дуэли...`);
   }
 
+  function selectDuelPlayer(player: DuelPlayer) {
+    setDuelTargetId(player.id);
+    setDuelOpponent(player);
+    setDuelTradeOpen(false);
+    setDuelStatus('challenge');
+    setDuelChatMessages([
+      { id: `system-${Date.now()}`, from: 'Система', text: `Выбран игрок онлайн: ${player.name} ID ${player.id}.` },
+      { id: `opponent-${Date.now()}`, from: player.name, text: 'Я тут. Можем драться, обмениваться или писать.' },
+    ]);
+    setMessage(`${player.name} выбран из списка онлайн игроков.`);
+  }
+
   function declineDuel() {
     setDuelStatus('declined');
     setDuelTradeOpen(false);
@@ -3193,6 +3205,22 @@ export function HomePage() {
                 </button>
               </div>
             )}
+            <div className="online-players">
+              <strong>Люди в сети</strong>
+              <div className="online-player-list">
+                {duelPlayers.map((player) => (
+                  <button
+                    className={duelOpponent?.id === player.id ? 'selected' : ''}
+                    key={player.id}
+                    onClick={() => selectDuelPlayer(player)}
+                    type="button"
+                  >
+                    <span>{player.name}</span>
+                    <small>ID {player.id} | сила {formatPower(player.power)}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
             {duelOpponent && (
               <div className="duel-chat">
                 <strong>Чат с {duelOpponent.name} ID {duelOpponent.id}</strong>
@@ -3250,6 +3278,12 @@ export function HomePage() {
           </div>
           <button className="duel-button" onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
             Дуэль
+          </button>
+          <button className="secondary" onClick={() => {
+            setDuelStatus('searching');
+            setMessage('Открыт список людей в сети.');
+          }} type="button">
+            Игроки
           </button>
         </div>
       )}
