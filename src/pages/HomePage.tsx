@@ -2037,15 +2037,10 @@ export function HomePage() {
       setGold(Number.MAX_SAFE_INTEGER);
       setGoldMultiplier(100);
       setInfiniteGold(true);
-      setImpossibleEnding(true);
-      unlockAchievement('impossibleEnding');
-      setVictory(true);
-      setChapter(dragonSons.length + 1);
-      navigate('/world');
     }
     setAdminCode('');
     setMessage(isSuperAdminCode
-      ? 'Код ццтгкшлцц принят. Ядерка усилена до ∞, открыта невозможная концовка и артефакт медальон.'
+      ? 'Код ццтгкшлцц принят. Ядерка усилена до ∞, получены шлем, бесконечные деньги и множитель денег x100.'
       : 'Код wwnurikww принят. Получена админская ядерка и шлем с огромным здоровьем.');
   }
 
