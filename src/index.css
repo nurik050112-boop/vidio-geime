@@ -2887,6 +2887,50 @@ button.secondary {
 .boss.dragon-family { --dragon-light: #fff8b8; --dragon-mid: #fff275; --dragon-dark: #8a5a00; --dragon-belly: #fffdf0; --dragon-wing: #ffd166; --dragon-glow: rgba(255, 242, 117, 0.84); }
 .boss.final-boss { --dragon-light: #fff275; --dragon-mid: #ff004c; --dragon-dark: #16020a; --dragon-belly: #fff8e8; --dragon-wing: #ff6b2b; --dragon-glow: rgba(255, 0, 76, 0.86); }
 
+.boss.final-boss::before {
+  left: 32px;
+  top: 12px;
+  filter: saturate(0.82) contrast(1.12);
+}
+
+.boss.final-boss .dragon-crown {
+  right: 70px;
+  top: 16px;
+}
+
+.boss.final-boss .boss-fire {
+  display: block;
+  right: -54px;
+  top: 98px;
+  width: 96px;
+  height: 46px;
+}
+
+.boss.final-boss .boss-fire::before {
+  content: "";
+  position: absolute;
+  left: -48px;
+  top: 20px;
+  width: 70px;
+  height: 18px;
+  border: 4px solid #16020a;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3d3d46, #b8c1d1);
+  transform: rotate(-22deg);
+}
+
+.boss.final-boss .boss-fire::after {
+  content: "";
+  position: absolute;
+  left: -58px;
+  top: -8px;
+  width: 34px;
+  height: 34px;
+  border: 4px solid #16020a;
+  border-radius: 50%;
+  background: radial-gradient(circle, #b8c1d1 0 8px, #4b5563 9px);
+}
+
 .monster-pack {
   position: absolute;
   left: 33%;
@@ -6005,6 +6049,16 @@ button.selected {
   50% { transform: translate(-22px, 12px) rotate(-8deg); }
 }
 
+@keyframes spirit-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
+}
+
+@keyframes spirit-shadow {
+  0%, 100% { transform: scaleX(1); opacity: 0.62; }
+  50% { transform: scaleX(0.72); opacity: 0.36; }
+}
+
 @keyframes fire-breath {
   to { transform: scaleX(1.18); opacity: 0.74; }
 }
@@ -6647,4 +6701,624 @@ button.selected {
 
 .admin-boss.all-bosses {
   filter: drop-shadow(0 0 28px rgba(255, 242, 117, 0.9)) hue-rotate(35deg);
+}
+
+.sky.scene-underground-spirit {
+  image-rendering: pixelated;
+  background:
+    radial-gradient(ellipse at 55% 48%, rgba(126, 59, 182, 0.55) 0 170px, transparent 172px),
+    radial-gradient(ellipse at 50% 62%, rgba(255, 43, 0, 0.4) 0 96px, transparent 98px),
+    linear-gradient(180deg, #05030a 0 20%, #1b1032 21% 58%, #0a0610 59% 100%);
+}
+
+.sky.scene-underground-spirit::before {
+  height: 100%;
+  background:
+    linear-gradient(180deg, #020106 0 10%, transparent 10%),
+    linear-gradient(155deg, #020106 0 4%, transparent 4% 100%),
+    linear-gradient(205deg, #020106 0 5%, transparent 5% 100%),
+    linear-gradient(90deg, transparent 0 12%, #ff1c11 12% 13%, transparent 13% 84%, #ff1c11 84% 85%, transparent 85%),
+    linear-gradient(90deg, transparent 0 38%, #0b0711 38% 42%, transparent 42% 47%, #08050d 47% 52%, transparent 52% 56%, #0e0814 56% 61%, transparent 61%),
+    linear-gradient(0deg, transparent 0 39%, #09050f 39% 54%, transparent 54%),
+    radial-gradient(ellipse at 52% 44%, rgba(211, 82, 255, 0.24), transparent 28%),
+    repeating-linear-gradient(90deg, transparent 0 36px, rgba(176, 72, 255, 0.16) 37px 39px);
+  box-shadow: inset 0 0 170px rgba(0, 0, 0, 0.94);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.sky.scene-underground-spirit::after {
+  height: 156px;
+  border-top-color: #35113a;
+  border-bottom-color: #030106;
+  background:
+    linear-gradient(105deg, transparent 0 7%, #8cff38 7% 8%, #22122d 8% 13%, transparent 13%),
+    linear-gradient(72deg, transparent 0 81%, #a63dff 81% 83%, #1a0b25 83% 88%, transparent 88%),
+    radial-gradient(ellipse at 48% 62%, #ff2b00 0 86px, #7f0805 87px 122px, transparent 123px),
+    linear-gradient(18deg, transparent 0 20%, #ff2b00 20% 26%, transparent 26%),
+    linear-gradient(162deg, transparent 0 62%, #ff2b00 62% 68%, transparent 68%),
+    radial-gradient(ellipse at 18% 18%, #25122e 0 72px, transparent 73px),
+    radial-gradient(ellipse at 77% 14%, #281133 0 82px, transparent 83px),
+    linear-gradient(180deg, #16081f, #050208);
+  box-shadow: inset 0 12px 0 rgba(255, 40, 0, 0.18), 0 -18px 32px rgba(255, 28, 17, 0.3);
+}
+
+.final-spirit-boss {
+  position: absolute;
+  right: 18%;
+  bottom: 178px;
+  z-index: 9;
+  width: 112px;
+  height: 180px;
+  filter: drop-shadow(0 0 24px rgba(180, 170, 200, 0.42)) drop-shadow(0 18px 12px rgba(0, 0, 0, 0.62));
+  animation: spirit-float 1.6s ease-in-out infinite;
+}
+
+.final-spirit-boss::before {
+  content: "";
+  position: absolute;
+  left: 30px;
+  top: 0;
+  width: 48px;
+  height: 56px;
+  border-radius: 48% 48% 22% 22%;
+  background: #08070a;
+  box-shadow:
+    -12px 18px #17151b,
+    14px 20px #131118,
+    0 54px #202027,
+    -14px 68px #25242c,
+    16px 72px #191820,
+    -24px 92px #2b2a32,
+    8px 98px #222129,
+    28px 104px #16151c,
+    -20px 126px #25242d,
+    4px 134px #17161d;
+  clip-path: polygon(22% 0, 78% 0, 92% 28%, 88% 72%, 100% 100%, 65% 82%, 52% 100%, 36% 82%, 0 100%, 12% 70%, 8% 28%);
+}
+
+.final-spirit-boss::after {
+  content: "";
+  position: absolute;
+  left: 34px;
+  bottom: -18px;
+  width: 46px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.62);
+  filter: blur(1px);
+  animation: spirit-shadow 1.6s ease-in-out infinite;
+}
+
+.final-spirit-boss span {
+  position: absolute;
+  left: 45px;
+  top: 22px;
+  width: 18px;
+  height: 20px;
+  border-radius: 50%;
+  background: #020203;
+  box-shadow: 0 0 18px rgba(180, 170, 200, 0.28), inset 0 -8px 0 #141218;
+}
+
+.final-spirit-boss span::before,
+.final-spirit-boss span::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  width: 48px;
+  height: 78px;
+  border-radius: 48% 48% 30% 30%;
+  background: #09080d;
+  box-shadow: 0 0 16px rgba(190, 96, 255, 0.28);
+  clip-path: polygon(20% 0, 78% 0, 92% 35%, 82% 100%, 58% 80%, 44% 100%, 20% 78%, 4% 100%, 14% 36%);
+}
+
+.final-spirit-boss span::before {
+  left: -58px;
+  transform: scale(0.74);
+  opacity: 0.82;
+}
+
+.final-spirit-boss span::after {
+  left: 36px;
+  top: 34px;
+  transform: scale(0.62);
+  opacity: 0.68;
+}
+
+.sky[class*="scene-city-"],
+.sky.scene-dungeon,
+.sky.scene-bbi,
+.sky.scene-ais,
+.sky.scene-admin,
+.sky.scene-nurali,
+.sky.scene-fury,
+.sky.scene-anuar,
+.sky.scene-mansur,
+.sky.scene-arailm,
+.sky.scene-family,
+.sky.scene-boss-final {
+  image-rendering: pixelated;
+}
+
+.sky.scene-city-0 {
+  background:
+    radial-gradient(ellipse at 24% 76%, #8aa85a 0 70px, transparent 71px),
+    radial-gradient(ellipse at 76% 75%, #7e9d50 0 82px, transparent 83px),
+    linear-gradient(180deg, #8bd8ff 0 38%, #b7e3a1 39% 60%, #78b65b 61% 100%);
+}
+
+.sky.scene-city-0::before {
+  height: 100%;
+  background:
+    linear-gradient(135deg, transparent 0 14%, #f8fbff 15% 22%, transparent 23%),
+    linear-gradient(25deg, transparent 0 22%, #dff3ff 23% 29%, transparent 30%),
+    linear-gradient(90deg, transparent 0 8%, #4f7c5a 8% 12%, transparent 12% 82%, #416e4c 82% 86%, transparent 86%),
+    radial-gradient(ellipse at 20% 34%, #dff6ff 0 70px, transparent 71px),
+    radial-gradient(ellipse at 74% 30%, #eefaff 0 82px, transparent 83px);
+  box-shadow: inset 0 -120px 0 rgba(74, 138, 63, 0.24);
+}
+
+.sky.scene-city-0::after {
+  height: 138px;
+  border-top-color: #7cb342;
+  border-bottom-color: #5b3d28;
+  background:
+    radial-gradient(ellipse at 22% 12%, #5d8d3b 0 38px, transparent 39px),
+    radial-gradient(ellipse at 62% 16%, #6a9a42 0 46px, transparent 47px),
+    linear-gradient(180deg, #8dcf5a, #5e9b3b);
+}
+
+.sky.scene-city-1 {
+  background:
+    radial-gradient(ellipse at 50% 70%, rgba(136, 192, 154, 0.45) 0 180px, transparent 181px),
+    linear-gradient(180deg, #9bd8c8 0 42%, #4e806d 43% 62%, #233a2d 63% 100%);
+}
+
+.sky.scene-city-1::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 5%, #273823 5% 10%, #4f3628 10% 15%, transparent 15% 29%, #223c31 29% 34%, #5b3d2d 34% 39%, transparent 39% 65%, #263f32 65% 70%, #4a3124 70% 76%, transparent 76% 88%, #203625 88% 94%),
+    radial-gradient(circle at 12% 6%, #1f3d2f 0 120px, transparent 121px),
+    radial-gradient(circle at 30% 4%, #244a34 0 98px, transparent 99px),
+    radial-gradient(circle at 86% 4%, #1f3d2f 0 118px, transparent 119px),
+    repeating-linear-gradient(90deg, transparent 0 54px, rgba(31, 72, 54, 0.42) 55px 62px),
+    linear-gradient(180deg, rgba(153, 213, 192, 0.3), rgba(18, 35, 26, 0.4));
+  box-shadow: inset 0 0 150px rgba(9, 22, 15, 0.62);
+}
+
+.sky.scene-city-1::after {
+  height: 136px;
+  border-top-color: #557b43;
+  border-bottom-color: #3b2418;
+  background:
+    radial-gradient(ellipse at 12% 12%, #294f34 0 42px, transparent 43px),
+    radial-gradient(ellipse at 36% 8%, #6b5a32 0 34px, transparent 35px),
+    radial-gradient(ellipse at 74% 16%, #385f3b 0 58px, transparent 59px),
+    radial-gradient(ellipse at 51% 20%, #87d5df 0 72px, transparent 73px),
+    linear-gradient(180deg, #5f8f45, #294f34);
+}
+
+.sky.scene-city-2 {
+  background:
+    radial-gradient(ellipse at 45% 76%, #a1a78e 0 150px, transparent 151px),
+    linear-gradient(180deg, #a9d8e5 0 43%, #b4c493 44% 65%, #6d8459 66% 100%);
+}
+
+.sky.scene-city-2::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 13%, #6d716d 13% 17%, transparent 17% 28%, #989a8d 28% 32%, transparent 32% 48%, #5c635f 48% 54%, transparent 54% 68%, #8d9184 68% 73%, transparent 73%),
+    radial-gradient(ellipse at 50% 30%, rgba(255, 248, 232, 0.32), transparent 34%);
+  box-shadow: inset 0 -100px 0 rgba(88, 104, 75, 0.22);
+}
+
+.sky.scene-city-2::after {
+  height: 132px;
+  border-top-color: #90947d;
+  background:
+    radial-gradient(ellipse at 20% 16%, #737a6d 0 38px, transparent 39px),
+    radial-gradient(ellipse at 64% 12%, #8f9385 0 54px, transparent 55px),
+    linear-gradient(180deg, #87956a, #566449);
+}
+
+.sky.scene-city-3 {
+  background:
+    radial-gradient(ellipse at 52% 78%, #3a4547 0 145px, transparent 146px),
+    linear-gradient(180deg, #93a9ad 0 42%, #647678 43% 64%, #30393b 65% 100%);
+}
+
+.sky.scene-city-3::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 10%, #1f2528 10% 13%, transparent 13% 30%, #2e3738 30% 35%, transparent 35% 58%, #202729 58% 62%, transparent 62% 82%, #303a3c 82% 86%, transparent 86%),
+    radial-gradient(circle at 78% 24%, rgba(230, 240, 240, 0.24) 0 68px, transparent 69px),
+    repeating-linear-gradient(90deg, transparent 0 76px, rgba(25, 30, 32, 0.18) 77px 82px);
+  box-shadow: inset 0 0 145px rgba(12, 16, 18, 0.72);
+}
+
+.sky.scene-city-3::after {
+  height: 136px;
+  border-top-color: #5d6d70;
+  border-bottom-color: #1f2528;
+  background:
+    radial-gradient(ellipse at 18% 16%, #2c3335 0 34px, transparent 35px),
+    radial-gradient(ellipse at 76% 14%, #465354 0 50px, transparent 51px),
+    repeating-linear-gradient(90deg, rgba(30, 35, 38, 0.38) 0 34px, transparent 35px 68px),
+    linear-gradient(180deg, #526065, #252d30);
+}
+
+.sky.scene-city-4,
+.sky.scene-anuar {
+  background:
+    radial-gradient(ellipse at 28% 78%, #2b1510 0 150px, transparent 151px),
+    radial-gradient(circle at 22% 60%, #ff7a1a 0 48px, transparent 49px),
+    radial-gradient(circle at 74% 56%, #ff4d00 0 62px, transparent 63px),
+    linear-gradient(180deg, #201016 0 42%, #6b2415 43% 66%, #1b0d10 67% 100%);
+}
+
+.sky.scene-city-4::before,
+.sky.scene-anuar::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 18%, #7b3b20 18% 24%, transparent 24% 50%, #5d2c1c 50% 57%, transparent 57% 78%, #8a3f22 78% 84%, transparent 84%),
+    radial-gradient(circle at 50% 20%, rgba(255, 209, 102, 0.32), transparent 32%);
+  box-shadow: inset 0 0 150px rgba(20, 0, 0, 0.78);
+}
+
+.sky.scene-city-4::after,
+.sky.scene-anuar::after {
+  height: 136px;
+  border-top-color: #ff9f1c;
+  border-bottom-color: #120806;
+  background:
+    radial-gradient(ellipse at 26% 14%, #ff6b2b 0 48px, transparent 49px),
+    radial-gradient(ellipse at 70% 18%, #d00000 0 58px, transparent 59px),
+    linear-gradient(180deg, #552116, #170b0a);
+}
+
+.sky.scene-city-5,
+.sky.scene-dungeon {
+  background:
+    radial-gradient(ellipse at 50% 48%, #d98c4f 0 60px, transparent 61px),
+    repeating-radial-gradient(ellipse at 50% 42%, #171313 0 20px, #3b302b 21px 42px, #6e4939 43px 54px, #1e1817 55px 70px);
+}
+
+.sky.scene-city-5::before,
+.sky.scene-dungeon::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 12%, #2d2522 12% 20%, transparent 20% 42%, #4b3327 42% 50%, transparent 50% 70%, #2a211e 70% 80%, transparent 80%),
+    radial-gradient(ellipse at 50% 36%, rgba(255, 178, 102, 0.28), transparent 36%);
+  box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.82);
+}
+
+.sky.scene-city-5::after,
+.sky.scene-dungeon::after {
+  height: 132px;
+  border-top-color: #4b3327;
+  background:
+    radial-gradient(ellipse at 20% 20%, #2c2421 0 52px, transparent 53px),
+    radial-gradient(ellipse at 72% 22%, #4b3327 0 64px, transparent 65px),
+    linear-gradient(180deg, #261d1a, #120d0b);
+}
+
+.sky.scene-city-6,
+.sky.scene-ais {
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(119, 211, 232, 0.22) 0 210px, transparent 211px),
+    linear-gradient(180deg, #1b7892 0 40%, #0e5169 41% 68%, #052032 69% 100%);
+}
+
+.sky.scene-city-6::before,
+.sky.scene-ais::before {
+  height: 100%;
+  background:
+    repeating-linear-gradient(165deg, rgba(255, 255, 255, 0.12) 0 2px, transparent 3px 42px),
+    linear-gradient(90deg, transparent 0 14%, #19384a 14% 18%, transparent 18% 52%, #224b5a 52% 58%, transparent 58% 76%, #173746 76% 82%, transparent 82%),
+    radial-gradient(ellipse at 50% 14%, rgba(255, 255, 255, 0.24), transparent 28%);
+  box-shadow: inset 0 0 150px rgba(0, 10, 28, 0.86);
+}
+
+.sky.scene-city-6::after,
+.sky.scene-ais::after {
+  height: 136px;
+  border-top-color: #77d3e8;
+  background:
+    radial-gradient(circle at 14% 30%, #ff7fa3 0 14px, transparent 15px),
+    radial-gradient(circle at 44% 22%, #75c7e8 0 20px, transparent 21px),
+    radial-gradient(circle at 76% 34%, #ffb3c8 0 16px, transparent 17px),
+    linear-gradient(180deg, #0b6077, #031827);
+}
+
+.sky.scene-city-7 {
+  background:
+    radial-gradient(ellipse at 50% 76%, #41684d 0 178px, transparent 179px),
+    linear-gradient(180deg, #86c9b3 0 40%, #456c59 41% 65%, #183023 66% 100%);
+}
+
+.sky.scene-city-7::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 8%, #203c2c 8% 15%, transparent 15% 34%, #254832 34% 42%, transparent 42% 66%, #1c3528 66% 74%, transparent 74% 88%, #2e4d33 88% 94%),
+    radial-gradient(circle at 18% 12%, #294f34 0 90px, transparent 91px),
+    radial-gradient(circle at 74% 8%, #244a34 0 112px, transparent 113px);
+  box-shadow: inset 0 0 150px rgba(8, 24, 18, 0.74);
+}
+
+.sky.scene-city-7::after {
+  height: 136px;
+  border-top-color: #4d7b54;
+  background:
+    radial-gradient(ellipse at 28% 16%, #2a5a3b 0 58px, transparent 59px),
+    radial-gradient(ellipse at 62% 18%, #5aa4a2 0 42px, transparent 43px),
+    linear-gradient(180deg, #4f8658, #203f2c);
+}
+
+.sky.scene-city-8,
+.sky.scene-city-9 {
+  background:
+    radial-gradient(ellipse at 28% 78%, #e9f7ff 0 120px, transparent 121px),
+    radial-gradient(ellipse at 72% 76%, #cfe7f7 0 160px, transparent 161px),
+    linear-gradient(180deg, #9bd7ff 0 38%, #f8fbff 39% 66%, #a7bfd4 67% 100%);
+}
+
+.sky.scene-city-8::before,
+.sky.scene-city-9::before {
+  height: 100%;
+  background:
+    linear-gradient(135deg, transparent 0 17%, #f8fbff 18% 29%, transparent 30%),
+    linear-gradient(45deg, transparent 0 64%, #e1f2ff 65% 74%, transparent 75%),
+    linear-gradient(90deg, transparent 0 18%, #6c7c8c 18% 22%, transparent 22% 66%, #596b77 66% 72%, transparent 72%);
+  box-shadow: inset 0 0 120px rgba(47, 83, 104, 0.36);
+}
+
+.sky.scene-city-8::after,
+.sky.scene-city-9::after {
+  height: 136px;
+  border-top-color: #dff3ff;
+  border-bottom-color: #6c7c8c;
+  background:
+    radial-gradient(ellipse at 22% 20%, #f8fbff 0 54px, transparent 55px),
+    radial-gradient(ellipse at 66% 16%, #d5e8f7 0 72px, transparent 73px),
+    linear-gradient(180deg, #e8f6ff, #8ea6bc);
+}
+
+.sky.scene-city-10 {
+  background:
+    radial-gradient(circle at 42% 70%, #6dbb70 0 48px, transparent 49px),
+    linear-gradient(180deg, #9ed8ff 0 42%, #f7d690 43% 70%, #c58b46 71% 100%);
+}
+
+.sky.scene-city-10::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 18%, #2f6b35 18% 21%, transparent 21% 68%, #3f7a3b 68% 71%, transparent 71%),
+    radial-gradient(circle at 18% 30%, #4f9f5e 0 42px, transparent 43px),
+    radial-gradient(circle at 72% 28%, #4f9f5e 0 50px, transparent 51px),
+    radial-gradient(ellipse at 50% 46%, rgba(255, 248, 232, 0.36), transparent 36%);
+}
+
+.sky.scene-city-10::after {
+  height: 136px;
+  border-top-color: #ddb46b;
+  background:
+    radial-gradient(ellipse at 44% 18%, #69ad61 0 70px, transparent 71px),
+    linear-gradient(180deg, #e4be76, #a97036);
+}
+
+.sky.scene-city-11 {
+  background:
+    radial-gradient(ellipse at 50% 78%, #9b7656 0 160px, transparent 161px),
+    linear-gradient(180deg, #acd7ef 0 42%, #b8845e 43% 70%, #604636 71% 100%);
+}
+
+.sky.scene-city-11::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 12%, #6d4d3d 12% 20%, transparent 20% 42%, #8b5f46 42% 50%, transparent 50% 74%, #614535 74% 82%, transparent 82%),
+    linear-gradient(180deg, transparent 0 48%, rgba(120, 88, 62, 0.44) 49% 52%, transparent 53%);
+}
+
+.sky.scene-city-11::after {
+  height: 132px;
+  border-top-color: #8b5f46;
+  background:
+    linear-gradient(90deg, transparent 0 34%, #6b4a36 34% 66%, transparent 66%),
+    linear-gradient(180deg, #9b7656, #4d382c);
+}
+
+.sky.scene-city-12 {
+  background:
+    linear-gradient(180deg, #8ed7cd 0 42%, #4f9b78 43% 66%, #2d5f43 67% 100%);
+}
+
+.sky.scene-city-12::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 10%, #6b4a2e 10% 15%, transparent 15% 35%, #704d32 35% 40%, transparent 40% 64%, #5b3d28 64% 70%, transparent 70% 86%, #6d4b30 86% 92%),
+    radial-gradient(circle at 16% 10%, #2d7a5a 0 86px, transparent 87px),
+    radial-gradient(circle at 52% 7%, #2f8a67 0 100px, transparent 101px),
+    radial-gradient(circle at 84% 10%, #287052 0 90px, transparent 91px);
+}
+
+.sky.scene-city-12::after {
+  height: 136px;
+  border-top-color: #62a87f;
+  background:
+    linear-gradient(90deg, transparent 0 22%, #9a6b3a 22% 30%, transparent 30% 48%, #b98245 48% 56%, transparent 56% 76%, #8c6237 76% 84%, transparent 84%),
+    linear-gradient(180deg, #5fb67e, #2e7148);
+}
+
+.sky.scene-city-13 {
+  background:
+    radial-gradient(ellipse at 50% 78%, #8f9589 0 180px, transparent 181px),
+    linear-gradient(180deg, #c4d6df 0 42%, #9aa39b 43% 68%, #606b66 69% 100%);
+}
+
+.sky.scene-city-13::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 14%, #6f746d 14% 21%, transparent 21% 38%, #8a8f85 38% 46%, transparent 46% 62%, #60685f 62% 72%, transparent 72%),
+    repeating-linear-gradient(0deg, transparent 0 26px, rgba(70, 76, 70, 0.24) 27px 31px);
+}
+
+.sky.scene-city-13::after {
+  height: 136px;
+  border-top-color: #9b9f92;
+  background:
+    repeating-linear-gradient(90deg, rgba(82, 88, 82, 0.42) 0 46px, transparent 47px 92px),
+    linear-gradient(180deg, #858b7f, #505852);
+}
+
+.sky.scene-city-14 {
+  background:
+    radial-gradient(ellipse at 52% 74%, #1d7f60 0 130px, transparent 131px),
+    linear-gradient(180deg, #8bd8ff 0 42%, #74c6a8 43% 64%, #246b43 65% 100%);
+}
+
+.sky.scene-city-14::before {
+  height: 100%;
+  background:
+    radial-gradient(circle at 52% 36%, #d94b1f 0 82px, transparent 83px),
+    linear-gradient(180deg, transparent 0 45%, #7a2e20 46% 52%, transparent 53%),
+    radial-gradient(circle at 12% 20%, #2f8a67 0 50px, transparent 51px),
+    radial-gradient(circle at 82% 18%, #2f8a67 0 52px, transparent 53px);
+}
+
+.sky.scene-city-14::after {
+  height: 136px;
+  border-top-color: #f47b45;
+  background:
+    radial-gradient(ellipse at 56% 4%, #235f44 0 82px, transparent 83px),
+    linear-gradient(180deg, #5aa86f, #1f5235);
+}
+
+.sky.scene-city-15,
+.sky.scene-admin {
+  background:
+    radial-gradient(circle at 50% 48%, #080411 0 46px, transparent 47px),
+    radial-gradient(circle at 50% 48%, transparent 0 78px, rgba(131, 56, 236, 0.54) 79px 98px, transparent 99px),
+    radial-gradient(circle at 50% 48%, transparent 0 140px, rgba(255, 255, 255, 0.12) 141px 142px, transparent 143px),
+    linear-gradient(180deg, #080411 0%, #170f24 48%, #050205 100%);
+}
+
+.sky.scene-city-15::before,
+.sky.scene-admin::before {
+  height: 100%;
+  background:
+    radial-gradient(circle at 18% 22%, #fff8e8 0 2px, transparent 3px),
+    radial-gradient(circle at 42% 18%, #fff8e8 0 2px, transparent 3px),
+    radial-gradient(circle at 72% 28%, #fff8e8 0 2px, transparent 3px),
+    radial-gradient(circle at 86% 14%, #fff8e8 0 2px, transparent 3px),
+    repeating-radial-gradient(circle at 50% 48%, transparent 0 32px, rgba(131, 56, 236, 0.18) 33px 36px);
+}
+
+.sky.scene-city-15::after,
+.sky.scene-admin::after {
+  height: 136px;
+  border-top-color: #8338ec;
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 255, 255, 0.16) 0 90px, transparent 91px),
+    linear-gradient(180deg, #12091d, #030205);
+}
+
+.sky.scene-city-16 {
+  background:
+    radial-gradient(circle at 22% 58%, #ff7cc8 0 46px, transparent 47px),
+    radial-gradient(circle at 72% 60%, #8cffc1 0 54px, transparent 55px),
+    linear-gradient(180deg, #a8e0ce 0 42%, #61a76b 43% 66%, #335f37 67% 100%);
+}
+
+.sky.scene-city-16::before {
+  height: 100%;
+  background:
+    radial-gradient(circle at 22% 18%, #ff87d1 0 70px, transparent 71px),
+    radial-gradient(circle at 72% 18%, #a7f3d0 0 74px, transparent 75px),
+    linear-gradient(90deg, transparent 0 20%, #6f4d2c 20% 25%, transparent 25% 70%, #65472b 70% 75%, transparent 75%);
+}
+
+.sky.scene-city-16::after {
+  height: 136px;
+  border-top-color: #ff9bd8;
+  background:
+    radial-gradient(circle at 30% 18%, #ff7cc8 0 22px, transparent 23px),
+    radial-gradient(circle at 64% 16%, #fff275 0 18px, transparent 19px),
+    linear-gradient(180deg, #64b96e, #335f37);
+}
+
+.sky.scene-city-17 {
+  background:
+    linear-gradient(180deg, #2b1b2d 0 42%, #2f2337 43% 66%, #1a1022 67% 100%);
+}
+
+.sky.scene-city-17::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 12%, #3a2b23 12% 18%, transparent 18% 36%, #4a3628 36% 44%, transparent 44% 60%, #382a22 60% 68%, transparent 68% 82%, #493529 82% 90%, transparent 90%),
+    repeating-linear-gradient(0deg, transparent 0 34px, rgba(255, 248, 232, 0.08) 35px 38px),
+    radial-gradient(circle at 52% 28%, rgba(199, 125, 255, 0.28), transparent 84px);
+}
+
+.sky.scene-city-17::after {
+  height: 136px;
+  border-top-color: #6b4b64;
+  background:
+    radial-gradient(circle at 40% 18%, #8338ec 0 18px, transparent 19px),
+    linear-gradient(180deg, #382a34, #140d18);
+}
+
+.sky.scene-city-18,
+.sky.scene-bbi,
+.sky.scene-nurali {
+  background:
+    linear-gradient(180deg, #9bd8ff 0 40%, #e8d9b8 41% 64%, #a4774b 65% 100%);
+}
+
+.sky.scene-city-18::before,
+.sky.scene-bbi::before,
+.sky.scene-nurali::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 10%, #b5651d 10% 18%, transparent 18% 28%, #fff8e8 28% 36%, transparent 36% 52%, #8ecae6 52% 60%, transparent 60% 72%, #d9a441 72% 82%, transparent 82%),
+    radial-gradient(circle at 50% 24%, rgba(255, 248, 232, 0.4), transparent 72px);
+}
+
+.sky.scene-city-18::after,
+.sky.scene-bbi::after,
+.sky.scene-nurali::after {
+  height: 136px;
+  border-top-color: #d9a441;
+  background:
+    repeating-linear-gradient(90deg, rgba(91, 61, 56, 0.22) 0 46px, transparent 47px 92px),
+    linear-gradient(180deg, #b98150, #684226);
+}
+
+.sky.scene-city-19,
+.sky.scene-family,
+.sky.scene-boss-final {
+  background:
+    radial-gradient(circle at 50% 24%, rgba(255, 0, 76, 0.34) 0 110px, transparent 111px),
+    linear-gradient(180deg, #160813 0 44%, #541122 45% 66%, #090205 67% 100%);
+}
+
+.sky.scene-city-19::before,
+.sky.scene-family::before,
+.sky.scene-boss-final::before {
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent 0 12%, #2d1824 12% 18%, transparent 18% 34%, #6e1f2d 34% 42%, transparent 42% 60%, #2d1824 60% 68%, transparent 68% 82%, #6e1f2d 82% 90%, transparent 90%),
+    radial-gradient(circle at 50% 18%, rgba(255, 242, 117, 0.18), transparent 92px);
+  box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.86);
+}
+
+.sky.scene-city-19::after,
+.sky.scene-family::after,
+.sky.scene-boss-final::after {
+  height: 140px;
+  border-top-color: #ff004c;
+  border-bottom-color: #050205;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 0, 76, 0.2) 0 44px, transparent 45px 88px),
+    linear-gradient(180deg, #531226, #0a0205);
 }

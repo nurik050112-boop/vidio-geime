@@ -183,6 +183,20 @@ const finalDragon: CityStage = {
   reaction: 'король бьет быстро и яростно',
 };
 
+const finalDragonSpirit: CityStage = {
+  name: 'Дух Великого дракона',
+  city: 'Подземный мир',
+  country: 'Тень финального босса',
+  lair: 'Подземный трон, где душа короля драконов не дает уйти дальше',
+  monsterKind: 'shadow',
+  monsterName: 'духи огня',
+  title: 'дух короля драконов',
+  power: 2_000_000_000,
+  color: '#2b2434',
+  attackSpeed: 0.38,
+  reaction: 'дух летает и бьет тяжелой тенью',
+};
+
 const dragonFamily: CityStage = {
   name: 'Семья короля драконов',
   city: 'Последнее логово семьи',
@@ -353,6 +367,9 @@ const monsterAvalancheTotal = 10_000_000_000;
 const monsterAvalancheHp = 1_000_000_000;
 const monsterAvalancheDamage = 100_000;
 const monsterAvalancheStartChapter = 7;
+const finalSpiritMonsterTotal = 1_000_000;
+const finalSpiritMonsterHp = 2_500_000_000;
+const finalSpiritMonsterDamage = 250_000;
 
 const monsterAvalancheWorld: CityStage = {
   name: 'Лавина монстров',
@@ -1060,6 +1077,9 @@ export function HomePage() {
   const [monsterAvalancheEntered, setMonsterAvalancheEntered] = useState(false);
   const [monsterAvalancheLeft, setMonsterAvalancheLeft] = useState(monsterAvalancheTotal);
   const [monsterAvalancheEnding, setMonsterAvalancheEnding] = useState(false);
+  const [finalSpiritWorldOpen, setFinalSpiritWorldOpen] = useState(false);
+  const [finalSpiritMonstersLeft, setFinalSpiritMonstersLeft] = useState(finalSpiritMonsterTotal);
+  const [finalSpiritFightStarted, setFinalSpiritFightStarted] = useState(false);
   const [unlockedAchievements, setUnlockedAchievements] = useState<AchievementId[]>([]);
   const [gold, setGold] = useState(0);
   const [goldMultiplier, setGoldMultiplier] = useState(1);
@@ -1153,6 +1173,8 @@ export function HomePage() {
   });
 
   const isFinalBoss = chapter === dragonSons.length && !victory;
+  const isFinalSpiritBoss = finalSpiritFightStarted;
+  const isFinalSpiritWorld = finalSpiritWorldOpen && !finalSpiritFightStarted;
   const isFamilyBoss = endingChoice === 'family';
   const isGoblinKingBoss = goblinKingReady && goblinKingFightStarted;
   const isFuryKingBoss = furyKingFightStarted;
@@ -1174,7 +1196,7 @@ export function HomePage() {
   const isBbiBoss = bbiBossStage !== null;
   const isBbiWorld = bbiWorldEntered && !isBbiBoss && !bbiFinalChoiceOpen;
   const isMonsterAvalancheWorld = monsterAvalancheEntered && !monsterAvalancheEnding;
-  const enemy = isMonsterAvalancheWorld ? monsterAvalancheWorld : isAdminBoss ? adminBoss : isAdminWorldBosses ? adminBoss : isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
+  const enemy = isFinalSpiritBoss || isFinalSpiritWorld ? finalDragonSpirit : isMonsterAvalancheWorld ? monsterAvalancheWorld : isAdminBoss ? adminBoss : isAdminWorldBosses ? adminBoss : isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
   const isDungeon = dungeon?.entered && !dungeon.cleared;
@@ -1200,7 +1222,7 @@ export function HomePage() {
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
   const waterSwordArtifactMultiplier = equippedArtifactId === 'seaPearl' && isAisultanSword(equippedWeapon) ? 11 : 1;
   const reward = enemy ? 120 + chapter * 110 : 0;
-  const currentMonsters = isAdminBoss || isAdminWorldBosses || isAisSharkBoss || isAisGodBoss || isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isMonsterAvalancheWorld ? monsterAvalancheLeft : isAdminWorld ? adminWorldMonstersLeft : isAisWorld ? aisMonstersLeft : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
+  const currentMonsters = isFinalSpiritBoss || isAdminBoss || isAdminWorldBosses || isAisSharkBoss || isAisGodBoss || isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isFinalSpiritWorld ? finalSpiritMonstersLeft : isMonsterAvalancheWorld ? monsterAvalancheLeft : isAdminWorld ? adminWorldMonstersLeft : isAisWorld ? aisMonstersLeft : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
   const musicKey = isFinalReveal
     ? 'ending'
     : isAdminBoss || isAdminWorldBosses
@@ -1223,7 +1245,7 @@ export function HomePage() {
       ? 'goblin'
     : isFamilyBoss
       ? 'family'
-    : isFinalBoss
+    : isFinalBoss || isFinalSpiritBoss || isFinalSpiritWorld
       ? 'final'
     : isAdminWorld
       ? 'admin-world'
@@ -1244,19 +1266,19 @@ export function HomePage() {
     : isDungeon
       ? 'dungeon'
       : 'world';
-  const currentMonsterHp = isMonsterAvalancheWorld ? monsterAvalancheHp : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
-  const currentMonsterDamage = isMonsterAvalancheWorld ? monsterAvalancheDamage : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
+  const currentMonsterHp = isFinalSpiritWorld ? finalSpiritMonsterHp : isMonsterAvalancheWorld ? monsterAvalancheHp : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
+  const currentMonsterDamage = isFinalSpiritWorld ? finalSpiritMonsterDamage : isMonsterAvalancheWorld ? monsterAvalancheDamage : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
-  const currentDragonHp = isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
-  const currentDragonDamage = isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
+  const currentDragonHp = isFinalSpiritBoss ? kingDragonHp * 2 : isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
+  const currentDragonDamage = isFinalSpiritBoss ? kingDragonDamage * 2 : isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
   const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 100);
   const weaponBonus = isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0;
   const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + Math.floor(weaponBonus * waterSwordArtifactMultiplier);
   const playerName = nickname.trim() || 'BBI герой';
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const dragonReactionSpeed = enemy?.attackSpeed ?? 1;
-  const currentMonsterTotal = isMonsterAvalancheWorld ? monsterAvalancheTotal : isAdminWorld ? adminWorldMonsterTotal : isAisWorld ? aisultanMonsterTotal : isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
+  const currentMonsterTotal = isFinalSpiritWorld ? finalSpiritMonsterTotal : isMonsterAvalancheWorld ? monsterAvalancheTotal : isAdminWorld ? adminWorldMonsterTotal : isAisWorld ? aisultanMonsterTotal : isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
   const currentEnemyHealthText = currentMonsters > 0
     ? `Враг HP ${formatPower(currentMonsterHp)}`
     : isArailmKingBoss
@@ -1288,8 +1310,10 @@ export function HomePage() {
         ? 'Концовка. Мир после огня. Герой оставил драконью семью жить.'
         : 'Плохая концовка. Пустое небо. Герой сразился с семьей драконов.'
       : '';
-  const cityScene = `scene-city-${chapter % 6}`;
-  const battleScene = isAdminWorld || isAdminWorldBosses || isAdminBoss || adminFinalChoiceOpen
+  const cityScene = `scene-city-${chapter % 20}`;
+  const battleScene = isFinalSpiritBoss || finalSpiritWorldOpen
+    ? 'scene-underground-spirit'
+    : isAdminWorld || isAdminWorldBosses || isAdminBoss || adminFinalChoiceOpen
     ? 'scene-admin'
     : isAisWorld || isAisSharkBoss || isAisGodBoss || aisFinalChoiceOpen
     ? 'scene-ais'
@@ -1318,7 +1342,9 @@ export function HomePage() {
             ? 'scene-boss-final'
             : `scene-boss-${chapter % 10}`
         : cityScene;
-  const dragonClass = isAdminBoss || isAdminWorldBosses
+  const dragonClass = isFinalSpiritBoss
+    ? 'dragon-spirit'
+    : isAdminBoss || isAdminWorldBosses
     ? 'dragon-admin'
     : isAisGodBoss
     ? 'dragon-ais-god'
@@ -1613,6 +1639,9 @@ export function HomePage() {
     setMonsterAvalancheEntered(false);
     setMonsterAvalancheLeft(monsterAvalancheTotal);
     setMonsterAvalancheEnding(false);
+    setFinalSpiritWorldOpen(false);
+    setFinalSpiritMonstersLeft(finalSpiritMonsterTotal);
+    setFinalSpiritFightStarted(false);
     setImpossibleEnding(false);
     setHeroHp(currentHeroMaxHp);
 
@@ -1801,13 +1830,24 @@ export function HomePage() {
   }, [storyProgress, savedCities.length, isFinalReveal]);
 
   useEffect(() => {
-    if (heroHp > 0 || isFinalReveal || isMonsterAvalancheWorld) return;
+    if (heroHp > 0 || isFinalReveal || isMonsterAvalancheWorld || isFinalSpiritWorld || isFinalSpiritBoss) return;
 
     window.setTimeout(() => {
       restart();
       setMessage('Здоровье героя упало до 0. Игра началась заново.');
     }, 700);
-  }, [heroHp, isFinalReveal, isMonsterAvalancheWorld]);
+  }, [heroHp, isFinalReveal, isMonsterAvalancheWorld, isFinalSpiritWorld, isFinalSpiritBoss]);
+
+  useEffect(() => {
+    if (heroHp > 0 || (!isFinalSpiritWorld && !isFinalSpiritBoss)) return;
+
+    const timer = window.setTimeout(() => {
+      setHeroHp(currentHeroMaxHp);
+      setMessage('В подземном мире герой не пропадает. Душа вернула HP, можно спокойно продолжать бой.');
+    }, 700);
+
+    return () => window.clearTimeout(timer);
+  }, [heroHp, isFinalSpiritWorld, isFinalSpiritBoss, currentHeroMaxHp]);
 
   useEffect(() => {
     if (dailyRewardCheckedRef.current) return;
@@ -1933,6 +1973,14 @@ export function HomePage() {
         finishMonsterAvalanche();
         return;
       }
+      if (isFinalSpiritWorld) {
+        setFinalSpiritMonstersLeft(0);
+        setFinalSpiritFightStarted(true);
+        setEnemyHp(kingDragonHp * 2);
+        setHeroHp(currentHeroMaxHp);
+        setMessage(`Подземные монстры уничтожены ядеркой. Души финального босса собрались в бой: ${formatPower(kingDragonHp * 2)} HP.`);
+        return;
+      }
       if (isArailmWorld) {
         setArailmMonstersLeft(0);
         setArailmWorldEntered(false);
@@ -2009,6 +2057,8 @@ export function HomePage() {
     setHeroHp(nextHeroHp);
     if (isAdminWorld) {
       setAdminWorldMonstersLeft(nextMonsters);
+    } else if (isFinalSpiritWorld) {
+      setFinalSpiritMonstersLeft(nextMonsters);
     } else if (isMonsterAvalancheWorld) {
       setMonsterAvalancheLeft(nextMonsters);
     } else if (isBbiWorld) {
@@ -2062,6 +2112,14 @@ export function HomePage() {
     if (nextMonsters === 0) {
       if (isMonsterAvalancheWorld) {
         finishMonsterAvalanche();
+        return;
+      }
+      if (isFinalSpiritWorld) {
+        setFinalSpiritMonstersLeft(0);
+        setFinalSpiritFightStarted(true);
+        setEnemyHp(kingDragonHp * 2);
+        setHeroHp(currentHeroMaxHp);
+        setMessage(`Монстры подземного мира побеждены. Теперь появились души финального босса: ${formatPower(kingDragonHp * 2)} HP.`);
         return;
       }
       if (isBbiWorld) {
@@ -2323,13 +2381,28 @@ export function HomePage() {
       return;
     }
 
-    if (isFinalBoss) {
+    if (isFinalSpiritBoss) {
+      setFinalSpiritWorldOpen(false);
+      setFinalSpiritMonstersLeft(finalSpiritMonsterTotal);
+      setFinalSpiritFightStarted(false);
       setVictory(true);
       setChapter(dragonSons.length + 1);
-      setEndingChoice(null);
-      addGold(50_000);
-      setMessage('Великий дракон побежден. Теперь реши судьбу его семьи.');
+      setEndingChoice('spare');
+      unlockAchievement('dragonPeace');
+      addGold(250_000);
+      setMessage('Души финального босса побеждены. Они больше не беспокойные. Открыта спокойная концовка подземного мира.');
       navigate('/world');
+      return;
+    }
+
+    if (isFinalBoss) {
+      setFinalSpiritWorldOpen(true);
+      setFinalSpiritFightStarted(false);
+      setFinalSpiritMonstersLeft(finalSpiritMonsterTotal);
+      setEnemyHp(kingDragonHp * 2);
+      setHeroHp(currentHeroMaxHp);
+      setMessage(`Финальный босс побежден. Открылся подземный мир: сначала победи ${formatPower(finalSpiritMonsterTotal)} темных монстров, потом появятся души.`);
+      navigate('/');
       return;
     }
 
@@ -2415,16 +2488,16 @@ export function HomePage() {
       setHeroHp((hp) => {
         const nextHp = Math.max(0, hp - monsterDamage);
         if (nextHp === 0) {
-          setMessage('Монстры постоянно нападали и герой упал. Нажми восстановить, чтобы продолжить.');
+          setMessage(isFinalSpiritWorld ? 'Подземные монстры сбили героя, но душа сейчас вернет HP.' : 'Монстры постоянно нападали и герой упал. Нажми восстановить, чтобы продолжить.');
         } else {
-          setMessage(`Монстр напал сам! Урон ${formatPower(monsterDamage)}. HP ${formatPower(hp)} -> ${formatPower(nextHp)}. Осталось монстров: ${formatPower(currentMonsters)}.`);
+          setMessage(`${isFinalSpiritWorld ? 'Подземный монстр' : 'Монстр'} напал сам! Урон ${formatPower(monsterDamage)}. HP ${formatPower(hp)} -> ${formatPower(nextHp)}. Осталось монстров: ${formatPower(currentMonsters)}.`);
         }
         return nextHp;
       });
     }, 3200);
 
     return () => window.clearInterval(attackTimer);
-  }, [chapter, currentMonsterDamage, currentMonsters, defenseBonus, hasAdminHelmet, heroHp, isFinalReveal]);
+  }, [chapter, currentMonsterDamage, currentMonsters, defenseBonus, hasAdminHelmet, heroHp, isFinalReveal, isFinalSpiritWorld]);
 
   useEffect(() => {
     if (!enemyBurning || isFinalReveal || currentMonsters > 0 || enemyHp <= 0) return;
@@ -2991,6 +3064,9 @@ export function HomePage() {
     setMonsterAvalancheEntered(false);
     setMonsterAvalancheLeft(monsterAvalancheTotal);
     setMonsterAvalancheEnding(false);
+    setFinalSpiritWorldOpen(false);
+    setFinalSpiritMonstersLeft(finalSpiritMonsterTotal);
+    setFinalSpiritFightStarted(false);
     setGold(0);
     setGoldMultiplier(1);
     setInfiniteGold(false);
@@ -3886,7 +3962,7 @@ export function HomePage() {
           <div className="monster-pack" data-kind={enemy?.monsterKind ?? 'goblin'}>
             {Array.from({ length: Math.max(0, Math.min(4, Math.ceil(currentMonsters / 500))) }).map((_, index) => {
               const mixedMonster = monsterKinds[(chapter + index) % monsterKinds.length];
-              const monsterKind = isAdminWorld ? 'admin' : isAisWorld ? 'fish' : isNuraliWorld ? 'nurali' : isBbiWorld ? 'shadow' : isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
+              const monsterKind = isFinalSpiritWorld ? 'shadow' : isAdminWorld ? 'admin' : isAisWorld ? 'fish' : isNuraliWorld ? 'nurali' : isBbiWorld ? 'shadow' : isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
               const monsterColumn = index % 8;
               const monsterRow = Math.floor(index / 8);
               return (
@@ -4058,7 +4134,12 @@ export function HomePage() {
               {isAdminWorldBosses && <b>ALL BOSSES</b>}
             </div>
           )}
-          {!isFinalReveal && enemy && currentMonsters === 0 && !isGoblinKingBoss && !isFuryKingBoss && !isAnuarKingBoss && !isMansurKingBoss && !isArailmKingBoss && !isAisSharkBoss && !isAisGodBoss && !isAdminWorldBosses && !isAdminBoss && (
+          {!isFinalReveal && enemy && currentMonsters === 0 && isFinalSpiritBoss && (
+            <div className="final-spirit-boss">
+              <span />
+            </div>
+          )}
+          {!isFinalReveal && enemy && currentMonsters === 0 && !isFinalSpiritBoss && !isGoblinKingBoss && !isFuryKingBoss && !isAnuarKingBoss && !isMansurKingBoss && !isArailmKingBoss && !isAisSharkBoss && !isAisGodBoss && !isAdminWorldBosses && !isAdminBoss && (
             <div className={`boss ${isFinalBoss ? 'final-boss' : ''} ${dragonClass}`} style={{ '--dragon-color': enemy.color } as CSSProperties}>
               {enemyBurning && <div className="enemy-burn-effect" />}
               <div className="tail-2d" />
@@ -4240,7 +4321,7 @@ export function HomePage() {
             <strong><span className="admin-nick">{playerName}</span> | {enemy.city}</strong>
             <span>Здоровье {heroHealthText}</span>
             <span>{currentEnemyHealthText}</span>
-            <span>{isDungeon ? 'Пещера' : 'Монстры'}: {formatPower(currentMonsters)}</span>
+            <span>{isFinalSpiritWorld ? 'Подземные монстры' : isDungeon ? 'Пещера' : 'Монстры'}: {formatPower(currentMonsters)}</span>
           </div>
           <form className="code-form" onSubmit={submitAdminCode}>
             <input
@@ -4252,7 +4333,7 @@ export function HomePage() {
             <button type="submit">OK</button>
           </form>
           {currentMonsters === 0 && (
-            <button onClick={strike} disabled={heroHp === 0}>Бить дракона</button>
+            <button onClick={strike} disabled={heroHp === 0}>{isFinalSpiritBoss ? 'Бить души' : 'Бить дракона'}</button>
           )}
           <div className="duel-id-box">
             <input
@@ -4555,7 +4636,7 @@ export function HomePage() {
                 <strong>{heroHealthText}</strong>
               </div>
               <div>
-                <p className="label">{currentMonsters === 0 ? (isBbiBoss ? 'BBI босс' : 'Дракон-босс') : (isBbiWorld ? 'BBI новый мир' : 'Город')}</p>
+                <p className="label">{currentMonsters === 0 ? (isFinalSpiritBoss ? 'Души босса' : isBbiBoss ? 'BBI босс' : 'Дракон-босс') : (isFinalSpiritWorld ? 'Подземный мир' : isBbiWorld ? 'BBI новый мир' : 'Город')}</p>
                 <div className="bar enemy">
                   <span style={{ width: `${currentMonsters === 0 ? Math.min(100, (enemyHp / currentDragonHp) * 100) : Math.max(0, 100 - (currentMonsters / currentMonsterTotal) * 100)}%` }} />
                 </div>
@@ -4601,7 +4682,7 @@ export function HomePage() {
             </div>
 
             <div className="actions">
-              <button onClick={strike} disabled={heroHp === 0 || currentMonsters > 0}>Бить дракона</button>
+              <button onClick={strike} disabled={heroHp === 0 || currentMonsters > 0}>{isFinalSpiritBoss ? 'Бить души' : 'Бить дракона'}</button>
               <div className="duel-id-box">
                 <input
                   aria-label="ID игрока для дуэли"
@@ -4630,9 +4711,9 @@ export function HomePage() {
 
             <div className="monster-panel">
               <div>
-                <p className="label">Монстры города</p>
+                <p className="label">{isFinalSpiritWorld ? 'Монстры подземного мира' : 'Монстры города'}</p>
                 <strong>{enemy.city}: разные монстры {formatPower(currentMonsters)} / {formatPower(currentMonsterTotal)}</strong>
-                <p>{currentMonsters === 0 ? `Все монстры побеждены. Теперь бей ${isBbiBoss ? 'босса' : 'дракона'}.` : `Победи ${formatPower(currentMonsterTotal)} монстров, чтобы появился ${isBbiWorld ? 'Управляющий' : 'дракон'}.`}</p>
+                <p>{currentMonsters === 0 ? `Все монстры побеждены. Теперь бей ${isFinalSpiritBoss ? 'души' : isBbiBoss ? 'босса' : 'дракона'}.` : `Победи ${formatPower(currentMonsterTotal)} монстров, чтобы появился ${isFinalSpiritWorld ? 'рой душ' : isBbiWorld ? 'Управляющий' : 'дракон'}.`}</p>
                 <p>{isNuraliWorld ? `Монстр Нурали: ${formatPower(nuraliMonsterHp)} HP. Всего монстров: ${formatPower(nuraliMonsterTotal)}.` : isBbiWorld ? `BBI монстр: ${formatPower(bbiMonsterHp)} HP. Всего монстров: ${formatPower(bbiMonsterTotal)}.` : 'Первый город: 100 HP и 10 урона. Каждый следующий город сильнее в 100 раз.'}</p>
               </div>
             </div>
