@@ -348,7 +348,6 @@ const baseMonsterHp = 10_000;
 const baseMonsterDamage = 20;
 const baseDragonHp = 100_000_000;
 const baseDragonDamage = 100_000;
-const adminNukeHiddenDamageText = '9'.repeat(999);
 const adminNukeDamageText = '∞';
 const adminHelmetHealthText = '∞';
 const furySwordDamageText = '1' + '0'.repeat(116);
@@ -922,28 +921,6 @@ function createSecretWeapon(level = 1): Weapon {
   };
 }
 
-function createAdminNuke(): Weapon {
-  return {
-    id: `admin-nuke-${Date.now()}-${Math.random()}`,
-    name: 'Админская ядерка',
-    rarity: 'Секретное',
-    damage: Number.MAX_SAFE_INTEGER,
-    displayDamage: adminNukeDamageText,
-    hiddenDamageText: adminNukeHiddenDamageText,
-    price: 0,
-  };
-}
-
-function createBillionSword(): Weapon {
-  return {
-    id: `billion-sword-${Date.now()}-${Math.random()}`,
-    name: 'Меч 999999999',
-    rarity: 'Секретное',
-    damage: 999_999_999,
-    price: 0,
-  };
-}
-
 function createFurySword(): Weapon {
   return {
     id: `fury-sword-${Date.now()}-${Math.random()}`,
@@ -996,17 +973,6 @@ function createAisultanSword(bestDamage: number): Weapon {
     rarity: 'Секретное',
     damage: boostedDamage,
     displayDamage: `${formatPower(bestDamage)} +100000%`,
-    price: 0,
-  };
-}
-
-function createAdminHelmet(): Armor {
-  return {
-    id: `admin-helmet-${Date.now()}-${Math.random()}`,
-    name: 'Админский шлем здоровья',
-    rarity: 'Секретное',
-    defense: 0,
-    displayDefense: `здоровье +${adminHelmetHealthText}`,
     price: 0,
   };
 }
@@ -1131,7 +1097,6 @@ export function HomePage() {
     return nextId;
   });
   const [duelTargetId, setDuelTargetId] = useState('');
-  const [adminCode, setAdminCode] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -2566,155 +2531,6 @@ export function HomePage() {
     }
 
     setMessage(`Удар по ${isBbiBoss ? 'боссу' : 'дракону'}: -${formatPower(heroDamage)} HP. Осталось ${formatPower(nextEnemyHp)} HP. Ответный удар: ${formatPower(dragonDamage)} урона. HP героя ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Реакция: ${dragonReaction}.`);
-  }
-
-  function submitAdminCode(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const code = normalizeCode(adminCode);
-
-    if (code === 'wwfuri') {
-      setFuryGateOpen(true);
-      setFuryDungeonEntered(false);
-      setFuryMonstersLeft(furyDungeonEnemiesTotal);
-      setFuryChoiceOpen(false);
-      setFuryKingFightStarted(false);
-      setAdminCode('');
-      setMessage('Код wwfuri открыл секретный фури-мир. Выбери: войти или выйти.');
-      return;
-    }
-
-    if (code === 'anuar') {
-      setAnuarGateOpen(true);
-      setAnuarWorldEntered(false);
-      setAnuarBombsLeft(anuarBombEnemiesTotal);
-      setAnuarKingFightStarted(false);
-      setAdminCode('');
-      setMessage('Код Anuar открыл секретный мир города бомб. Выбери: войти или выйти.');
-      return;
-    }
-
-    if (code === 'mansur') {
-      setMansurGateOpen(true);
-      setMansurDungeonEntered(false);
-      setMansurMonstersLeft(mansurDungeonEnemiesTotal);
-      setMansurKingFightStarted(false);
-      setAdminCode('');
-      setMessage('Код mansur открыл секретное подземелье Мансура для братишки.');
-      return;
-    }
-
-    if (code === 'nurali2281') {
-      setNuraliGateOpen(true);
-      setNuraliWorldEntered(false);
-      setNuraliMonstersLeft(nuraliMonsterTotal);
-      setNuraliChoiceOpen(false);
-      setNuraliBossFightStarted(false);
-      setAdminCode('');
-      setMessage('Код nurali2281 открыл новый мир Нурали. Выбери: войти или выйти.');
-      return;
-    }
-
-    if (code === 'arailm' || code === 'arailym') {
-      openArailmWorld();
-      return;
-    }
-
-    if (code === 'ais228198') {
-      setAisGateOpen(true);
-      setAisWorldEntered(false);
-      setAisMonstersLeft(aisultanMonsterTotal);
-      setAisSharkFightStarted(false);
-      setAisFinalChoiceOpen(false);
-      setAisGodFightStarted(false);
-      setAdminCode('');
-      setMessage('Код ais228198 открыл 10 мир: водный мир Айсултана. Выбери: войти или выйти.');
-      return;
-    }
-
-    if (code === 'admin2281') {
-      setAdminWorldGateOpen(true);
-      setAdminWorldEntered(false);
-      setAdminWorldMonstersLeft(adminWorldMonsterTotal);
-      setAdminWorldBossesStarted(false);
-      setAdminFinalChoiceOpen(false);
-      setAdminBossFightStarted(false);
-      setAdminCode('');
-      setMessage('Код ADMIN2281 открыл 11 мир: админская сложность.');
-      return;
-    }
-
-    if (code === 'bbi' || code === 'ииш') {
-      setBbiGateOpen(true);
-      setBbiWorldEntered(false);
-      setBbiMonstersLeft(bbiMonsterTotal);
-      setBbiBossStage(null);
-      setBbiFinalChoiceOpen(false);
-      setBbiCityReward(false);
-      setAdminCode('');
-      setMessage('Код BBI открыл новый мир. Выбери: войти или не входить.');
-      return;
-    }
-
-    if (code === 'ibb') {
-      const bbiSword = createBbiLegendarySword();
-      setWeapons((currentWeapons) => [...currentWeapons, bbiSword]);
-      setEquippedWeapon(bbiSword);
-      setAdminCode('');
-      setMessage('Код ibb принят. Получен BBI огненный легендарный меч.');
-      return;
-    }
-
-    if (code === '999999999') {
-      const sword = createBillionSword();
-      setWeapons((currentWeapons) => [...currentWeapons, sword]);
-      setEquippedWeapon(sword);
-      setAdminCode('');
-      setMessage('Код принят. Получен меч с уроном 999999999.');
-      return;
-    }
-
-    if (code !== 'wwnurikww' && code !== 'ццтгкшлцц') {
-      setAdminCode('');
-      setMessage('Код не подошел.');
-      return;
-    }
-
-    const nuke = createAdminNuke();
-    const helmet = createAdminHelmet();
-    const isSuperAdminCode = code === 'ццтгкшлцц';
-    setWeapons((currentWeapons) => [...currentWeapons, nuke]);
-    setArmors((currentArmors) => [...currentArmors, helmet]);
-    setEquippedWeapon(nuke);
-    setEquippedArmor(helmet);
-    setHeroHp(Number.MAX_SAFE_INTEGER);
-    if (isSuperAdminCode) {
-      setGold(Number.MAX_SAFE_INTEGER);
-      setGoldMultiplier(100);
-      setInfiniteGold(true);
-    }
-    setAdminCode('');
-    setMessage(isSuperAdminCode
-      ? 'Код ццтгкшлцц принят. Ядерка усилена до ∞, получены шлем, бесконечные деньги и множитель денег x100.'
-      : 'Код wwnurikww принят. Получена админская ядерка и шлем с огромным здоровьем.');
-  }
-
-  function openArailmWorld() {
-    setFuryGateOpen(false);
-    setAnuarGateOpen(false);
-    setMansurGateOpen(false);
-    setArailmGateOpen(true);
-    setArailmWorldEntered(false);
-    setArailmMonstersLeft(arailmEnemiesTotal);
-    setArailmChoiceOpen(false);
-    setArailmKingFightStarted(false);
-    setAisGateOpen(false);
-    setAisWorldEntered(false);
-    setAisMonstersLeft(aisultanMonsterTotal);
-    setAisSharkFightStarted(false);
-    setAisFinalChoiceOpen(false);
-    setAisGodFightStarted(false);
-    setAdminCode('');
-    setMessage('Код arailm открыл красную программу. Войди и зачисти 100к код-монстров.');
   }
 
   function enterDungeon() {
@@ -4323,39 +4139,9 @@ export function HomePage() {
             <span>{currentEnemyHealthText}</span>
             <span>{isFinalSpiritWorld ? 'Подземные монстры' : isDungeon ? 'Пещера' : 'Монстры'}: {formatPower(currentMonsters)}</span>
           </div>
-          <form className="code-form" onSubmit={submitAdminCode}>
-            <input
-              aria-label="Код"
-              onChange={(event) => setAdminCode(event.target.value)}
-              placeholder="Код"
-              value={adminCode}
-            />
-            <button type="submit">OK</button>
-          </form>
           {currentMonsters === 0 && (
             <button onClick={strike} disabled={heroHp === 0}>{isFinalSpiritBoss ? 'Бить души' : 'Бить дракона'}</button>
           )}
-          <div className="duel-id-box">
-            <input
-              aria-label="ID игрока для дуэли"
-              maxLength={6}
-              onChange={(event) => setDuelTargetId(normalizePlayerId(event.target.value))}
-              placeholder="ID игрока"
-              value={duelTargetId}
-            />
-            <button onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
-              OK
-            </button>
-          </div>
-          <button className="duel-button" onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
-            Дуэль
-          </button>
-          <button className="secondary" onClick={() => {
-            setDuelStatus('searching');
-            setMessage('Открыт список людей в сети.');
-          }} type="button">
-            Игроки
-          </button>
         </div>
       )}
 
@@ -4667,7 +4453,6 @@ export function HomePage() {
                 <strong>Здоровье ур.: {healthLevel}</strong>
                 <strong>HP монстра: {formatPower(currentMonsterHp)}</strong>
                 <strong>Урон монстра: {formatPower(currentMonsterDamage)}</strong>
-                <strong>Дуэли: {duelWins}</strong>
               </div>
               <div className="weapon-summary">
                 <p className="label">Оружие 12 500 видов</p>
@@ -4683,30 +4468,6 @@ export function HomePage() {
 
             <div className="actions">
               <button onClick={strike} disabled={heroHp === 0 || currentMonsters > 0}>{isFinalSpiritBoss ? 'Бить души' : 'Бить дракона'}</button>
-              <div className="duel-id-box">
-                <input
-                  aria-label="ID игрока для дуэли"
-                  maxLength={6}
-                  onChange={(event) => setDuelTargetId(normalizePlayerId(event.target.value))}
-                  placeholder="ID игрока"
-                  value={duelTargetId}
-                />
-                <button onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
-                  OK
-                </button>
-              </div>
-              <button className="duel-button" onClick={startDuelSearch} disabled={heroHp === 0 || duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting'} type="button">
-                {duelStatus === 'searching' ? 'Ищет игрока...' : duelStatus === 'fighting' ? 'Дуэль идет...' : 'Дуэль'}
-              </button>
-              <form className="code-form" onSubmit={submitAdminCode}>
-                <input
-                  aria-label="Код"
-                  onChange={(event) => setAdminCode(event.target.value)}
-                  placeholder="Код"
-                  value={adminCode}
-                />
-                <button className="nuclear-button" type="submit">OK</button>
-              </form>
             </div>
 
             <div className="monster-panel">
