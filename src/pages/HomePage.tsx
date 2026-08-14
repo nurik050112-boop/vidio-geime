@@ -45,6 +45,7 @@ type Weapon = {
   damage: number;
   price: number;
   displayDamage?: string;
+  hiddenDamageText?: string;
 };
 
 type Armor = {
@@ -333,7 +334,8 @@ const baseMonsterHp = 10_000;
 const baseMonsterDamage = 20;
 const baseDragonHp = 100_000_000;
 const baseDragonDamage = 100_000;
-const adminNukeDamageText = '10000000000000000000000000000000';
+const adminNukeHiddenDamageText = '9'.repeat(999);
+const adminNukeDamageText = '∞';
 const adminHelmetHealthText = '∞';
 const furySwordDamageText = '1' + '0'.repeat(116);
 const mansurBladeDamageText = '99999999999999999999999999999999999999999999999999999999';
@@ -346,7 +348,7 @@ const bbiDirectorHp = bbiManagerHp * 3;
 const bbiFinalBossHp = bbiDirectorHp * 5;
 const nuraliMonsterTotal = 100;
 const nuraliMonsterHp = 1e42;
-const nuraliBossHp = 1e25;
+const nuraliBossHp = 1e27;
 
 const nuraliBoss: CityStage = {
   name: 'Нурали',
@@ -402,6 +404,14 @@ function readOnlinePresences() {
   } catch {
     return [];
   }
+}
+
+function readRealtimePresences(state: Record<string, unknown[]>, currentPlayerId: string) {
+  return Object.values(state)
+    .flatMap((players) => players as OnlinePresence[])
+    .map((player) => ({ ...player, id: normalizePlayerId(player.id) }))
+    .filter((player) => player.id.length === 6 && player.id !== currentPlayerId)
+    .map(toDuelPlayer);
 }
 
 function toDuelPlayer(player: OnlinePresence): DuelPlayer {
@@ -813,6 +823,7 @@ function createAdminNuke(): Weapon {
     rarity: 'Секретное',
     damage: Number.MAX_SAFE_INTEGER,
     displayDamage: adminNukeDamageText,
+    hiddenDamageText: adminNukeHiddenDamageText,
     price: 0,
   };
 }
@@ -2244,7 +2255,7 @@ export function HomePage() {
     }
     if (isAdminNuke(equippedWeapon)) {
       setEnemyHp(0);
-      setMessage(`Админская ядерка ударила в ${adminNukeDamageText} раз сильнее и уничтожила ${isBbiBoss ? 'босса' : 'дракона'} сразу.`);
+      setMessage(`Админская ядерка ударила силой ${adminNukeDamageText} и уничтожила ${isBbiBoss ? 'босса' : 'дракона'} сразу.`);
       clearCity();
       return;
     }
@@ -2630,6 +2641,42 @@ export function HomePage() {
   }, [playerName]);
 
   useEffect(() => {
+    const presence: OnlinePresence = {
+      id: playerId,
+      name: playerName,
+      power: currentPlayerPower,
+      weapon: equippedWeapon,
+      armor: equippedArmor,
+      updatedAt: Date.now(),
+    };
+
+    if (isSupabaseConfigured) {
+      const channel = supabase.channel('dragon-game-online-presence', {
+        config: {
+          presence: {
+            key: playerId,
+          },
+        },
+      });
+
+      channel
+        .on('presence', { event: 'sync' }, () => {
+          setOnlinePlayers(readRealtimePresences(channel.presenceState(), playerId));
+        })
+        .subscribe(async (status) => {
+          if (status !== 'SUBSCRIBED') return;
+          await channel.track({
+            ...presence,
+            updatedAt: Date.now(),
+          });
+        });
+
+      return () => {
+        channel.untrack();
+        supabase.removeChannel(channel);
+      };
+    }
+
     function refreshOnlinePlayers() {
       setOnlinePlayers(readOnlinePresences()
         .filter((player) => player.id !== playerId)
@@ -2638,15 +2685,13 @@ export function HomePage() {
 
     function writePresence() {
       const others = readOnlinePresences().filter((player) => player.id !== playerId);
-      const presence: OnlinePresence = {
-        id: playerId,
-        name: playerName,
-        power: currentPlayerPower,
-        weapon: equippedWeapon,
-        armor: equippedArmor,
-        updatedAt: Date.now(),
-      };
-      window.localStorage.setItem(presenceStorageKey, JSON.stringify([...others, presence]));
+      window.localStorage.setItem(presenceStorageKey, JSON.stringify([
+        ...others,
+        {
+          ...presence,
+          updatedAt: Date.now(),
+        },
+      ]));
       refreshOnlinePlayers();
     }
 
@@ -2884,7 +2929,9 @@ export function HomePage() {
             <strong>Арайлым</strong>
             <strong>Ануар</strong>
             <strong>Димаш</strong>
+            <strong>Нурдаулет</strong>
             <p>Эти люди и мои учителя по поаити лагерю помогали, вдохновляли и были рядом.</p>
+            <p>Примечание: создатель создал игру за 4 дня.</p>
             <h2>Нурдаулет</h2>
             <h3>создатель</h3>
           </div>
@@ -3995,8 +4042,8 @@ export function HomePage() {
             <p className="eyebrow">Невозможная концовка</p>
             <h2>Символ бесконечности</h2>
             <p>
-              В мире nurali2281 Нурали был побежден. Админская ядерка стала сильнее
-              в {adminNukeDamageText} раз.
+              В мире nurali2281 Нурали был побежден. Админская ядерка стала сильнее:
+              {adminNukeDamageText}.
             </p>
             <p>
               Получен артефакт: Медальон невозможности. Он дает +1000% урон,
