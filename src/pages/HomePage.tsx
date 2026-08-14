@@ -57,7 +57,7 @@ type Armor = {
   displayDefense?: string;
 };
 
-type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'seaPearl' | 'deathPendant' | 'sunOrb' | 'impossibleMedallion';
+type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'seaPearl' | 'deathPendant' | 'sunOrb' | 'impossibleMedallion' | 'avalancheCrown';
 
 type Artifact = {
   id: ArtifactId;
@@ -84,8 +84,8 @@ type Quest = {
 
 type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
 type EndingChoice = 'spare' | 'fight' | 'family' | null;
-type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | null;
-type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | 'bbiBadEnding' | 'impossibleEnding';
+type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | 'monsterAvalanche' | null;
+type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | 'bbiBadEnding' | 'impossibleEnding' | 'monsterAvalanche';
 type BbiBossStage = 'manager' | 'director' | 'final' | null;
 type DuelStatus = 'idle' | 'searching' | 'challenge' | 'fighting' | 'won' | 'declined';
 
@@ -349,6 +349,24 @@ const bbiFinalBossHp = bbiDirectorHp * 5;
 const nuraliMonsterTotal = 100;
 const nuraliMonsterHp = 1e42;
 const nuraliBossHp = 1e27;
+const monsterAvalancheTotal = 10_000_000_000;
+const monsterAvalancheHp = 1_000_000_000;
+const monsterAvalancheDamage = 100_000;
+const monsterAvalancheStartChapter = 7;
+
+const monsterAvalancheWorld: CityStage = {
+  name: 'Лавина монстров',
+  city: '5 мир',
+  country: 'Секрет после 5-го дракона',
+  lair: 'Черная гора, где 10 миллиардов монстров падают волной',
+  monsterKind: 'avalanche',
+  monsterName: 'монстры лавины',
+  title: 'секретная лавина',
+  power: monsterAvalancheHp,
+  color: '#ff004c',
+  attackSpeed: 0.4,
+  reaction: 'монстры бьют лавиной без остановки',
+};
 
 const nuraliBoss: CityStage = {
   name: 'Нурали',
@@ -364,7 +382,16 @@ const nuraliBoss: CityStage = {
   reaction: 'рычит как лев и пугает котом',
 };
 const presenceStorageKey = 'dragon-game-online-players';
+const leaderboardStorageKey = 'dragon-game-leaderboard-players';
+const dailyRewardStorageKey = 'dragon-game-daily-rewards';
 const presenceTtlMs = 20_000;
+
+type DailyRewardState = {
+  lastVisitDate: string;
+  lastRewardDate: string;
+  streak: number;
+  bestStreak: number;
+};
 
 function makePlayerId() {
   return Math.random().toString(36).slice(2, 8).toUpperCase().padEnd(6, '0');
@@ -406,12 +433,72 @@ function readOnlinePresences() {
   }
 }
 
-function readRealtimePresences(state: Record<string, unknown[]>, currentPlayerId: string) {
+function readLeaderboardPresences() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(leaderboardStorageKey) ?? '[]') as OnlinePresence[];
+    return parsed
+      .map((player) => ({ ...player, id: normalizePlayerId(player.id) }))
+      .filter((player) => player.id.length === 6)
+      .sort((a, b) => b.power - a.power || b.updatedAt - a.updatedAt);
+  } catch {
+    return [];
+  }
+}
+
+function saveLeaderboardPresences(players: OnlinePresence[]) {
+  const strongestById = new Map<string, OnlinePresence>();
+  players.forEach((player) => {
+    const id = normalizePlayerId(player.id);
+    if (id.length !== 6) return;
+    const normalizedPlayer = { ...player, id };
+    const current = strongestById.get(id);
+    if (!current || normalizedPlayer.power > current.power || normalizedPlayer.updatedAt > current.updatedAt) {
+      strongestById.set(id, normalizedPlayer);
+    }
+  });
+  const leaderboard = [...strongestById.values()]
+    .sort((a, b) => b.power - a.power || b.updatedAt - a.updatedAt)
+    .slice(0, 100);
+  window.localStorage.setItem(leaderboardStorageKey, JSON.stringify(leaderboard));
+  return leaderboard;
+}
+
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getYesterdayDateKey() {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return getLocalDateKey(yesterday);
+}
+
+function readDailyRewardState(): DailyRewardState {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(dailyRewardStorageKey) ?? 'null') as Partial<DailyRewardState> | null;
+    return {
+      lastVisitDate: parsed?.lastVisitDate ?? '',
+      lastRewardDate: parsed?.lastRewardDate ?? '',
+      streak: parsed?.streak ?? 0,
+      bestStreak: parsed?.bestStreak ?? 0,
+    };
+  } catch {
+    return { lastVisitDate: '', lastRewardDate: '', streak: 0, bestStreak: 0 };
+  }
+}
+
+function saveDailyRewardState(state: DailyRewardState) {
+  window.localStorage.setItem(dailyRewardStorageKey, JSON.stringify(state));
+}
+
+function readRealtimePresenceEntries(state: Record<string, unknown[]>) {
   return Object.values(state)
-    .flatMap((players) => players as OnlinePresence[])
+    .flatMap((players) => players as unknown as OnlinePresence[])
     .map((player) => ({ ...player, id: normalizePlayerId(player.id) }))
-    .filter((player) => player.id.length === 6 && player.id !== currentPlayerId)
-    .map(toDuelPlayer);
+    .filter((player) => player.id.length === 6);
 }
 
 function toDuelPlayer(player: OnlinePresence): DuelPlayer {
@@ -479,6 +566,7 @@ const achievements: { id: AchievementId; name: string }[] = [
   { id: 'adminImpossible', name: 'Это невозможно пройти' },
   { id: 'bbiBadEnding', name: 'Они лишь дети' },
   { id: 'impossibleEnding', name: 'Невозможная концовка' },
+  { id: 'monsterAvalanche', name: 'Лавина 10 миллиардов' },
 ];
 
 const endingArtifacts: Artifact[] = [
@@ -493,6 +581,7 @@ const endingArtifacts: Artifact[] = [
   { id: 'deathPendant', name: 'Кулон смерти', ending: 'adminImpossible', bonusPercent: 100000, goldBonusPercent: 100000, attackSpeedPercent: 100000, healthBonusPercent: 100000, defenseBonusPercent: 100000, luckBonusPercent: 100000, icon: 'death-pendant', text: 'Админская сила заключена в кулоне смерти' },
   { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 80, goldBonusPercent: 80, attackSpeedPercent: 80, icon: 'sun-orb', text: 'BBI концовка' },
   { id: 'impossibleMedallion', name: 'Медальон невозможности', ending: 'impossibleEnding', bonusPercent: 1000, goldBonusPercent: 1000, attackSpeedPercent: 1000, icon: 'impossible-medallion', text: 'Невозможная концовка мира Нурали' },
+  { id: 'avalancheCrown', name: 'Корона лавины', ending: 'monsterAvalanche', bonusPercent: 100, goldBonusPercent: 100, attackSpeedPercent: 100, healthBonusPercent: 100, defenseBonusPercent: 100, luckBonusPercent: 100, icon: 'avalanche-crown', text: 'Концовка лавины монстров' },
 ];
 
 const shopItems: ShopItem[] = [
@@ -968,6 +1057,9 @@ export function HomePage() {
   const [nuraliMonstersLeft, setNuraliMonstersLeft] = useState(nuraliMonsterTotal);
   const [nuraliChoiceOpen, setNuraliChoiceOpen] = useState(false);
   const [nuraliBossFightStarted, setNuraliBossFightStarted] = useState(false);
+  const [monsterAvalancheEntered, setMonsterAvalancheEntered] = useState(false);
+  const [monsterAvalancheLeft, setMonsterAvalancheLeft] = useState(monsterAvalancheTotal);
+  const [monsterAvalancheEnding, setMonsterAvalancheEnding] = useState(false);
   const [unlockedAchievements, setUnlockedAchievements] = useState<AchievementId[]>([]);
   const [gold, setGold] = useState(0);
   const [goldMultiplier, setGoldMultiplier] = useState(1);
@@ -1001,6 +1093,9 @@ export function HomePage() {
   const [duelChatMessages, setDuelChatMessages] = useState<DuelChatMessage[]>([]);
   const [duelChatText, setDuelChatText] = useState('');
   const [onlinePlayers, setOnlinePlayers] = useState<DuelPlayer[]>([]);
+  const [leaderboardPlayers, setLeaderboardPlayers] = useState<OnlinePresence[]>(() => readLeaderboardPresences());
+  const [dailyRewardState, setDailyRewardState] = useState<DailyRewardState>(() => readDailyRewardState());
+  const [dailyRewardText, setDailyRewardText] = useState('');
   const [nickname, setNickname] = useState(() => window.localStorage.getItem('hero-nickname') ?? 'BBI герой');
   const [playerId] = useState(() => {
     const savedId = window.localStorage.getItem('hero-player-id');
@@ -1035,6 +1130,7 @@ export function HomePage() {
   const lastMessageVoiceAtRef = useRef(0);
   const onlinePlayerListRef = useRef<HTMLDivElement | null>(null);
   const onlinePlayerScrollTimer = useRef<number | null>(null);
+  const dailyRewardCheckedRef = useRef(false);
   const [items, setItems] = useState<Record<ShopItem['id'], number>>({
     sword: 0,
     pet: 0,
@@ -1077,7 +1173,8 @@ export function HomePage() {
   const isNuraliWorld = nuraliWorldEntered && !nuraliChoiceOpen && !nuraliBossFightStarted;
   const isBbiBoss = bbiBossStage !== null;
   const isBbiWorld = bbiWorldEntered && !isBbiBoss && !bbiFinalChoiceOpen;
-  const enemy = isAdminBoss ? adminBoss : isAdminWorldBosses ? adminBoss : isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
+  const isMonsterAvalancheWorld = monsterAvalancheEntered && !monsterAvalancheEnding;
+  const enemy = isMonsterAvalancheWorld ? monsterAvalancheWorld : isAdminBoss ? adminBoss : isAdminWorldBosses ? adminBoss : isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
   const isDungeon = dungeon?.entered && !dungeon.cleared;
@@ -1103,7 +1200,7 @@ export function HomePage() {
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
   const waterSwordArtifactMultiplier = equippedArtifactId === 'seaPearl' && isAisultanSword(equippedWeapon) ? 11 : 1;
   const reward = enemy ? 120 + chapter * 110 : 0;
-  const currentMonsters = isAdminBoss || isAdminWorldBosses || isAisSharkBoss || isAisGodBoss || isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isAdminWorld ? adminWorldMonstersLeft : isAisWorld ? aisMonstersLeft : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
+  const currentMonsters = isAdminBoss || isAdminWorldBosses || isAisSharkBoss || isAisGodBoss || isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isMonsterAvalancheWorld ? monsterAvalancheLeft : isAdminWorld ? adminWorldMonstersLeft : isAisWorld ? aisMonstersLeft : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
   const musicKey = isFinalReveal
     ? 'ending'
     : isAdminBoss || isAdminWorldBosses
@@ -1147,8 +1244,8 @@ export function HomePage() {
     : isDungeon
       ? 'dungeon'
       : 'world';
-  const currentMonsterHp = isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
-  const currentMonsterDamage = isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
+  const currentMonsterHp = isMonsterAvalancheWorld ? monsterAvalancheHp : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
+  const currentMonsterDamage = isMonsterAvalancheWorld ? monsterAvalancheDamage : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
   const currentDragonHp = isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
@@ -1159,7 +1256,7 @@ export function HomePage() {
   const playerName = nickname.trim() || 'BBI герой';
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const dragonReactionSpeed = enemy?.attackSpeed ?? 1;
-  const currentMonsterTotal = isAdminWorld ? adminWorldMonsterTotal : isAisWorld ? aisultanMonsterTotal : isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
+  const currentMonsterTotal = isMonsterAvalancheWorld ? monsterAvalancheTotal : isAdminWorld ? adminWorldMonsterTotal : isAisWorld ? aisultanMonsterTotal : isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
   const currentEnemyHealthText = currentMonsters > 0
     ? `Враг HP ${formatPower(currentMonsterHp)}`
     : isArailmKingBoss
@@ -1172,6 +1269,8 @@ export function HomePage() {
     ? 'Би Би Ай концовка. Они лишь дети, ты монстр. Ты мог отказаться, но выбрал сражаться.'
     : secretEnding === 'adminImpossible'
       ? 'Секретная концовка. Это невозможно пройти. Герой убил админа и стал уж слишком сильным.'
+    : secretEnding === 'monsterAvalanche'
+      ? 'Секретная концовка. Лавина монстров побеждена. Все бафы стали сильнее на сто процентов.'
     : secretEnding === 'aisultanSea'
       ? 'Секретная концовка. Воденой мир. Бог моря Айсултан побежден, океан стал свободным.'
     : secretEnding === 'arailmKing'
@@ -1414,6 +1513,41 @@ export function HomePage() {
     setGold((currentGold) => Math.min(Number.MAX_SAFE_INTEGER, currentGold + amount * goldMultiplier * artifactGoldMultiplier));
   }
 
+  function grantDailyReward(day: number) {
+    // Замечание: здесь лежат награды за рекорд дней захода, меняй этот список если нужны новые подарки.
+    if (day === 1) {
+      addGold(1_000);
+      return 'День 1: получено 1000 монет.';
+    }
+
+    if (day === 2) {
+      const weapon = createWeapon('Эпик', Math.max(2, chapter + 2));
+      setWeapons((currentWeapons) => [...currentWeapons, weapon]);
+      setEquippedWeapon(weapon);
+      return `День 2: получен эпический меч ${getWeaponDisplayName(weapon)}.`;
+    }
+
+    if (day === 3) {
+      return 'День 3: код BBI показан. Введи код bbi, чтобы открыть BBI мир.';
+    }
+
+    if (day === 4) {
+      const weapon = createWeapon('Легендарка', Math.max(4, chapter + 4));
+      setWeapons((currentWeapons) => [...currentWeapons, weapon]);
+      setEquippedWeapon(weapon);
+      return `День 4: получен легендарный меч ${getWeaponDisplayName(weapon)}.`;
+    }
+
+    if (day === 5) {
+      const weapon = createSecretWeapon(Math.max(5, chapter + 5));
+      setWeapons((currentWeapons) => [...currentWeapons, weapon]);
+      setEquippedWeapon(weapon);
+      return `День 5: получен секретный меч ${getWeaponDisplayName(weapon)}.`;
+    }
+
+    return `Рекорд дней: ${day}. Все главные награды уже получены.`;
+  }
+
   function sellWeapon(weapon: Weapon) {
     const sellPrice = weaponSellPrice[weapon.rarity];
     setWeapons((currentWeapons) => currentWeapons.filter((item) => item.id !== weapon.id));
@@ -1476,6 +1610,9 @@ export function HomePage() {
     setNuraliMonstersLeft(nuraliMonsterTotal);
     setNuraliChoiceOpen(false);
     setNuraliBossFightStarted(false);
+    setMonsterAvalancheEntered(false);
+    setMonsterAvalancheLeft(monsterAvalancheTotal);
+    setMonsterAvalancheEnding(false);
     setImpossibleEnding(false);
     setHeroHp(currentHeroMaxHp);
 
@@ -1492,6 +1629,15 @@ export function HomePage() {
       setEndingChoice('family');
       setEnemyHp(kingDragonHp * 100);
       setMessage('Телепорт: битва с семьей драконов.');
+      navigate('/');
+      return;
+    }
+
+    if (id === 'monsterAvalanche') {
+      setMonsterAvalancheEntered(true);
+      setMonsterAvalancheLeft(monsterAvalancheTotal);
+      setHeroHp(currentHeroMaxHp);
+      setMessage('Телепорт: 5 мир. Лавина из 10 миллиардов монстров уже несется.');
       navigate('/');
       return;
     }
@@ -1655,13 +1801,40 @@ export function HomePage() {
   }, [storyProgress, savedCities.length, isFinalReveal]);
 
   useEffect(() => {
-    if (heroHp > 0 || isFinalReveal) return;
+    if (heroHp > 0 || isFinalReveal || isMonsterAvalancheWorld) return;
 
     window.setTimeout(() => {
       restart();
       setMessage('Здоровье героя упало до 0. Игра началась заново.');
     }, 700);
-  }, [heroHp, isFinalReveal]);
+  }, [heroHp, isFinalReveal, isMonsterAvalancheWorld]);
+
+  useEffect(() => {
+    if (dailyRewardCheckedRef.current) return;
+    dailyRewardCheckedRef.current = true;
+
+    const today = getLocalDateKey();
+    const saved = readDailyRewardState();
+    if (saved.lastRewardDate === today) {
+      setDailyRewardState(saved);
+      setDailyRewardText(`Сегодня награда уже получена. Рекорд дней: ${saved.bestStreak}.`);
+      return;
+    }
+
+    const nextStreak = saved.lastVisitDate === getYesterdayDateKey() ? saved.streak + 1 : 1;
+    const nextState: DailyRewardState = {
+      lastVisitDate: today,
+      lastRewardDate: today,
+      streak: nextStreak,
+      bestStreak: Math.max(saved.bestStreak, nextStreak),
+    };
+    saveDailyRewardState(nextState);
+    setDailyRewardState(nextState);
+
+    const rewardText = grantDailyReward(nextStreak);
+    setDailyRewardText(`${rewardText} Рекорд дней: ${nextState.bestStreak}.`);
+    setMessage(`${rewardText} Заходи завтра, чтобы получить следующую награду.`);
+  }, []);
 
   function buy(item: ShopItem) {
     const level = shopLevels[item.id];
@@ -1756,6 +1929,10 @@ export function HomePage() {
         setMessage('100 монстров Нурали уничтожены. На весь экран вышла надпись: драться с Нурали или нет.');
         return;
       }
+      if (isMonsterAvalancheWorld) {
+        finishMonsterAvalanche();
+        return;
+      }
       if (isArailmWorld) {
         setArailmMonstersLeft(0);
         setArailmWorldEntered(false);
@@ -1832,6 +2009,8 @@ export function HomePage() {
     setHeroHp(nextHeroHp);
     if (isAdminWorld) {
       setAdminWorldMonstersLeft(nextMonsters);
+    } else if (isMonsterAvalancheWorld) {
+      setMonsterAvalancheLeft(nextMonsters);
     } else if (isBbiWorld) {
       setBbiMonstersLeft(nextMonsters);
     } else if (isNuraliWorld) {
@@ -1881,6 +2060,10 @@ export function HomePage() {
     );
 
     if (nextMonsters === 0) {
+      if (isMonsterAvalancheWorld) {
+        finishMonsterAvalanche();
+        return;
+      }
       if (isBbiWorld) {
         setBbiWorldEntered(false);
         setBbiBossStage('manager');
@@ -1948,6 +2131,21 @@ export function HomePage() {
       setEnemyHp(currentDragonHp);
       setMessage(`Все монстры побеждены. Появился дракон: ${formatPower(currentDragonHp)} HP и ${formatPower(currentDragonDamage)} урона.`);
     }
+  }
+
+  function finishMonsterAvalanche() {
+    setMonsterAvalancheEntered(false);
+    setMonsterAvalancheLeft(0);
+    setMonsterAvalancheEnding(true);
+    setSecretEnding('monsterAvalanche');
+    setVictory(true);
+    setChapter(dragonSons.length + 1);
+    setSavedCities(dragonSons.slice(0, monsterAvalancheStartChapter + 1).map((city) => `${city.city}, ${city.country}`));
+    setHeroHp(currentHeroMaxHp);
+    unlockAchievement('monsterAvalanche');
+    addGold(10_000_000_000);
+    setMessage('Лавина из 10 миллиардов монстров побеждена. Открыта концовка лавины и 100% баф ко всем силам.');
+    navigate('/world');
   }
 
   function clearCity() {
@@ -2140,6 +2338,15 @@ export function HomePage() {
     const prize = reward;
     const droppedWeapon = rollWeapon(1, chapter + 1);
     const droppedArmor = rollArmor(1, chapter + 1);
+
+    if (chapter === 4 && Math.random() < 0.4) {
+      setMonsterAvalancheEntered(true);
+      setMonsterAvalancheLeft(monsterAvalancheTotal);
+      setHeroHp(currentHeroMaxHp);
+      setMessage('5-й дракон умер, и с шансом 40% открылся 5 мир: тебя унесло в лавину из 10 миллиардов монстров.');
+      navigate('/');
+      return;
+    }
 
     setSavedCities(nextSavedCities);
     addGold(prize);
@@ -2649,6 +2856,18 @@ export function HomePage() {
       armor: equippedArmor,
       updatedAt: Date.now(),
     };
+    const rememberPlayers = (players: OnlinePresence[]) => {
+      setLeaderboardPlayers(saveLeaderboardPresences([
+        ...readLeaderboardPresences(),
+        ...players,
+        {
+          ...presence,
+          updatedAt: Date.now(),
+        },
+      ]));
+    };
+
+    rememberPlayers([]);
 
     if (isSupabaseConfigured) {
       const channel = supabase.channel('dragon-game-online-presence', {
@@ -2661,7 +2880,11 @@ export function HomePage() {
 
       channel
         .on('presence', { event: 'sync' }, () => {
-          setOnlinePlayers(readRealtimePresences(channel.presenceState(), playerId));
+          const realtimePresences = readRealtimePresenceEntries(channel.presenceState());
+          setOnlinePlayers(realtimePresences
+            .filter((player) => player.id !== playerId)
+            .map(toDuelPlayer));
+          rememberPlayers(realtimePresences);
         })
         .subscribe(async (status) => {
           if (status !== 'SUBSCRIBED') return;
@@ -2678,9 +2901,11 @@ export function HomePage() {
     }
 
     function refreshOnlinePlayers() {
-      setOnlinePlayers(readOnlinePresences()
+      const onlinePresences = readOnlinePresences();
+      setOnlinePlayers(onlinePresences
         .filter((player) => player.id !== playerId)
         .map(toDuelPlayer));
+      rememberPlayers(onlinePresences);
     }
 
     function writePresence() {
@@ -2709,12 +2934,13 @@ export function HomePage() {
   }, [currentPlayerPower, equippedArmor, equippedWeapon, playerId, playerName]);
 
   function restart() {
-    setChapter(0);
+    const avalancheCompleted = unlockedAchievements.includes('monsterAvalanche');
+    setChapter(avalancheCompleted ? monsterAvalancheStartChapter : 0);
     setHealthLevel(0);
     setHeroHp(heroMaxHp);
-    setEnemyHp(baseDragonHp);
-    setMessage('Мир снова в огне. Начинается новый поход за спасение городов.');
-    setSavedCities([]);
+    setEnemyHp(avalancheCompleted ? scaledDragonPower(baseDragonHp, monsterAvalancheStartChapter) : baseDragonHp);
+    setMessage(avalancheCompleted ? 'После концовки лавины новый поход начинается сразу с 8-го города.' : 'Мир снова в огне. Начинается новый поход за спасение городов.');
+    setSavedCities(avalancheCompleted ? dragonSons.slice(0, monsterAvalancheStartChapter).map((city) => `${city.city}, ${city.country}`) : []);
     setVictory(false);
     setEndingChoice(null);
     setSecretEnding(null);
@@ -2762,6 +2988,9 @@ export function HomePage() {
     setNuraliMonstersLeft(nuraliMonsterTotal);
     setNuraliChoiceOpen(false);
     setNuraliBossFightStarted(false);
+    setMonsterAvalancheEntered(false);
+    setMonsterAvalancheLeft(monsterAvalancheTotal);
+    setMonsterAvalancheEnding(false);
     setGold(0);
     setGoldMultiplier(1);
     setInfiniteGold(false);
@@ -2776,7 +3005,7 @@ export function HomePage() {
     setHeroPosition({ x: -18_000, z: 0 });
     setHeroHeight(0);
     verticalVelocity.current = 0;
-    setCityMonsters(dragonSons.map(() => monstersPerCity));
+    setCityMonsters(dragonSons.map((_, index) => avalancheCompleted && index < monsterAvalancheStartChapter ? 0 : monstersPerCity));
     setMonsterAttackCount(0);
     setBattlePulse(0);
     setFireWavePulse(0);
@@ -3954,6 +4183,30 @@ export function HomePage() {
                 ))}
               </div>
             </div>
+            <div className="online-players leaderboard">
+              <div className="online-players-head">
+                <strong>Лидерборд силы</strong>
+                <span>{leaderboardPlayers.length} игроков</span>
+              </div>
+              <div className="online-player-list leaderboard-list">
+                {leaderboardPlayers.length === 0 ? (
+                  <p className="online-empty">Лидерборд пуст. Первый игрок появится после захода в игру.</p>
+                ) : leaderboardPlayers.map((player, index) => (
+                  <button
+                    className={player.id === playerId ? 'selected' : ''}
+                    key={player.id}
+                    onClick={() => {
+                      if (player.id === playerId) return;
+                      selectDuelPlayer(toDuelPlayer(player));
+                    }}
+                    type="button"
+                  >
+                    <span>#{index + 1} {player.name}</span>
+                    <small>ID {player.id} | сила {formatPower(player.power)} | заходил {new Date(player.updatedAt).toLocaleDateString()}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
             {duelOpponent && (
               <div className="duel-chat">
                 <strong>Чат с {duelOpponent.name} ID {duelOpponent.id}</strong>
@@ -4037,6 +4290,16 @@ export function HomePage() {
           <p>{message}</p>
         </div>
 
+        {dailyRewardText && (
+          <div className="dungeon">
+            <div>
+              <p className="label">Рекорд дней</p>
+              <strong>{dailyRewardState.streak} день подряд | лучший рекорд {dailyRewardState.bestStreak}</strong>
+              <p>{dailyRewardText}</p>
+            </div>
+          </div>
+        )}
+
         {impossibleEnding ? (
           <div className="reveal impossible-ending">
             <p className="eyebrow">Невозможная концовка</p>
@@ -4084,6 +4347,27 @@ export function HomePage() {
             <div className="ending-actions">
               <Link className="ending-link" href="/">Продолжать</Link>
               <button onClick={restart}>Начать повторно</button>
+            </div>
+          </div>
+        ) : secretEnding === 'monsterAvalanche' ? (
+          <div className="reveal admin-ending">
+            <p className="eyebrow">Секретная концовка 5 мира</p>
+            <h2>Лавина монстров</h2>
+            <p>
+              После смерти от 5-го дракона герой попал в 5 мир и победил
+              {formatPower(monsterAvalancheTotal)} монстров.
+            </p>
+            <p>
+              Каждый монстр имел {formatPower(monsterAvalancheHp)} HP и бил на
+              {formatPower(monsterAvalancheDamage)} урона. Получена Корона лавины:
+              +100% ко всем бафам.
+            </p>
+            <p>
+              После этой концовки новый поход начинается с 8-го города.
+            </p>
+            <div className="ending-actions">
+              <Link className="ending-link" href="/">Продолжать</Link>
+              <button onClick={restart}>Начать с 8-го города</button>
             </div>
           </div>
         ) : secretEnding === 'aisultanSea' ? (

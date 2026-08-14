@@ -2735,6 +2735,87 @@ button.secondary {
   animation: fire-breath 520ms ease-in-out infinite alternate;
 }
 
+.boss:not(.dragon-admin):not(.dragon-ais-god):not(.dragon-ais-shark):not(.dragon-bbi):not(.dragon-nurali):not(.dragon-goblin):not(.dragon-fury):not(.dragon-anuar):not(.dragon-mansur):not(.dragon-arailm) {
+  --dragon-light: #ff8a2a;
+  --dragon-mid: #c93624;
+  --dragon-dark: #5b1420;
+  --dragon-belly: #ffd28a;
+  --dragon-wing: #f47a26;
+  --dragon-glow: rgba(255, 107, 43, 0.55);
+  width: 352px;
+  height: 236px;
+  transform: scaleX(-1);
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 20px var(--dragon-glow)) drop-shadow(0 18px 12px rgba(20, 8, 4, 0.38));
+}
+
+.boss:not(.dragon-admin):not(.dragon-ais-god):not(.dragon-ais-shark):not(.dragon-bbi):not(.dragon-nurali):not(.dragon-goblin):not(.dragon-fury):not(.dragon-anuar):not(.dragon-mansur):not(.dragon-arailm) .tail-2d,
+.boss:not(.dragon-admin):not(.dragon-ais-god):not(.dragon-ais-shark):not(.dragon-bbi):not(.dragon-nurali):not(.dragon-goblin):not(.dragon-fury):not(.dragon-anuar):not(.dragon-mansur):not(.dragon-arailm) .neck-2d,
+.boss:not(.dragon-admin):not(.dragon-ais-god):not(.dragon-ais-shark):not(.dragon-bbi):not(.dragon-nurali):not(.dragon-goblin):not(.dragon-fury):not(.dragon-anuar):not(.dragon-mansur):not(.dragon-arailm) .horn-2d,
+.boss:not(.dragon-admin):not(.dragon-ais-god):not(.dragon-ais-shark):not(.dragon-bbi):not(.dragon-nurali):not(.dragon-goblin):not(.dragon-fury):not(.dragon-anuar):not(.dragon-mansur):not(.dragon-arailm) .boss-body,
+.boss:not(.dragon-admin):not(.dragon-ais-god):not(.dragon-ais-shark):not(.dragon-bbi):not(.dragon-nurali):not(.dragon-goblin):not(.dragon-fury):not(.dragon-anuar):not(.dragon-mansur):not(.dragon-arailm) .boss-head,
+.boss:not(.dragon-admin):not(.dragon-ais-god):not(.dragon-ais-shark):not(.dragon-bbi):not(.dragon-nurali):not(.dragon-goblin):not(.dragon-fury):not(.dragon-anuar):not(.dragon-mansur):not(.dragon-arailm) .wing,
+.boss:not(.dragon-admin):not(.dragon-ais-god):not(.dragon-ais-shark):not(.dragon-bbi):not(.dragon-nurali):not(.dragon-goblin):not(.dragon-fury):not(.dragon-anuar):not(.dragon-mansur):not(.dragon-arailm) .boss-fire {
+  display: none;
+}
+
+.boss:not(.dragon-admin):not(.dragon-ais-god):not(.dragon-ais-shark):not(.dragon-bbi):not(.dragon-nurali):not(.dragon-goblin):not(.dragon-fury):not(.dragon-anuar):not(.dragon-mansur):not(.dragon-arailm)::before {
+  content: "";
+  position: absolute;
+  left: 44px;
+  top: 18px;
+  width: 16px;
+  height: 16px;
+  background: var(--dragon-dark);
+  box-shadow:
+    32px 0 var(--dragon-dark), 48px 0 var(--dragon-dark), 64px 0 var(--dragon-dark),
+    16px 16px var(--dragon-dark), 32px 16px var(--dragon-wing), 48px 16px var(--dragon-wing), 64px 16px var(--dragon-wing), 80px 16px var(--dragon-dark), 96px 16px var(--dragon-dark),
+    0 32px var(--dragon-dark), 16px 32px var(--dragon-wing), 32px 32px var(--dragon-wing), 48px 32px var(--dragon-wing), 64px 32px var(--dragon-wing), 80px 32px var(--dragon-wing), 96px 32px var(--dragon-dark), 176px 32px var(--dragon-dark), 192px 32px #fff4d6,
+    0 48px var(--dragon-dark), 16px 48px var(--dragon-wing), 32px 48px var(--dragon-wing), 48px 48px var(--dragon-dark), 64px 48px var(--dragon-wing), 80px 48px var(--dragon-wing), 96px 48px var(--dragon-dark), 144px 48px var(--dragon-dark), 160px 48px var(--dragon-dark), 176px 48px var(--dragon-mid), 192px 48px var(--dragon-light), 208px 48px var(--dragon-dark), 224px 48px #fff4d6,
+    16px 64px var(--dragon-dark), 32px 64px var(--dragon-wing), 48px 64px var(--dragon-dark), 64px 64px var(--dragon-wing), 80px 64px var(--dragon-dark), 112px 64px var(--dragon-dark), 128px 64px var(--dragon-dark), 144px 64px var(--dragon-mid), 160px 64px var(--dragon-light), 176px 64px var(--dragon-light), 192px 64px var(--dragon-mid), 208px 64px var(--dragon-dark), 224px 64px var(--dragon-mid), 240px 64px var(--dragon-dark),
+    32px 80px var(--dragon-dark), 48px 80px var(--dragon-wing), 64px 80px var(--dragon-dark), 96px 80px var(--dragon-dark), 112px 80px var(--dragon-mid), 128px 80px var(--dragon-light), 144px 80px var(--dragon-light), 160px 80px var(--dragon-belly), 176px 80px var(--dragon-light), 192px 80px var(--dragon-mid), 208px 80px var(--dragon-dark), 224px 80px var(--dragon-mid), 240px 80px var(--dragon-light), 256px 80px var(--dragon-dark),
+    48px 96px var(--dragon-dark), 80px 96px var(--dragon-dark), 96px 96px var(--dragon-mid), 112px 96px var(--dragon-light), 128px 96px var(--dragon-light), 144px 96px var(--dragon-belly), 160px 96px var(--dragon-belly), 176px 96px var(--dragon-light), 192px 96px var(--dragon-dark), 208px 96px var(--dragon-dark), 224px 96px var(--dragon-dark), 240px 96px var(--dragon-mid), 256px 96px var(--dragon-dark), 272px 96px var(--dragon-dark),
+    16px 112px var(--dragon-dark), 32px 112px var(--dragon-mid), 48px 112px var(--dragon-dark), 64px 112px var(--dragon-dark), 80px 112px var(--dragon-mid), 96px 112px var(--dragon-light), 112px 112px var(--dragon-light), 128px 112px var(--dragon-belly), 144px 112px var(--dragon-belly), 160px 112px var(--dragon-belly), 176px 112px var(--dragon-light), 192px 112px var(--dragon-mid), 208px 112px var(--dragon-dark), 240px 112px var(--dragon-dark), 256px 112px var(--dragon-dark),
+    0 128px var(--dragon-dark), 16px 128px var(--dragon-mid), 32px 128px var(--dragon-light), 48px 128px var(--dragon-mid), 64px 128px var(--dragon-mid), 80px 128px var(--dragon-light), 96px 128px var(--dragon-light), 112px 128px var(--dragon-belly), 128px 128px var(--dragon-belly), 144px 128px var(--dragon-belly), 160px 128px var(--dragon-light), 176px 128px var(--dragon-mid), 192px 128px var(--dragon-dark), 224px 128px var(--dragon-dark), 240px 128px var(--dragon-mid),
+    16px 144px var(--dragon-dark), 32px 144px var(--dragon-mid), 48px 144px var(--dragon-light), 64px 144px var(--dragon-light), 80px 144px var(--dragon-light), 96px 144px var(--dragon-mid), 112px 144px var(--dragon-belly), 128px 144px var(--dragon-belly), 144px 144px var(--dragon-light), 160px 144px var(--dragon-mid), 176px 144px var(--dragon-dark), 224px 144px var(--dragon-dark), 240px 144px var(--dragon-mid),
+    48px 160px var(--dragon-dark), 64px 160px var(--dragon-dark), 96px 160px var(--dragon-dark), 112px 160px var(--dragon-mid), 128px 160px var(--dragon-mid), 144px 160px var(--dragon-dark), 176px 160px var(--dragon-dark), 192px 160px var(--dragon-dark), 224px 160px var(--dragon-dark), 240px 160px var(--dragon-dark),
+    64px 176px var(--dragon-dark), 80px 176px var(--dragon-dark), 128px 176px var(--dragon-dark), 144px 176px var(--dragon-dark), 176px 176px var(--dragon-dark), 192px 176px var(--dragon-mid), 208px 176px var(--dragon-dark),
+    80px 192px var(--dragon-dark), 144px 192px var(--dragon-dark), 192px 192px var(--dragon-dark), 208px 192px var(--dragon-dark);
+  transform-origin: center bottom;
+  animation: pixel-dragon-breathe 780ms steps(2, end) infinite;
+}
+
+.boss:not(.dragon-admin):not(.dragon-ais-god):not(.dragon-ais-shark):not(.dragon-bbi):not(.dragon-nurali):not(.dragon-goblin):not(.dragon-fury):not(.dragon-anuar):not(.dragon-mansur):not(.dragon-arailm)::after {
+  content: "";
+  position: absolute;
+  right: -48px;
+  top: 82px;
+  z-index: 12;
+  width: 150px;
+  height: 64px;
+  background:
+    radial-gradient(circle at 92% 50%, rgba(255, 242, 117, 0.95) 0 10px, transparent 11px),
+    radial-gradient(circle at 68% 50%, #fff275 0 18px, transparent 19px),
+    radial-gradient(circle at 42% 50%, #ff9f1c 0 24px, transparent 25px),
+    linear-gradient(90deg, #ff2a1f 0 42%, #ff9f1c 43% 70%, transparent 71%);
+  clip-path: polygon(0 48%, 20% 20%, 36% 44%, 52% 0, 68% 42%, 100% 50%, 68% 58%, 52% 100%, 36% 56%, 20% 80%);
+  transform: scaleX(-1);
+  animation: pixel-fire-breath 430ms steps(3, end) infinite;
+}
+
+.boss.dragon-0 { --dragon-light: #ff7a2e; --dragon-mid: #d52f1f; --dragon-dark: #5d1421; --dragon-belly: #ffd28a; --dragon-wing: #f05a24; --dragon-glow: rgba(255, 82, 38, 0.62); }
+.boss.dragon-1 { --dragon-light: #f6ffff; --dragon-mid: #8ecae6; --dragon-dark: #264653; --dragon-belly: #fff8e8; --dragon-wing: #bdefff; --dragon-glow: rgba(142, 202, 230, 0.7); }
+.boss.dragon-2 { --dragon-light: #d1f7a7; --dragon-mid: #2fbf71; --dragon-dark: #17412b; --dragon-belly: #f7ffd1; --dragon-wing: #67d989; --dragon-glow: rgba(47, 191, 113, 0.62); }
+.boss.dragon-3 { --dragon-light: #ffb703; --dragon-mid: #fb5607; --dragon-dark: #5b1420; --dragon-belly: #ffe3b3; --dragon-wing: #ff7b00; --dragon-glow: rgba(255, 183, 3, 0.7); }
+.boss.dragon-4 { --dragon-light: #b388ff; --dragon-mid: #8338ec; --dragon-dark: #24113b; --dragon-belly: #e4d1ff; --dragon-wing: #6b2cbf; --dragon-glow: rgba(131, 56, 236, 0.68); }
+.boss.dragon-5 { --dragon-light: #8bd8ff; --dragon-mid: #3a86ff; --dragon-dark: #112b62; --dragon-belly: #d9f3ff; --dragon-wing: #2f80ed; --dragon-glow: rgba(58, 134, 255, 0.68); }
+.boss.dragon-6 { --dragon-light: #a6fff2; --dragon-mid: #06d6a0; --dragon-dark: #064b42; --dragon-belly: #e2fff9; --dragon-wing: #00a884; --dragon-glow: rgba(6, 214, 160, 0.62); }
+.boss.dragon-7 { --dragon-light: #ffffff; --dragon-mid: #c7d2fe; --dragon-dark: #3730a3; --dragon-belly: #fff8e8; --dragon-wing: #a5b4fc; --dragon-glow: rgba(199, 210, 254, 0.72); }
+.boss.dragon-8 { --dragon-light: #ffcf9c; --dragon-mid: #b5651d; --dragon-dark: #3a2415; --dragon-belly: #ffe4bd; --dragon-wing: #8a4b24; --dragon-glow: rgba(181, 101, 29, 0.64); }
+.boss.dragon-9 { --dragon-light: #fff275; --dragon-mid: #ff004c; --dragon-dark: #3a0214; --dragon-belly: #fff8b8; --dragon-wing: #d00000; --dragon-glow: rgba(255, 0, 76, 0.78); }
+.boss.dragon-family { --dragon-light: #fff8b8; --dragon-mid: #fff275; --dragon-dark: #8a5a00; --dragon-belly: #fffdf0; --dragon-wing: #ffd166; --dragon-glow: rgba(255, 242, 117, 0.84); }
+.boss.final-boss { --dragon-light: #fff275; --dragon-mid: #ff004c; --dragon-dark: #16020a; --dragon-belly: #fff8e8; --dragon-wing: #ff6b2b; --dragon-glow: rgba(255, 0, 76, 0.86); }
+
 .monster-pack {
   position: absolute;
   left: 33%;
@@ -5720,6 +5801,17 @@ button.selected {
 
 @keyframes fire-breath {
   to { transform: scaleX(1.18); opacity: 0.74; }
+}
+
+@keyframes pixel-dragon-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+@keyframes pixel-fire-breath {
+  0% { opacity: 0.78; transform: scaleX(-0.82) translateX(-6px); filter: brightness(1); }
+  50% { opacity: 1; transform: scaleX(-1.08) translateX(-12px); filter: brightness(1.45); }
+  100% { opacity: 0.86; transform: scaleX(-0.95) translateX(-2px); filter: brightness(1.1); }
 }
 
 @keyframes monster-hop {

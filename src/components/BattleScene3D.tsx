@@ -273,6 +273,7 @@ export function BattleScene3D({ dragonColor, heroAnimation, isFinalReveal, burn,
       shadow: new THREE.MeshStandardMaterial({ color: '#3c096c', roughness: 0.82 }),
       magma: new THREE.MeshStandardMaterial({ color: '#d00000', emissive: '#ff6b2b', emissiveIntensity: 0.35, roughness: 0.55 }),
       frost: new THREE.MeshStandardMaterial({ color: '#8ecae6', emissive: '#caf0f8', emissiveIntensity: 0.25, roughness: 0.38 }),
+      avalanche: new THREE.MeshStandardMaterial({ color: '#ff004c', emissive: '#ff6b2b', emissiveIntensity: 0.6, roughness: 0.42 }),
     };
     const monsterMaterial = monsterMaterials.goblin;
     for (let i = 0; i < 24; i += 1) {
