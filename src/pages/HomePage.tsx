@@ -57,7 +57,7 @@ type Armor = {
   displayDefense?: string;
 };
 
-type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'seaPearl' | 'deathPendant' | 'sunOrb' | 'impossibleMedallion' | 'avalancheCrown';
+type ArtifactId = 'starRing' | 'dragonPendant' | 'magicBottle' | 'goldHoop' | 'greenRelic' | 'snowGlobe' | 'moonCrystal' | 'seaPearl' | 'deathPendant' | 'sunOrb' | 'impossibleMedallion' | 'avalancheCrown' | 'godHead';
 
 type Artifact = {
   id: ArtifactId;
@@ -85,8 +85,8 @@ type Quest = {
 
 type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
 type EndingChoice = 'spare' | 'fight' | 'family' | null;
-type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | 'monsterAvalanche' | null;
-type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | 'bbiBadEnding' | 'impossibleEnding' | 'monsterAvalanche';
+type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | 'monsterAvalanche' | 'deathHell' | 'deathVictory' | null;
+type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | 'bbiBadEnding' | 'impossibleEnding' | 'monsterAvalanche' | 'deathHell' | 'deathVictory';
 type BbiBossStage = 'manager' | 'director' | 'final' | null;
 type DuelStatus = 'idle' | 'searching' | 'challenge' | 'fighting' | 'won' | 'declined';
 
@@ -210,6 +210,20 @@ const finalDragonSpirit: CityStage = {
   color: '#2b2434',
   attackSpeed: 0.38,
   reaction: 'дух летает и бьет тяжелой тенью',
+};
+
+const deathGod: CityStage = {
+  name: 'Аид Сидаш',
+  city: 'Адский трон',
+  country: 'После подземного мира',
+  lair: 'Черный зал ада, где бог смерти спокойно смотрит на героя',
+  monsterKind: 'death-god',
+  monsterName: 'души ада',
+  title: 'бог смерти',
+  power: 999_999_999_999,
+  color: '#8b0000',
+  attackSpeed: 0.3,
+  reaction: 'спокойно смотрит и ударяет смертью',
 };
 
 const dragonFamily: CityStage = {
@@ -385,6 +399,7 @@ const monsterAvalancheStartChapter = 7;
 const finalSpiritMonsterTotal = 1_000_000;
 const finalSpiritMonsterHp = 2_500_000_000;
 const finalSpiritMonsterDamage = 250_000;
+const deathSwordDamageText = '999999999999999999999999999999999999999999999';
 
 const monsterAvalancheWorld: CityStage = {
   name: 'Лавина монстров',
@@ -614,6 +629,8 @@ const achievements: { id: AchievementId; name: string }[] = [
   { id: 'bbiBadEnding', name: 'Они лишь дети' },
   { id: 'impossibleEnding', name: 'Невозможная концовка' },
   { id: 'monsterAvalanche', name: 'Лавина 10 миллиардов' },
+  { id: 'deathHell', name: 'Душа попала в ад' },
+  { id: 'deathVictory', name: 'Победивший смерть' },
 ];
 
 const endingArtifacts: Artifact[] = [
@@ -629,6 +646,7 @@ const endingArtifacts: Artifact[] = [
   { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 80, goldBonusPercent: 80, attackSpeedPercent: 80, icon: 'sun-orb', text: 'BBI концовка' },
   { id: 'impossibleMedallion', name: 'Медальон невозможности', ending: 'impossibleEnding', bonusPercent: 1000, goldBonusPercent: 1000, attackSpeedPercent: 1000, icon: 'impossible-medallion', text: 'Невозможная концовка мира Нурали' },
   { id: 'avalancheCrown', name: 'Корона лавины', ending: 'monsterAvalanche', bonusPercent: 100, goldBonusPercent: 100, attackSpeedPercent: 100, healthBonusPercent: 100, defenseBonusPercent: 100, luckBonusPercent: 100, icon: 'avalanche-crown', text: 'Концовка лавины монстров' },
+  { id: 'godHead', name: 'Голова бога', ending: 'deathVictory', bonusPercent: 666, goldBonusPercent: 666, attackSpeedPercent: 666, healthBonusPercent: 666, defenseBonusPercent: 666, luckBonusPercent: 666, healingBonusPercent: 666, icon: 'god-head', text: 'Победа над смертью: усиливает меч смерти' },
 ];
 
 const shopItems: ShopItem[] = [
@@ -846,6 +864,10 @@ function isAisultanSword(weapon: Weapon | null) {
   return weapon?.id.startsWith('aisultan-sea-sword-') ?? false;
 }
 
+function isDeathSword(weapon: Weapon | null) {
+  return weapon?.id.startsWith('death-sword-') ?? false;
+}
+
 function getArmorStyleIndex(armor: Armor | null) {
   if (!armor) return 0;
   const text = `${armor.id}-${armor.name}-${armor.rarity}`;
@@ -996,6 +1018,17 @@ function createMansurBlade(): Weapon {
   };
 }
 
+function createDeathSword(): Weapon {
+  return {
+    id: `death-sword-${Date.now()}-${Math.random()}`,
+    name: 'Смертельный секретный меч',
+    rarity: 'Секретное',
+    damage: Number.MAX_SAFE_INTEGER,
+    displayDamage: deathSwordDamageText,
+    price: 0,
+  };
+}
+
 function createProgramSword(): Weapon {
   return {
     id: `program-sword-${Date.now()}-${Math.random()}`,
@@ -1110,6 +1143,7 @@ export function HomePage() {
   const [finalSpiritWorldOpen, setFinalSpiritWorldOpen] = useState(false);
   const [finalSpiritMonstersLeft, setFinalSpiritMonstersLeft] = useState(finalSpiritMonsterTotal);
   const [finalSpiritFightStarted, setFinalSpiritFightStarted] = useState(false);
+  const [deathGodFightStarted, setDeathGodFightStarted] = useState(false);
   const [unlockedAchievements, setUnlockedAchievements] = useState<AchievementId[]>([]);
   const [gold, setGold] = useState(0);
   const [goldMultiplier, setGoldMultiplier] = useState(1);
@@ -1133,6 +1167,7 @@ export function HomePage() {
   const [battlePulse, setBattlePulse] = useState(0);
   const [fireWavePulse, setFireWavePulse] = useState(0);
   const [waterWavePulse, setWaterWavePulse] = useState(0);
+  const [soulFirePulse, setSoulFirePulse] = useState(0);
   const [enemyBurning, setEnemyBurning] = useState(false);
   const [duelStatus, setDuelStatus] = useState<DuelStatus>('idle');
   const [duelOpponent, setDuelOpponent] = useState<DuelPlayer | null>(null);
@@ -1229,7 +1264,8 @@ export function HomePage() {
   const isBbiBoss = bbiBossStage !== null;
   const isBbiWorld = bbiWorldEntered && !isBbiBoss && !bbiFinalChoiceOpen;
   const isMonsterAvalancheWorld = monsterAvalancheEntered && !monsterAvalancheEnding;
-  const enemy = isFinalSpiritBoss || isFinalSpiritWorld ? finalDragonSpirit : isMonsterAvalancheWorld ? monsterAvalancheWorld : isAdminBoss ? adminBoss : isAdminWorldBosses ? adminBoss : isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
+  const isDeathGodBoss = deathGodFightStarted;
+  const enemy = isDeathGodBoss ? deathGod : isFinalSpiritBoss || isFinalSpiritWorld ? finalDragonSpirit : isMonsterAvalancheWorld ? monsterAvalancheWorld : isAdminBoss ? adminBoss : isAdminWorldBosses ? adminBoss : isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
   const isDungeon = dungeon?.entered && !dungeon.cleared;
@@ -1255,7 +1291,7 @@ export function HomePage() {
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
   const waterSwordArtifactMultiplier = equippedArtifactId === 'seaPearl' && isAisultanSword(equippedWeapon) ? 11 : 1;
   const reward = enemy ? 120 + chapter * 110 : 0;
-  const currentMonsters = isFinalSpiritBoss || isAdminBoss || isAdminWorldBosses || isAisSharkBoss || isAisGodBoss || isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isFinalSpiritWorld ? finalSpiritMonstersLeft : isMonsterAvalancheWorld ? monsterAvalancheLeft : isAdminWorld ? adminWorldMonstersLeft : isAisWorld ? aisMonstersLeft : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
+  const currentMonsters = isDeathGodBoss || isFinalSpiritBoss || isAdminBoss || isAdminWorldBosses || isAisSharkBoss || isAisGodBoss || isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isFinalSpiritWorld ? finalSpiritMonstersLeft : isMonsterAvalancheWorld ? monsterAvalancheLeft : isAdminWorld ? adminWorldMonstersLeft : isAisWorld ? aisMonstersLeft : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
   const musicKey = isFinalReveal
     ? 'ending'
     : isAdminBoss || isAdminWorldBosses
@@ -1278,6 +1314,8 @@ export function HomePage() {
       ? 'goblin'
     : isFamilyBoss
       ? 'family'
+    : isDeathGodBoss
+      ? 'death'
     : isFinalBoss || isFinalSpiritBoss || isFinalSpiritWorld
       ? 'final'
     : isAdminWorld
@@ -1303,10 +1341,12 @@ export function HomePage() {
   const currentMonsterDamage = isFinalSpiritWorld ? finalSpiritMonsterDamage : isMonsterAvalancheWorld ? monsterAvalancheDamage : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterDamage, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterDamage, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterDamage, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterDamage, chapter + 5) : isDungeon ? scaledPower(baseMonsterDamage, chapter + 2) : scaledPower(baseMonsterDamage, chapter);
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const kingDragonDamage = scaledDragonPower(baseDragonDamage, dragonSons.length + 2);
-  const currentDragonHp = isFinalSpiritBoss ? kingDragonHp * 2 : isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
-  const currentDragonDamage = isFinalSpiritBoss ? kingDragonDamage * 2 : isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
+  const deathGodHp = kingDragonHp * 100;
+  const currentDragonHp = isDeathGodBoss ? deathGodHp : isFinalSpiritBoss ? kingDragonHp * 2 : isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
+  const currentDragonDamage = isDeathGodBoss ? kingDragonDamage * 100 : isFinalSpiritBoss ? kingDragonDamage * 2 : isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 5) : isGoblinKingBoss ? scaledDragonPower(baseDragonDamage, chapter + 4) : isFamilyBoss ? kingDragonDamage * 100 : isFinalBoss ? kingDragonDamage : scaledDragonPower(baseDragonDamage, chapter);
   const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 100);
-  const weaponBonus = isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0;
+  const deathSwordMultiplier = equippedArtifactId === 'godHead' && equippedWeapon?.id.startsWith('death-sword-') ? 7.66 : 1;
+  const weaponBonus = Math.floor((isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0) * deathSwordMultiplier);
   const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + Math.floor(weaponBonus * waterSwordArtifactMultiplier);
   const playerName = nickname.trim() || 'BBI герой';
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
@@ -1322,6 +1362,10 @@ export function HomePage() {
     ? 'Невозможная концовка. Админская ядерка стала бесконечной. Получен медальон невозможности.'
     : bbiBadEnding
     ? 'Би Би Ай концовка. Они лишь дети, ты монстр. Ты мог отказаться, но выбрал сражаться.'
+    : secretEnding === 'deathHell'
+      ? 'Плохая концовка. Ваша душа попала в ад.'
+    : secretEnding === 'deathVictory'
+      ? 'Секретная концовка. Победивший смерть. Герой получил голову бога и смертельный меч.'
     : secretEnding === 'adminImpossible'
       ? 'Секретная концовка. Это невозможно пройти. Герой убил админа и стал уж слишком сильным.'
     : secretEnding === 'monsterAvalanche'
@@ -1344,7 +1388,9 @@ export function HomePage() {
         : 'Плохая концовка. Пустое небо. Герой сразился с семьей драконов.'
       : '';
   const cityScene = `scene-city-${chapter % 20}`;
-  const battleScene = isFinalSpiritBoss || finalSpiritWorldOpen
+  const battleScene = isDeathGodBoss
+    ? 'scene-death-god'
+    : isFinalSpiritBoss || finalSpiritWorldOpen
     ? 'scene-underground-spirit'
     : isAdminWorld || isAdminWorldBosses || isAdminBoss || adminFinalChoiceOpen
     ? 'scene-admin'
@@ -1375,7 +1421,9 @@ export function HomePage() {
             ? 'scene-boss-final'
             : `scene-boss-${chapter % 10}`
         : cityScene;
-  const dragonClass = isFinalSpiritBoss
+  const dragonClass = isDeathGodBoss
+    ? 'dragon-death-god'
+    : isFinalSpiritBoss
     ? 'dragon-spirit'
     : isAdminBoss || isAdminWorldBosses
     ? 'dragon-admin'
@@ -1675,6 +1723,7 @@ export function HomePage() {
     setFinalSpiritWorldOpen(false);
     setFinalSpiritMonstersLeft(finalSpiritMonsterTotal);
     setFinalSpiritFightStarted(false);
+    setDeathGodFightStarted(false);
     setImpossibleEnding(false);
     setHeroHp(currentHeroMaxHp);
 
@@ -1992,6 +2041,7 @@ export function HomePage() {
     setFinalSpiritWorldOpen(false);
     setFinalSpiritMonstersLeft(finalSpiritMonsterTotal);
     setFinalSpiritFightStarted(false);
+    setDeathGodFightStarted(false);
     setEnemyBurning(false);
     setMessage(`${reason} Здоровье стало 0, герой начинает снова с первого города.`);
   }
@@ -2305,6 +2355,22 @@ export function HomePage() {
     if (!enemy) return;
     setEnemyBurning(false);
 
+    if (isDeathGodBoss) {
+      const deathSword = createDeathSword();
+      setDeathGodFightStarted(false);
+      setVictory(true);
+      setSecretEnding('deathVictory');
+      unlockAchievement('deathVictory');
+      setChapter(dragonSons.length + 1);
+      setWeapons((currentWeapons) => [...currentWeapons, deathSword]);
+      setEquippedWeapon(deathSword);
+      setEquippedArtifactId('godHead');
+      addGold(666_666_666);
+      setMessage('Аид Сидаш побежден. Концовка: победивший смерть. Получены Голова бога и смертельный секретный меч.');
+      navigate('/world');
+      return;
+    }
+
     if (isBbiBoss) {
       if (bbiBossStage === 'manager') {
         setBbiBossStage('director');
@@ -2480,13 +2546,11 @@ export function HomePage() {
       setFinalSpiritWorldOpen(false);
       setFinalSpiritMonstersLeft(finalSpiritMonsterTotal);
       setFinalSpiritFightStarted(false);
-      setVictory(true);
-      setChapter(dragonSons.length + 1);
-      setEndingChoice('spare');
-      unlockAchievement('dragonPeace');
-      addGold(250_000);
-      setMessage('Души финального босса побеждены. Они больше не беспокойные. Открыта спокойная концовка подземного мира.');
-      navigate('/world');
+      setDeathGodFightStarted(true);
+      setEnemyHp(deathGodHp);
+      setHeroHp(currentHeroMaxHp);
+      setMessage(`Души короля драконов побеждены. Из ада вышел бог смерти Аид Сидаш: ${formatPower(deathGodHp)} HP, в 100 раз больше главного босса.`);
+      navigate('/');
       return;
     }
 
@@ -2628,6 +2692,21 @@ export function HomePage() {
     if (isAisultanSword(equippedWeapon)) {
       setWaterWavePulse((pulse) => pulse + 1);
     }
+    if (isDeathSword(equippedWeapon)) {
+      const soulDamage = Math.max(1, Math.floor(enemyHp * 0.66));
+      const soulHeal = Math.max(1, Math.floor(enemyHp * 0.01));
+      const nextEnemyHp = Math.max(0, enemyHp - soulDamage);
+      setSoulFirePulse((pulse) => pulse + 1);
+      setHeroHp((hp) => Math.min(currentHeroMaxHp, hp + soulHeal));
+      setEnemyHp(nextEnemyHp);
+      if (nextEnemyHp === 0) {
+        setMessage(`Меч смерти выпустил огонь души, забрал 66% души и украл ${formatPower(soulHeal)} HP. Враг уничтожен.`);
+        clearCity();
+        return;
+      }
+      setMessage(`Меч смерти выпустил огонь души: -${formatPower(soulDamage)} HP врагу, герой забрал себе ${formatPower(soulHeal)} HP.`);
+      return;
+    }
     if (isAdminNuke(equippedWeapon)) {
       setEnemyHp(0);
       setMessage(`Админская ядерка ударила силой ${adminNukeDamageText} и уничтожила ${isBbiBoss ? 'босса' : 'дракона'} сразу.`);
@@ -2656,6 +2735,17 @@ export function HomePage() {
     setHeroHp(nextHeroHp);
 
     if (nextHeroHp === 0) {
+      if (isDeathGodBoss) {
+        setDeathGodFightStarted(false);
+        setHeroHp(1);
+        setVictory(true);
+        setSecretEnding('deathHell');
+        unlockAchievement('deathHell');
+        setChapter(dragonSons.length + 1);
+        setMessage('Аид Сидаш забрал душу героя. Концовка: ваша душа попала в ад.');
+        navigate('/world');
+        return;
+      }
       returnToFirstCityAfterDeath(`${isBbiBoss ? 'Босс' : 'Дракон'} ударил на ${formatPower(dragonDamage)} урона.`);
       return;
     }
@@ -2875,7 +2965,6 @@ export function HomePage() {
       setDuelOpponent(requestedPlayer);
       setDuelChatMessages([
         { id: `system-${Date.now()}`, from: 'Система', text: `Чат открыт: ${playerName} ID ${playerId} и ${requestedPlayer.name} ID ${requestedPlayer.id}.` },
-        { id: `opponent-${Date.now()}`, from: requestedPlayer.name, text: 'Я онлайн. Можно драться, обменяться или просто писать.' },
       ]);
       setDuelStatus('challenge');
       setMessage(`${playerName} вызвал игрока ${requestedPlayer.name} по ID ${requestedPlayer.id}. У него появятся кнопки Принять / Отвергнуть.`);
@@ -2892,7 +2981,6 @@ export function HomePage() {
     setDuelStatus('challenge');
     setDuelChatMessages([
       { id: `system-${Date.now()}`, from: 'Система', text: `Выбран игрок онлайн: ${player.name} ID ${player.id}.` },
-      { id: `opponent-${Date.now()}`, from: player.name, text: 'Я тут. Можем драться, обмениваться или писать.' },
     ]);
     setMessage(`${player.name} выбран из списка онлайн игроков.`);
   }
@@ -2968,6 +3056,17 @@ export function HomePage() {
 
   function acceptDuel() {
     if (!duelOpponent) return;
+    saveDuelRequests([
+      ...readDuelRequests().filter((request) => request.id !== `fight-${playerId}-${duelOpponent.id}`),
+      {
+        id: `fight-${playerId}-${duelOpponent.id}`,
+        kind: 'fight',
+        fromId: playerId,
+        fromName: playerName,
+        toId: duelOpponent.id,
+        createdAt: Date.now(),
+      },
+    ]);
     setDuelStatus('fighting');
     setDuelTradeOpen(false);
     setDuelTradeOffer(null);
@@ -3069,19 +3168,10 @@ export function HomePage() {
     }
     const text = duelChatText.trim();
     if (!text) return;
-    const lowerText = text.toLowerCase();
-    const reply = lowerText.includes('обмен') || lowerText.includes('trade')
-      ? 'Ок, жми кнопку Обмен.'
-      : lowerText.includes('дуел') || lowerText.includes('драт') || lowerText.includes('бой')
-        ? 'Готов. Нажимай Драться.'
-        : lowerText.includes('прив') || lowerText.includes('салам')
-          ? 'Привет, я в сети.'
-          : 'Я понял. Можем драться или обменяться.';
 
     setDuelChatMessages((messages) => [
       ...messages,
       { id: `you-${Date.now()}`, from: `${playerName} ID ${playerId}`, text },
-      { id: `opponent-${Date.now()}`, from: `${duelOpponent.name} ID ${duelOpponent.id}`, text: reply },
     ].slice(-12));
     setDuelChatText('');
   }
@@ -3095,7 +3185,6 @@ export function HomePage() {
       setDuelOpponent(player);
       setDuelChatMessages([
         { id: `system-${Date.now()}`, from: 'Система', text: `Найден игрок ${player.name} ID ${player.id}.` },
-        { id: `opponent-${Date.now()}`, from: player.name, text: 'Привет. Драться будем или обмен?' },
       ]);
       setDuelStatus('challenge');
       setMessage(`${player.name} найден в сети. ID ${player.id}. Он кинул вызов на дуэль.`);
@@ -4104,11 +4193,7 @@ export function HomePage() {
             value={nickname}
           />
         </label>
-        {authUser ? (
-          <>
-            <span>Аккаунт</span>
-          </>
-        ) : (
+        {!authUser && (
           guestMode ? (
             <span>Гость</span>
           ) : (
@@ -4220,6 +4305,13 @@ export function HomePage() {
           )}
           {waterWavePulse > 0 && (
             <div className="ais-water-wave" key={waterWavePulse}>
+              <span />
+              <span />
+              <span />
+            </div>
+          )}
+          {soulFirePulse > 0 && (
+            <div className="soul-fire-wave" key={soulFirePulse}>
               <span />
               <span />
               <span />
@@ -4348,12 +4440,21 @@ export function HomePage() {
               {isAdminWorldBosses && <b>ALL BOSSES</b>}
             </div>
           )}
+          {!isFinalReveal && enemy && currentMonsters === 0 && isDeathGodBoss && (
+            <div className="death-god-boss">
+              <span className="death-crown" />
+              <span className="death-head" />
+              <span className="death-body" />
+              <span className="death-hound" />
+              <span className="death-scythe" />
+            </div>
+          )}
           {!isFinalReveal && enemy && currentMonsters === 0 && isFinalSpiritBoss && (
             <div className="final-spirit-boss">
               <span />
             </div>
           )}
-          {!isFinalReveal && enemy && currentMonsters === 0 && !isFinalSpiritBoss && !isGoblinKingBoss && !isFuryKingBoss && !isAnuarKingBoss && !isMansurKingBoss && !isArailmKingBoss && !isAisSharkBoss && !isAisGodBoss && !isAdminWorldBosses && !isAdminBoss && (
+          {!isFinalReveal && enemy && currentMonsters === 0 && !isDeathGodBoss && !isFinalSpiritBoss && !isGoblinKingBoss && !isFuryKingBoss && !isAnuarKingBoss && !isMansurKingBoss && !isArailmKingBoss && !isAisSharkBoss && !isAisGodBoss && !isAdminWorldBosses && !isAdminBoss && (
             <div className={`boss ${isFinalBoss ? 'final-boss' : ''} ${dragonClass}`} style={{ '--dragon-color': enemy.color } as CSSProperties}>
               {enemyBurning && <div className="enemy-burn-effect" />}
               <div className="tail-2d" />
@@ -4449,7 +4550,8 @@ export function HomePage() {
             {duelTradeOpen && duelOpponent && (
               <div className="duel-trade">
                 <strong>Обмен или нет</strong>
-                <p>Выбери предмет из своего инвентаря. Потом нажми принять или отвергнуть.</p>
+                <p>Сверху вещи другого игрока, ниже твой инвентарь. Выбери предмет и нажми готово.</p>
+                <div className="duel-trade-label">У него есть</div>
                 <div className="duel-trade-target">
                   <div className="weapon weapon-card rare">
                     <span className="weapon-picture" aria-hidden="true"><i /></span>
@@ -4462,6 +4564,7 @@ export function HomePage() {
                     <small>Получишь броню соперника +{formatPower(duelOpponent.armor.defense)}</small>
                   </div>
                 </div>
+                <div className="duel-trade-label">У тебя есть</div>
                 <div className="duel-trade-inventory">
                   {weapons.length === 0 && armors.length === 0 ? (
                     <p className="online-empty">Инвентарь пуст. Для обмена нужен меч или броня.</p>
@@ -4495,8 +4598,8 @@ export function HomePage() {
                   )}
                 </div>
                 <div className="duel-actions">
-                  <button onClick={acceptDuelTrade} disabled={!duelTradeOffer} type="button">Принять</button>
-                  <button className="secondary" onClick={rejectDuelTrade} type="button">Отвергнуть</button>
+                  <button onClick={acceptDuelTrade} disabled={!duelTradeOffer} type="button">Готово</button>
+                  <button className="secondary" onClick={rejectDuelTrade} type="button">Отказаться</button>
                 </div>
               </div>
             )}
@@ -4577,12 +4680,18 @@ export function HomePage() {
       )}
 
       {incomingDuelRequest && (
-        <div className="duel-request-pop" role="dialog" aria-live="polite" aria-label="Входящий вызов">
-          <strong>{incomingDuelRequest.fromName}</strong>
-          <p>{incomingDuelRequest.kind === 'trade' ? 'Обмен или нет?' : 'Дуэль на арене?'}</p>
-          <div className="duel-actions">
-            <button onClick={acceptIncomingDuelRequest} type="button">Принять</button>
-            <button className="secondary" onClick={rejectIncomingDuelRequest} type="button">Отвергнуть</button>
+        <div className="duel-request-screen" role="dialog" aria-modal="true" aria-live="polite" aria-label="Входящий вызов">
+          <div className="duel-request-box">
+            <p className="eyebrow">{incomingDuelRequest.kind === 'trade' ? 'Входящий обмен' : 'Входящая дуэль'}</p>
+            <h2>{incomingDuelRequest.kind === 'trade' ? 'Игрок хочет обмен' : 'Игрок хочет драться'}</h2>
+            <strong>{incomingDuelRequest.fromName}</strong>
+            <p>{incomingDuelRequest.kind === 'trade' ? 'Обмен или нет?' : 'Принять бой на арене или отказаться?'}</p>
+            <div className="duel-actions">
+              <button onClick={acceptIncomingDuelRequest} type="button">
+                {incomingDuelRequest.kind === 'trade' ? 'Обменяться' : 'Принять'}
+              </button>
+              <button className="secondary" onClick={rejectIncomingDuelRequest} type="button">Отказаться</button>
+            </div>
           </div>
         </div>
       )}
@@ -4651,6 +4760,37 @@ export function HomePage() {
             <p>
               Последний BBI босс был сильнее директора в 5 раз, но даже его победа
               не стала хорошей концовкой.
+            </p>
+            <div className="ending-actions">
+              <Link className="ending-link" href="/">Продолжать</Link>
+              <button onClick={restart}>Начать повторно</button>
+            </div>
+          </div>
+        ) : secretEnding === 'deathHell' ? (
+          <div className="reveal death-ending">
+            <p className="eyebrow">Адская концовка</p>
+            <h2>Ваша душа попала в ад</h2>
+            <p>
+              После душ короля драконов герой встретил Аида Сидаша. Бог смерти спокойно смотрел на героя и забрал его душу.
+            </p>
+            <p>
+              HP героя осталось, но душа уже не вернулась в мир живых.
+            </p>
+            <div className="ending-actions">
+              <Link className="ending-link" href="/">Продолжать</Link>
+              <button onClick={restart}>Начать повторно</button>
+            </div>
+          </div>
+        ) : secretEnding === 'deathVictory' ? (
+          <div className="reveal death-ending">
+            <p className="eyebrow">Секретная концовка</p>
+            <h2>Победивший смерть</h2>
+            <p>
+              Герой победил Аида Сидаша, бога смерти с HP в 100 раз больше главного босса.
+            </p>
+            <p>
+              Получены Голова бога: +666% ко всем бафам, и смертельный секретный меч с уроном {formatHugeText(deathSwordDamageText)}.
+              Голова бога усиливает меч смерти.
             </p>
             <div className="ending-actions">
               <Link className="ending-link" href="/">Продолжать</Link>
