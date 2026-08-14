@@ -1951,9 +1951,17 @@ button.secondary {
 }
 
 .hero.knight {
+  --knight-edge: #1a1022;
+  --knight-blue: #1f4f9a;
+  --knight-blue-dark: #122a59;
+  --knight-gold: #ffd166;
+  --knight-steel: #dce5ed;
+  --knight-steel-dark: #68778b;
+  --knight-cloth: #273b6d;
   transition: left 220ms ease, bottom 220ms ease;
   filter: drop-shadow(0 14px 10px rgba(20, 8, 4, 0.35));
   transform: none;
+  image-rendering: pixelated;
 }
 
 .hero.strike {
@@ -1970,68 +1978,80 @@ button.secondary {
 
 .hero .head {
   position: absolute;
-  left: 30px;
-  top: 10px;
-  width: 43px;
-  aspect-ratio: 1;
-  border: 4px solid #1a1022;
-  border-radius: 50%;
+  left: 36px;
+  top: 22px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 0;
   background: #ffd6a5;
-  box-shadow: none;
+  box-shadow:
+    -8px 0 var(--knight-edge), 0 -8px var(--knight-edge), 8px -8px var(--knight-edge), 16px 0 var(--knight-edge),
+    0 8px #c28b64, 8px 8px #c28b64,
+    8px 0 #0f172a;
 }
 
 .hero .body {
   position: absolute;
-  left: 21px;
-  top: 57px;
-  width: 62px;
-  height: 87px;
-  border: 4px solid #1a1022;
-  border-radius: 25px 25px 12px 12px;
+  left: 24px;
+  top: 58px;
+  width: 56px;
+  height: 72px;
+  border: 0;
+  border-radius: 0;
   background:
-    linear-gradient(90deg, transparent 0 43%, rgba(47, 128, 237, 0.55) 44% 56%, transparent 57%),
-    linear-gradient(90deg, #98a6b8, #e3e8ef 48%, #607089);
-  box-shadow: inset 0 -16px 0 rgba(47, 128, 237, 0.35);
+    linear-gradient(90deg, var(--knight-blue-dark) 0 24%, var(--knight-steel) 25% 44%, var(--knight-gold) 45% 56%, var(--knight-steel-dark) 57% 76%, var(--knight-blue-dark) 77%),
+    var(--knight-blue);
+  box-shadow:
+    -8px 0 var(--knight-edge), 0 -8px var(--knight-edge), 8px -8px var(--knight-edge), 56px 0 var(--knight-edge),
+    0 72px var(--knight-edge), 8px 72px var(--knight-edge), 16px 72px var(--knight-edge), 24px 72px var(--knight-edge), 32px 72px var(--knight-edge), 40px 72px var(--knight-edge),
+    inset 0 -18px 0 rgba(18, 42, 89, 0.88);
   transform: none;
 }
 
 .knight .body {
   background:
-    linear-gradient(90deg, transparent 0 43%, rgba(47, 128, 237, 0.55) 44% 56%, transparent 57%),
-    linear-gradient(90deg, #98a6b8, #e3e8ef 48%, #607089);
-  box-shadow: inset 0 -16px 0 rgba(47, 128, 237, 0.35);
+    linear-gradient(90deg, var(--knight-blue-dark) 0 24%, var(--knight-steel) 25% 44%, var(--knight-gold) 45% 56%, var(--knight-steel-dark) 57% 76%, var(--knight-blue-dark) 77%),
+    var(--knight-blue);
 }
 
 .helm-2d {
   position: absolute;
-  left: 26px;
-  top: 2px;
-  width: 52px;
-  height: 36px;
-  border: 4px solid #1a1022;
-  border-radius: 50% 50% 28% 28%;
-  background: linear-gradient(180deg, #edf2f7, #76859a);
+  left: 28px;
+  top: 3px;
+  width: 48px;
+  height: 40px;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, var(--knight-blue-dark) 0 20%, var(--knight-steel) 21% 42%, var(--knight-gold) 43% 55%, var(--knight-steel-dark) 56% 78%, var(--knight-blue-dark) 79%);
   z-index: 4;
   transform: none;
-  box-shadow: none;
+  box-shadow:
+    -8px 8px var(--knight-edge), 0 0 var(--knight-edge), 8px -8px var(--knight-edge), 16px -8px var(--knight-edge), 24px -8px var(--knight-edge), 32px -8px var(--knight-edge), 40px 0 var(--knight-edge), 48px 8px var(--knight-edge),
+    16px 40px var(--knight-edge), 24px 40px var(--knight-edge);
 }
 
 .helm-2d::after {
   content: "";
   position: absolute;
-  left: 9px;
-  right: 9px;
+  left: 10px;
+  right: 8px;
   top: 19px;
-  height: 7px;
-  border-radius: 999px;
-  background: #1a1022;
+  height: 8px;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, #0f172a 0 36%, var(--knight-gold) 37% 50%, #0f172a 51%);
   display: block;
 }
 
 .hero.has-armor .helm-2d {
-  background: var(--armor-helmet-bg, linear-gradient(180deg, #edf2f7, #76859a));
-  border-color: var(--armor-edge, #1a1022);
-  box-shadow: 0 0 14px var(--armor-glow, rgba(255, 255, 255, 0));
+  background:
+    linear-gradient(90deg, var(--armor-edge, var(--knight-blue-dark)) 0 20%, var(--armor-helmet-bg, var(--knight-steel)) 21% 78%, var(--armor-edge, var(--knight-blue-dark)) 79%);
+  box-shadow:
+    -8px 8px var(--knight-edge), 0 0 var(--knight-edge), 8px -8px var(--knight-edge), 16px -8px var(--knight-edge), 24px -8px var(--knight-edge), 32px -8px var(--knight-edge), 40px 0 var(--knight-edge), 48px 8px var(--knight-edge),
+    16px 40px var(--knight-edge), 24px 40px var(--knight-edge),
+    0 0 14px var(--armor-glow, rgba(255, 255, 255, 0));
 }
 
 .hero.has-helmet-gear .helm-2d {
@@ -2054,9 +2074,11 @@ button.secondary {
 .hero.has-body-gear .body {
   background:
     var(--armor-mark, linear-gradient(90deg, transparent 0 43%, rgba(47, 128, 237, 0.55) 44% 56%, transparent 57%)),
-    var(--armor-body-bg, linear-gradient(90deg, #98a6b8, #e3e8ef 48%, #607089));
-  border-color: var(--armor-edge, #1a1022);
-  box-shadow: inset 0 -16px 0 var(--armor-shadow, rgba(47, 128, 237, 0.35)), 0 0 14px var(--armor-glow, transparent);
+    var(--armor-body-bg, linear-gradient(90deg, var(--knight-blue-dark), var(--knight-steel) 48%, var(--knight-steel-dark)));
+  box-shadow:
+    -8px 0 var(--knight-edge), 0 -8px var(--knight-edge), 8px -8px var(--knight-edge), 56px 0 var(--knight-edge),
+    0 72px var(--knight-edge), 8px 72px var(--knight-edge), 16px 72px var(--knight-edge), 24px 72px var(--knight-edge), 32px 72px var(--knight-edge), 40px 72px var(--knight-edge),
+    inset 0 -16px 0 var(--armor-shadow, rgba(47, 128, 237, 0.35)), 0 0 14px var(--armor-glow, transparent);
 }
 
 .hero.has-body-gear .body::before,
@@ -2079,65 +2101,97 @@ button.secondary {
   right: -21px;
 }
 
+.hero.strike,
+.hero.armor-style-6,
+.hero.armor-style-10 {
+  --knight-blue: #8f2d1d;
+  --knight-blue-dark: #4b1111;
+  --knight-gold: #dce5ed;
+  --knight-steel: #c9d3df;
+  --knight-steel-dark: #6f1d1b;
+  --knight-cloth: #5a1111;
+}
+
+.hero.armor-style-9 {
+  --knight-blue: #2fbf71;
+  --knight-blue-dark: #064e3b;
+  --knight-gold: #dce5ed;
+  --knight-steel: #a7f3d0;
+  --knight-steel-dark: #047857;
+  --knight-cloth: #0f5132;
+}
+
+.hero.armor-style-8 {
+  --knight-blue: #8338ec;
+  --knight-blue-dark: #3c096c;
+  --knight-gold: #e9d5ff;
+  --knight-steel: #c77dff;
+  --knight-steel-dark: #5b21b6;
+  --knight-cloth: #2e1065;
+}
+
 .shield-2d {
   position: absolute;
-  left: -17px;
-  top: 82px;
-  width: 42px;
-  height: 62px;
-  border: 4px solid #1a1022;
-  border-radius: 50% 50% 45% 45%;
-  background: linear-gradient(180deg, #264653, #1d3557);
+  left: -11px;
+  top: 76px;
+  width: 40px;
+  height: 58px;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, var(--knight-blue-dark) 0 30%, var(--knight-gold) 31% 43%, var(--knight-steel) 44% 100%);
   z-index: 5;
   transform: none;
-  box-shadow: none;
+  clip-path: polygon(0 8px, 100% 8px, 100% 38px, 50% 100%, 0 38px);
+  box-shadow: 0 0 0 4px var(--knight-edge);
 }
 
 .shield-2d::after {
   content: "";
   position: absolute;
-  inset: 17px 13px;
-  border-radius: 50%;
-  background: #ffd166;
+  inset: 18px 14px 22px;
+  border-radius: 0;
+  background: var(--knight-gold);
   display: block;
 }
 
 .arm-2d,
 .leg-2d {
   position: absolute;
-  border: 4px solid #1a1022;
-  background: linear-gradient(180deg, #c9d3df, #6f7f95);
-  box-shadow: none;
+  border: 0;
+  border-radius: 0;
+  background: var(--knight-steel-dark);
+  box-shadow: 0 0 0 4px var(--knight-edge);
 }
 
 .arm-2d {
-  left: 75px;
-  top: 75px;
+  left: 78px;
+  top: 70px;
   width: 18px;
-  height: 64px;
-  border-radius: 999px;
-  transform: rotate(-28deg);
+  height: 56px;
+  transform: rotate(-18deg);
 }
 
 .leg-2d {
-  top: 137px;
-  width: 20px;
-  height: 44px;
-  border-radius: 999px;
+  top: 136px;
+  width: 22px;
+  height: 42px;
+  background: linear-gradient(180deg, var(--knight-blue-dark), #3a2415);
 }
 
-.left-leg { left: 30px; transform: rotate(8deg); }
-.right-leg { left: 57px; transform: rotate(-8deg); }
+.left-leg { left: 28px; transform: rotate(7deg); }
+.right-leg { left: 58px; transform: rotate(-7deg); }
 
 .cape {
   position: absolute;
-  left: 1px;
-  top: 54px;
-  width: 58px;
+  left: 5px;
+  top: 52px;
+  width: 48px;
   height: 104px;
-  border-radius: 50% 15% 45% 25%;
-  background: #d00000;
-  transform: skewX(-12deg);
+  border-radius: 0;
+  background: var(--knight-cloth);
+  clip-path: polygon(20% 0, 100% 8%, 78% 100%, 0 88%);
+  transform: skewX(-8deg);
   display: block;
 }
 
@@ -2193,6 +2247,23 @@ button.secondary {
 
 .hero.strike .sword::before {
   animation: sword-tip-flash 820ms ease-out;
+}
+
+.hero.strike::after {
+  content: "";
+  position: absolute;
+  right: -94px;
+  top: 42px;
+  z-index: 12;
+  width: 132px;
+  height: 94px;
+  border: 8px solid rgba(232, 241, 244, 0.94);
+  border-left: 0;
+  border-bottom-color: transparent;
+  border-radius: 0 100% 100% 0;
+  filter: drop-shadow(0 0 10px rgba(142, 202, 230, 0.85));
+  transform: rotate(12deg);
+  animation: knight-slash-fx 820ms steps(3, end) both;
 }
 
 .hero.step .cape {
@@ -4634,14 +4705,18 @@ button.selected {
   position: relative;
   display: grid;
   place-items: center;
-  width: 48px;
+  width: 54px;
   height: 74px;
-  border: 2px solid rgba(255, 248, 232, 0.74);
-  border-radius: 8px;
+  border: 2px solid rgba(37, 17, 5, 0.58);
+  border-radius: 4px;
   background:
-    radial-gradient(circle at 50% 28%, rgba(255, 255, 255, 0.42), transparent 17px),
-    rgba(37, 17, 5, 0.22);
-  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.16);
+    linear-gradient(rgba(37, 17, 5, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 17, 5, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 50% 28%, rgba(255, 255, 255, 0.54), transparent 17px),
+    #e8f1f4;
+  background-size: 8px 8px, 8px 8px, auto, auto;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55), 0 3px 0 rgba(37, 17, 5, 0.28);
+  image-rendering: pixelated;
 }
 
 .weapon-picture::before,
@@ -4698,6 +4773,95 @@ button.selected {
   height: 12px;
   background: #f8fbff;
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.weapon-style-1 .weapon-picture::before,
+.weapon-style-8 .weapon-picture::before,
+.weapon-style-12 .weapon-picture::before {
+  width: 24px;
+  height: 48px;
+  border-radius: 999px 999px 6px 6px;
+  background:
+    radial-gradient(ellipse at 50% 8%, transparent 0 10px, #1a1022 11px 13px, transparent 14px),
+    var(--sword-blade, linear-gradient(180deg, #fff, #9aa6b2));
+  clip-path: polygon(50% 0, 78% 8%, 78% 72%, 100% 82%, 63% 100%, 50% 88%, 37% 100%, 0 82%, 22% 72%, 22% 8%);
+}
+
+.weapon-style-6 .weapon-picture::before,
+.weapon-style-7 .weapon-picture::before,
+.weapon-style-13 .weapon-picture::before {
+  width: 5px;
+  height: 58px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #8b5a2b, #3a2415);
+  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg));
+}
+
+.weapon-style-6 .weapon-picture::after,
+.weapon-style-7 .weapon-picture::after,
+.weapon-style-13 .weapon-picture::after {
+  top: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #fff8e8 0 5px, transparent 6px),
+    var(--sword-blade, linear-gradient(180deg, #d7fbff, #73d2de));
+}
+
+.weapon-style-10 .weapon-picture::before {
+  left: 10px;
+  top: 36px;
+  width: 38px;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8b5a2b, #3a2415);
+  transform: rotate(-34deg);
+}
+
+.weapon-style-10 .weapon-picture::after {
+  left: 9px;
+  top: 15px;
+  width: 30px;
+  height: 42px;
+  border: 4px solid #1a1022;
+  border-right-color: transparent;
+  border-radius: 50%;
+  background: transparent;
+  transform: rotate(-24deg);
+}
+
+.weapon-style-11 .weapon-picture::before,
+.weapon-style-14 .weapon-picture::before,
+.weapon-style-16 .weapon-picture::before {
+  width: 34px;
+  height: 20px;
+  border-radius: 9px;
+  background:
+    linear-gradient(90deg, transparent 0 36%, #1a1022 37% 45%, transparent 46%),
+    var(--sword-blade, linear-gradient(180deg, #fff, #94a3b8));
+  clip-path: polygon(0 24%, 68% 0, 100% 50%, 68% 100%, 0 76%);
+}
+
+.weapon-style-11 .weapon-picture i,
+.weapon-style-14 .weapon-picture i,
+.weapon-style-16 .weapon-picture i {
+  top: 36px;
+  width: 6px;
+  height: 30px;
+  border-radius: 999px;
+  background: #5b3d38;
+}
+
+.weapon-style-15 .weapon-picture::before,
+.weapon-style-17 .weapon-picture::before {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #e8f1f4 0 11px, transparent 12px),
+    var(--sword-blade, linear-gradient(180deg, #fff, #94a3b8));
+  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg));
 }
 
 .weapon.uncommon .weapon-picture::before {
@@ -4790,6 +4954,17 @@ button.selected {
     linear-gradient(90deg, #26391f, #66745d 42%, #23361f);
   transform: none;
   box-shadow: inset -7px 0 8px rgba(255, 255, 255, 0.18), 0 0 12px rgba(47, 80, 42, 0.9);
+}
+
+.weapon-style-18 .weapon-picture {
+  border-color: #ff2a1f;
+  background:
+    linear-gradient(rgba(255, 42, 31, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 42, 31, 0.22) 1px, transparent 1px),
+    radial-gradient(circle at 50% 34%, rgba(255, 42, 31, 0.82), transparent 22px),
+    #180307;
+  background-size: 8px 8px, 8px 8px, auto, auto;
+  box-shadow: inset 0 0 0 2px rgba(255, 242, 117, 0.22), 0 0 22px rgba(255, 42, 31, 0.85);
 }
 
 .weapon-style-18 .weapon-picture::after {
@@ -4900,14 +5075,18 @@ button.selected {
   position: relative;
   display: grid;
   place-items: center;
-  width: 48px;
+  width: 54px;
   height: 74px;
-  border: 2px solid rgba(255, 248, 232, 0.74);
-  border-radius: 8px;
+  border: 2px solid rgba(37, 17, 5, 0.58);
+  border-radius: 4px;
   background:
-    radial-gradient(circle at 50% 24%, rgba(255, 255, 255, 0.36), transparent 16px),
-    rgba(37, 17, 5, 0.22);
-  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.16);
+    linear-gradient(rgba(37, 17, 5, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 17, 5, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 50% 24%, rgba(255, 255, 255, 0.42), transparent 16px),
+    #e8f1f4;
+  background-size: 8px 8px, 8px 8px, auto, auto;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55), 0 3px 0 rgba(37, 17, 5, 0.28);
+  image-rendering: pixelated;
 }
 
 .armor-picture::before,
@@ -4971,6 +5150,18 @@ button.selected {
   border: 3px solid var(--armor-edge, #1a1022);
   border-radius: 50%;
   background: var(--armor-shoulder, #7b8794);
+}
+
+.armor-card.secret .armor-picture,
+.armor-style-10 .armor-picture {
+  border-color: #ff004c;
+  background:
+    linear-gradient(rgba(255, 0, 76, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 0, 76, 0.22) 1px, transparent 1px),
+    radial-gradient(circle at 50% 28%, rgba(255, 0, 76, 0.68), transparent 20px),
+    #130208;
+  background-size: 8px 8px, 8px 8px, auto, auto;
+  box-shadow: inset 0 0 0 2px rgba(255, 248, 232, 0.18), 0 0 22px rgba(255, 0, 76, 0.72);
 }
 
 .armor-style-0 { --armor-edge: #1a1022; --armor-helmet-bg: linear-gradient(180deg, #dce5ed, #59606b); --armor-body-bg: linear-gradient(180deg, #dce5ed, #59606b); --armor-visor: #111827; --armor-shoulder: #7b8794; --armor-shadow: rgba(47, 128, 237, 0.25); }
@@ -5664,6 +5855,21 @@ button.selected {
   }
   45%, 65% {
     filter: brightness(1.8) drop-shadow(0 0 14px #fff275);
+  }
+}
+
+@keyframes knight-slash-fx {
+  0% {
+    opacity: 0;
+    transform: rotate(-18deg) scale(0.6);
+  }
+  38% {
+    opacity: 1;
+    transform: rotate(8deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(28deg) scale(1.12);
   }
 }
 
