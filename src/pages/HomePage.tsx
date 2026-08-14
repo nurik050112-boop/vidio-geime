@@ -114,6 +114,11 @@ type DuelChatMessage = {
   text: string;
 };
 
+type DuelTradeOffer =
+  | { kind: 'weapon'; item: Weapon }
+  | { kind: 'armor'; item: Armor }
+  | null;
+
 const firstDragonCities: CityStage[] = [
   { name: 'Игнис', city: 'Алматы', country: 'Казахстан', lair: 'Логово Искры в горах Заилийского Алатау', monsterKind: 'goblin', monsterName: 'гоблины', title: 'сын искры', power: 1_000, color: '#ffb703', attackSpeed: 0.85, reaction: 'бьет очень быстро' },
   { name: 'Рубор', city: 'Стамбул', country: 'Турция', lair: 'Пепельное гнездо у древних стен', monsterKind: 'orc', monsterName: 'орки', title: 'сын пепла', power: 1_000_000, color: '#fb5607', attackSpeed: 1.3, reaction: 'бьет тяжелее и медленнее' },
@@ -1111,6 +1116,7 @@ export function HomePage() {
   const [duelHeroHp, setDuelHeroHp] = useState(0);
   const [duelOpponentHp, setDuelOpponentHp] = useState(0);
   const [duelTradeOpen, setDuelTradeOpen] = useState(false);
+  const [duelTradeOffer, setDuelTradeOffer] = useState<DuelTradeOffer>(null);
   const [duelChatMessages, setDuelChatMessages] = useState<DuelChatMessage[]>([]);
   const [duelChatText, setDuelChatText] = useState('');
   const [onlinePlayers, setOnlinePlayers] = useState<DuelPlayer[]>([]);
@@ -2644,6 +2650,7 @@ export function HomePage() {
       setFuryKingFightStarted(false);
       setAdminCode('');
       setMessage('Код wwfuri открыл секретный фури-мир. Выбери: войти или выйти.');
+      navigate('/world');
       return;
     }
 
@@ -2654,6 +2661,7 @@ export function HomePage() {
       setAnuarKingFightStarted(false);
       setAdminCode('');
       setMessage('Код Anuar открыл секретный мир города бомб. Выбери: войти или выйти.');
+      navigate('/world');
       return;
     }
 
@@ -2664,6 +2672,7 @@ export function HomePage() {
       setMansurKingFightStarted(false);
       setAdminCode('');
       setMessage('Код mansur открыл секретное подземелье Мансура для братишки.');
+      navigate('/world');
       return;
     }
 
@@ -2675,6 +2684,7 @@ export function HomePage() {
       setNuraliBossFightStarted(false);
       setAdminCode('');
       setMessage('Код nurali2281 открыл новый мир Нурали. Выбери: войти или выйти.');
+      navigate('/world');
       return;
     }
 
@@ -2692,6 +2702,7 @@ export function HomePage() {
       setAisGodFightStarted(false);
       setAdminCode('');
       setMessage('Код ais228198 открыл 10 мир: водный мир Айсултана. Выбери: войти или выйти.');
+      navigate('/world');
       return;
     }
 
@@ -2704,6 +2715,7 @@ export function HomePage() {
       setAdminBossFightStarted(false);
       setAdminCode('');
       setMessage('Код ADMIN2281 открыл 11 мир: админская сложность.');
+      navigate('/world');
       return;
     }
 
@@ -2716,6 +2728,7 @@ export function HomePage() {
       setBbiCityReward(false);
       setAdminCode('');
       setMessage('Код BBI открыл новый мир. Выбери: войти или не входить.');
+      navigate('/world');
       return;
     }
 
@@ -2779,6 +2792,7 @@ export function HomePage() {
     setAisGodFightStarted(false);
     setAdminCode('');
     setMessage('Код arailm открыл красную программу. Войди и зачисти 100к код-монстров.');
+    navigate('/world');
   }
 
   function enterDungeon() {
@@ -2838,6 +2852,7 @@ export function HomePage() {
     setDuelTargetId(player.id);
     setDuelOpponent(player);
     setDuelTradeOpen(false);
+    setDuelTradeOffer(null);
     setDuelStatus('challenge');
     setDuelChatMessages([
       { id: `system-${Date.now()}`, from: 'Система', text: `Выбран игрок онлайн: ${player.name} ID ${player.id}.` },
@@ -2850,6 +2865,7 @@ export function HomePage() {
     setDuelStatus('idle');
     setDuelOpponent(null);
     setDuelTradeOpen(false);
+    setDuelTradeOffer(null);
     setDuelChatMessages([]);
     setDuelChatText('');
     setMessage('Список игроков закрыт. Можно играть дальше.');
@@ -2867,6 +2883,7 @@ export function HomePage() {
   function declineDuel() {
     setDuelStatus('declined');
     setDuelTradeOpen(false);
+    setDuelTradeOffer(null);
     setMessage('Ты отказался от дуэли. Вызов закрыт.');
   }
 
@@ -2874,6 +2891,7 @@ export function HomePage() {
     if (!duelOpponent) return;
     setDuelStatus('fighting');
     setDuelTradeOpen(false);
+    setDuelTradeOffer(null);
     setDuelHeroHp(Math.max(currentHeroMaxHp, 1_000 + defenseBonus + attackBonus));
     setDuelOpponentHp(duelOpponent.power * 4);
     setBattlePulse((pulse) => pulse + 1);
@@ -2911,30 +2929,45 @@ export function HomePage() {
     setMessage(`${playerName} ударил: -${formatPower(heroDuelDamage)} HP. ${duelOpponent.name} ответил: -${formatPower(opponentDuelDamage)} HP.`);
   }
 
-  function tradeDuelWeapon() {
-    if (!duelOpponent || weapons.length === 0) {
-      setMessage('Для обмена нужен хотя бы один меч в инвентаре.');
-      return;
-    }
-    const offeredWeapon = weapons[weapons.length - 1];
-    const receivedWeapon = { ...duelOpponent.weapon, id: `${duelOpponent.weapon.id}-${Date.now()}` };
-    setWeapons((currentWeapons) => [...currentWeapons.filter((weapon) => weapon.id !== offeredWeapon.id), receivedWeapon]);
-    if (equippedWeapon?.id === offeredWeapon.id) setEquippedWeapon(receivedWeapon);
+  function rejectDuelTrade() {
+    setDuelTradeOffer(null);
     setDuelTradeOpen(false);
-    setMessage(`Обмен: ты отдал ${getWeaponDisplayName(offeredWeapon)} и получил ${getWeaponDisplayName(receivedWeapon)} от ${duelOpponent.name}.`);
+    setMessage('Обмен отвергнут.');
   }
 
-  function tradeDuelArmor() {
-    if (!duelOpponent || armors.length === 0) {
-      setMessage('Для обмена нужна хотя бы одна броня в инвентаре.');
+  function acceptDuelTrade() {
+    if (!duelOpponent || !duelTradeOffer) {
+      setMessage('Сначала выбери предмет для обмена.');
       return;
     }
-    const offeredArmor = armors[armors.length - 1];
+
+    if (duelTradeOffer.kind === 'weapon') {
+      const offeredWeapon = duelTradeOffer.item;
+      const receivedWeapon = { ...duelOpponent.weapon, id: `${duelOpponent.weapon.id}-${Date.now()}` };
+      setWeapons((currentWeapons) => [...currentWeapons.filter((weapon) => weapon.id !== offeredWeapon.id), receivedWeapon]);
+      if (equippedWeapon?.id === offeredWeapon.id) setEquippedWeapon(receivedWeapon);
+      setDuelTradeOffer(null);
+      setDuelTradeOpen(false);
+      setMessage(`Обмен принят: ты отдал ${getWeaponDisplayName(offeredWeapon)} и получил ${getWeaponDisplayName(receivedWeapon)} от ${duelOpponent.name}.`);
+      return;
+    }
+
+    const offeredArmor = duelTradeOffer.item;
     const receivedArmor = { ...duelOpponent.armor, id: `${duelOpponent.armor.id}-${Date.now()}` };
     setArmors((currentArmors) => [...currentArmors.filter((armor) => armor.id !== offeredArmor.id), receivedArmor]);
     if (equippedArmor?.id === offeredArmor.id) setEquippedArmor(receivedArmor);
+    setDuelTradeOffer(null);
     setDuelTradeOpen(false);
-    setMessage(`Обмен: ты отдал ${offeredArmor.name} и получил ${receivedArmor.name} от ${duelOpponent.name}.`);
+    setMessage(`Обмен принят: ты отдал ${offeredArmor.name} и получил ${receivedArmor.name} от ${duelOpponent.name}.`);
+  }
+
+  function openDuelTrade() {
+    if (!duelOpponent) {
+      setMessage('Сначала найди игрока для обмена.');
+      return;
+    }
+    setDuelTradeOpen((open) => !open);
+    setDuelTradeOffer(null);
   }
 
   function sendDuelChat(event: FormEvent<HTMLFormElement>) {
@@ -3962,7 +3995,7 @@ export function HomePage() {
         </label>
         {authUser ? (
           <>
-            <span>{authUser.email}</span>
+            <span>Аккаунт</span>
           </>
         ) : (
           guestMode ? (
@@ -4261,7 +4294,7 @@ export function HomePage() {
                 <div className="duel-actions">
                   <button onClick={acceptDuel} type="button">Драться</button>
                   <button className="secondary" onClick={declineDuel} type="button">Нет</button>
-                  <button className="secondary" onClick={() => setDuelTradeOpen((open) => !open)} type="button">Обмен</button>
+                  <button className="secondary" onClick={openDuelTrade} type="button">Обмен</button>
                 </div>
               </>
             ) : duelStatus === 'fighting' && duelOpponent ? (
@@ -4283,7 +4316,7 @@ export function HomePage() {
                 <div className="duel-clash"><span /><span /></div>
                 <div className="duel-actions">
                   <button onClick={duelHit} type="button">Удар</button>
-                  <button className="secondary" onClick={() => setDuelTradeOpen((open) => !open)} type="button">Обмен</button>
+                  <button className="secondary" onClick={openDuelTrade} type="button">Обмен</button>
                   <button className="secondary" onClick={declineDuel} type="button">Выйти</button>
                 </div>
               </>
@@ -4300,13 +4333,55 @@ export function HomePage() {
             {duelTradeOpen && duelOpponent && (
               <div className="duel-trade">
                 <strong>Обмен предметами</strong>
-                <p>Твой последний предмет меняется на предмет соперника.</p>
-                <button onClick={tradeDuelWeapon} disabled={weapons.length === 0} type="button">
-                  Меч на {getWeaponDisplayName(duelOpponent.weapon)}
-                </button>
-                <button onClick={tradeDuelArmor} disabled={armors.length === 0} type="button">
-                  Броню на {duelOpponent.armor.name}
-                </button>
+                <p>Выбери предмет из своего инвентаря. Потом нажми принять или отвергнуть.</p>
+                <div className="duel-trade-target">
+                  <div className="weapon weapon-card rare">
+                    <span className="weapon-picture" aria-hidden="true"><i /></span>
+                    <span className="weapon-name">{getWeaponDisplayName(duelOpponent.weapon)}</span>
+                    <small>Получишь меч соперника +{formatPower(duelOpponent.weapon.damage)}</small>
+                  </div>
+                  <div className="weapon armor-card rare body-card">
+                    <span className="armor-picture" aria-hidden="true"><i /></span>
+                    <span>{duelOpponent.armor.name}</span>
+                    <small>Получишь броню соперника +{formatPower(duelOpponent.armor.defense)}</small>
+                  </div>
+                </div>
+                <div className="duel-trade-inventory">
+                  {weapons.length === 0 && armors.length === 0 ? (
+                    <p className="online-empty">Инвентарь пуст. Для обмена нужен меч или броня.</p>
+                  ) : (
+                    <>
+                      {weapons.map((weapon) => (
+                        <button
+                          className={`weapon weapon-card ${rarityClass[weapon.rarity]} weapon-style-${getWeaponStyleIndex(weapon)} ${duelTradeOffer?.kind === 'weapon' && duelTradeOffer.item.id === weapon.id ? 'selected' : ''}`}
+                          key={weapon.id}
+                          onClick={() => setDuelTradeOffer({ kind: 'weapon', item: weapon })}
+                          type="button"
+                        >
+                          <span className="weapon-picture" aria-hidden="true"><i /></span>
+                          <span className="weapon-name">{getWeaponDisplayName(weapon)}</span>
+                          <small>{weapon.rarity} +{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)}</small>
+                        </button>
+                      ))}
+                      {armors.map((armor) => (
+                        <button
+                          className={`weapon armor-card ${rarityClass[armor.rarity]} armor-style-${getArmorStyleIndex(armor)} ${isHelmetArmor(armor) ? 'helmet-card' : 'body-card'} ${duelTradeOffer?.kind === 'armor' && duelTradeOffer.item.id === armor.id ? 'selected' : ''}`}
+                          key={armor.id}
+                          onClick={() => setDuelTradeOffer({ kind: 'armor', item: armor })}
+                          type="button"
+                        >
+                          <span className="armor-picture" aria-hidden="true"><i /></span>
+                          <span>{armor.name}</span>
+                          <small>{armor.rarity} +{armor.displayDefense ?? formatPower(armor.defense)} защиты</small>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+                <div className="duel-actions">
+                  <button onClick={acceptDuelTrade} disabled={!duelTradeOffer} type="button">Принять</button>
+                  <button className="secondary" onClick={rejectDuelTrade} type="button">Отвергнуть</button>
+                </div>
               </div>
             )}
             <div className="online-players">
