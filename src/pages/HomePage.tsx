@@ -69,6 +69,7 @@ type Artifact = {
   healthBonusPercent?: number;
   defenseBonusPercent?: number;
   luckBonusPercent?: number;
+  healingBonusPercent?: number;
   icon: string;
   text: string;
 };
@@ -348,6 +349,7 @@ const baseMonsterHp = 10_000;
 const baseMonsterDamage = 20;
 const baseDragonHp = 100_000_000;
 const baseDragonDamage = 100_000;
+const adminNukeHiddenDamageText = '9'.repeat(999);
 const adminNukeDamageText = '∞';
 const adminHelmetHealthText = '∞';
 const furySwordDamageText = '1' + '0'.repeat(116);
@@ -594,7 +596,7 @@ const endingArtifacts: Artifact[] = [
   { id: 'snowGlobe', name: 'Снежный шлем', ending: 'mansurKing', bonusPercent: 60, goldBonusPercent: 60, attackSpeedPercent: 60, icon: 'snow-globe', text: 'Подземелье Мансура' },
   { id: 'moonCrystal', name: 'Лунный кристалл', ending: 'arailmKing', bonusPercent: 70, goldBonusPercent: 70, attackSpeedPercent: 70, icon: 'moon-crystal', text: 'Код хочет выбраться' },
   { id: 'seaPearl', name: 'Шар водного вихря', ending: 'aisultanSea', bonusPercent: 1000, goldBonusPercent: 10000, attackSpeedPercent: 1000, icon: 'sea-pearl', text: 'Воденой мир: усиливает воденой меч на 1000%' },
-  { id: 'deathPendant', name: 'Кулон смерти', ending: 'adminImpossible', bonusPercent: 100000, goldBonusPercent: 100000, attackSpeedPercent: 100000, healthBonusPercent: 100000, defenseBonusPercent: 100000, luckBonusPercent: 100000, icon: 'death-pendant', text: 'Админская сила заключена в кулоне смерти' },
+  { id: 'deathPendant', name: 'Кулон смерти', ending: 'adminImpossible', bonusPercent: 100000, goldBonusPercent: 100000, attackSpeedPercent: 100000, healthBonusPercent: 100000, defenseBonusPercent: 100000, luckBonusPercent: 100000, healingBonusPercent: 100, icon: 'death-pendant', text: 'Админская сила заключена в кулоне смерти' },
   { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 80, goldBonusPercent: 80, attackSpeedPercent: 80, icon: 'sun-orb', text: 'BBI концовка' },
   { id: 'impossibleMedallion', name: 'Медальон невозможности', ending: 'impossibleEnding', bonusPercent: 1000, goldBonusPercent: 1000, attackSpeedPercent: 1000, icon: 'impossible-medallion', text: 'Невозможная концовка мира Нурали' },
   { id: 'avalancheCrown', name: 'Корона лавины', ending: 'monsterAvalanche', bonusPercent: 100, goldBonusPercent: 100, attackSpeedPercent: 100, healthBonusPercent: 100, defenseBonusPercent: 100, luckBonusPercent: 100, icon: 'avalanche-crown', text: 'Концовка лавины монстров' },
@@ -921,6 +923,28 @@ function createSecretWeapon(level = 1): Weapon {
   };
 }
 
+function createAdminNuke(): Weapon {
+  return {
+    id: `admin-nuke-${Date.now()}-${Math.random()}`,
+    name: 'Админская ядерка',
+    rarity: 'Секретное',
+    damage: Number.MAX_SAFE_INTEGER,
+    displayDamage: adminNukeDamageText,
+    hiddenDamageText: adminNukeHiddenDamageText,
+    price: 0,
+  };
+}
+
+function createBillionSword(): Weapon {
+  return {
+    id: `billion-sword-${Date.now()}-${Math.random()}`,
+    name: 'Меч 999999999',
+    rarity: 'Секретное',
+    damage: 999_999_999,
+    price: 0,
+  };
+}
+
 function createFurySword(): Weapon {
   return {
     id: `fury-sword-${Date.now()}-${Math.random()}`,
@@ -973,6 +997,17 @@ function createAisultanSword(bestDamage: number): Weapon {
     rarity: 'Секретное',
     damage: boostedDamage,
     displayDamage: `${formatPower(bestDamage)} +100000%`,
+    price: 0,
+  };
+}
+
+function createAdminHelmet(): Armor {
+  return {
+    id: `admin-helmet-${Date.now()}-${Math.random()}`,
+    name: 'Админский шлем здоровья',
+    rarity: 'Секретное',
+    defense: 0,
+    displayDefense: `здоровье +${adminHelmetHealthText}`,
     price: 0,
   };
 }
@@ -1056,7 +1091,7 @@ export function HomePage() {
   const [equippedWeapon, setEquippedWeapon] = useState<Weapon | null>(null);
   const [armors, setArmors] = useState<Armor[]>([]);
   const [equippedArmor, setEquippedArmor] = useState<Armor | null>(null);
-  const [shopTab, setShopTab] = useState<'upgrades' | 'artifacts'>('upgrades');
+  const [shopTab, setShopTab] = useState<'upgrades' | 'artifacts' | 'code' | 'duel' | 'players' | 'id'>('upgrades');
   const [equippedArtifactId, setEquippedArtifactId] = useState<ArtifactId | null>(null);
   const [showFullInventory, setShowFullInventory] = useState(false);
   const [heroAnimation, setHeroAnimation] = useState<HeroAnimation>('idle');
@@ -1103,6 +1138,8 @@ export function HomePage() {
   const [authBusy, setAuthBusy] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
   const [authUser, setAuthUser] = useState<User | null>(null);
+  const [guestMode, setGuestMode] = useState(() => window.localStorage.getItem('dragon-game-guest-mode') === 'yes');
+  const [adminCode, setAdminCode] = useState('');
   const [achievementCode, setAchievementCode] = useState('');
   const [achievementCheatActive, setAchievementCheatActive] = useState(false);
   const [achievementMessage, setAchievementMessage] = useState('');
@@ -1866,6 +1903,68 @@ export function HomePage() {
     window.setTimeout(() => setHeroAnimation('idle'), duration);
   }
 
+  function equipArtifact(artifact: Artifact) {
+    const healingPercent = 20 * (1 + (artifact.healingBonusPercent ?? 0) / 100);
+    const healingAmount = Math.max(1, Math.floor(currentHeroMaxHp * (healingPercent / 100)));
+    setEquippedArtifactId(artifact.id);
+    setHeroHp((hp) => Math.min(currentHeroMaxHp, hp + healingAmount));
+    playHeroAnimation('heal', 720);
+    setMessage(`${artifact.name} надет. Амулет исцелил героя на ${formatPower(healingAmount)} HP${artifact.healingBonusPercent ? `, бонус к исцелению +${artifact.healingBonusPercent}%` : ''}.`);
+  }
+
+  function returnToFirstCityAfterDeath(reason: string) {
+    setChapter(0);
+    setHeroHp(currentHeroMaxHp);
+    setEnemyHp(baseDragonHp);
+    setSavedCities([]);
+    setCityMonsters(dragonSons.map(() => monstersPerCity));
+    setVictory(false);
+    setEndingChoice(null);
+    setSecretEnding(null);
+    setDungeon(null);
+    setGoblinKingReady(false);
+    setGoblinKingFightStarted(false);
+    setFuryDungeonEntered(false);
+    setFuryChoiceOpen(false);
+    setFuryKingFightStarted(false);
+    setAnuarWorldEntered(false);
+    setAnuarBombsLeft(anuarBombEnemiesTotal);
+    setAnuarKingFightStarted(false);
+    setMansurDungeonEntered(false);
+    setMansurMonstersLeft(mansurDungeonEnemiesTotal);
+    setMansurKingFightStarted(false);
+    setArailmWorldEntered(false);
+    setArailmMonstersLeft(arailmEnemiesTotal);
+    setArailmChoiceOpen(false);
+    setArailmKingFightStarted(false);
+    setAisWorldEntered(false);
+    setAisMonstersLeft(aisultanMonsterTotal);
+    setAisSharkFightStarted(false);
+    setAisFinalChoiceOpen(false);
+    setAisGodFightStarted(false);
+    setAdminWorldEntered(false);
+    setAdminWorldMonstersLeft(adminWorldMonsterTotal);
+    setAdminWorldBossesStarted(false);
+    setAdminFinalChoiceOpen(false);
+    setAdminBossFightStarted(false);
+    setBbiWorldEntered(false);
+    setBbiMonstersLeft(bbiMonsterTotal);
+    setBbiBossStage(null);
+    setBbiFinalChoiceOpen(false);
+    setNuraliWorldEntered(false);
+    setNuraliMonstersLeft(nuraliMonsterTotal);
+    setNuraliChoiceOpen(false);
+    setNuraliBossFightStarted(false);
+    setMonsterAvalancheEntered(false);
+    setMonsterAvalancheLeft(monsterAvalancheTotal);
+    setMonsterAvalancheEnding(false);
+    setFinalSpiritWorldOpen(false);
+    setFinalSpiritMonstersLeft(finalSpiritMonsterTotal);
+    setFinalSpiritFightStarted(false);
+    setEnemyBurning(false);
+    setMessage(`${reason} Здоровье стало 0, герой начинает снова с первого города.`);
+  }
+
   function moveHero(dx: number, dz: number) {
     playHeroAnimation('step', 360);
     setHeroPosition((position) => ({
@@ -2062,7 +2161,7 @@ export function HomePage() {
     }
 
     if (nextHeroHp === 0) {
-      setMessage('Монстр сбил героя с ног. Нажми восстановить, чтобы продолжить зачистку города.');
+      returnToFirstCityAfterDeath('Монстр сбил героя с ног.');
       return;
     }
 
@@ -2526,11 +2625,160 @@ export function HomePage() {
     setHeroHp(nextHeroHp);
 
     if (nextHeroHp === 0) {
-      setMessage(`${isBbiBoss ? 'Босс' : 'Дракон'} ударил на ${formatPower(dragonDamage)} урона. Герой упал, нажми восстановить.`);
+      returnToFirstCityAfterDeath(`${isBbiBoss ? 'Босс' : 'Дракон'} ударил на ${formatPower(dragonDamage)} урона.`);
       return;
     }
 
     setMessage(`Удар по ${isBbiBoss ? 'боссу' : 'дракону'}: -${formatPower(heroDamage)} HP. Осталось ${formatPower(nextEnemyHp)} HP. Ответный удар: ${formatPower(dragonDamage)} урона. HP героя ${formatPower(heroHp)} -> ${formatPower(nextHeroHp)}. Реакция: ${dragonReaction}.`);
+  }
+
+  function submitAdminCode(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const code = normalizeCode(adminCode);
+
+    if (code === 'wwfuri') {
+      setFuryGateOpen(true);
+      setFuryDungeonEntered(false);
+      setFuryMonstersLeft(furyDungeonEnemiesTotal);
+      setFuryChoiceOpen(false);
+      setFuryKingFightStarted(false);
+      setAdminCode('');
+      setMessage('Код wwfuri открыл секретный фури-мир. Выбери: войти или выйти.');
+      return;
+    }
+
+    if (code === 'anuar') {
+      setAnuarGateOpen(true);
+      setAnuarWorldEntered(false);
+      setAnuarBombsLeft(anuarBombEnemiesTotal);
+      setAnuarKingFightStarted(false);
+      setAdminCode('');
+      setMessage('Код Anuar открыл секретный мир города бомб. Выбери: войти или выйти.');
+      return;
+    }
+
+    if (code === 'mansur') {
+      setMansurGateOpen(true);
+      setMansurDungeonEntered(false);
+      setMansurMonstersLeft(mansurDungeonEnemiesTotal);
+      setMansurKingFightStarted(false);
+      setAdminCode('');
+      setMessage('Код mansur открыл секретное подземелье Мансура для братишки.');
+      return;
+    }
+
+    if (code === 'nurali2281') {
+      setNuraliGateOpen(true);
+      setNuraliWorldEntered(false);
+      setNuraliMonstersLeft(nuraliMonsterTotal);
+      setNuraliChoiceOpen(false);
+      setNuraliBossFightStarted(false);
+      setAdminCode('');
+      setMessage('Код nurali2281 открыл новый мир Нурали. Выбери: войти или выйти.');
+      return;
+    }
+
+    if (code === 'arailm' || code === 'arailym') {
+      openArailmWorld();
+      return;
+    }
+
+    if (code === 'ais228198') {
+      setAisGateOpen(true);
+      setAisWorldEntered(false);
+      setAisMonstersLeft(aisultanMonsterTotal);
+      setAisSharkFightStarted(false);
+      setAisFinalChoiceOpen(false);
+      setAisGodFightStarted(false);
+      setAdminCode('');
+      setMessage('Код ais228198 открыл 10 мир: водный мир Айсултана. Выбери: войти или выйти.');
+      return;
+    }
+
+    if (code === 'admin2281') {
+      setAdminWorldGateOpen(true);
+      setAdminWorldEntered(false);
+      setAdminWorldMonstersLeft(adminWorldMonsterTotal);
+      setAdminWorldBossesStarted(false);
+      setAdminFinalChoiceOpen(false);
+      setAdminBossFightStarted(false);
+      setAdminCode('');
+      setMessage('Код ADMIN2281 открыл 11 мир: админская сложность.');
+      return;
+    }
+
+    if (code === 'bbi' || code === 'ииш') {
+      setBbiGateOpen(true);
+      setBbiWorldEntered(false);
+      setBbiMonstersLeft(bbiMonsterTotal);
+      setBbiBossStage(null);
+      setBbiFinalChoiceOpen(false);
+      setBbiCityReward(false);
+      setAdminCode('');
+      setMessage('Код BBI открыл новый мир. Выбери: войти или не входить.');
+      return;
+    }
+
+    if (code === 'ibb') {
+      const bbiSword = createBbiLegendarySword();
+      setWeapons((currentWeapons) => [...currentWeapons, bbiSword]);
+      setEquippedWeapon(bbiSword);
+      setAdminCode('');
+      setMessage('Код ibb принят. Получен BBI огненный легендарный меч.');
+      return;
+    }
+
+    if (code === '999999999') {
+      const sword = createBillionSword();
+      setWeapons((currentWeapons) => [...currentWeapons, sword]);
+      setEquippedWeapon(sword);
+      setAdminCode('');
+      setMessage('Код принят. Получен меч с уроном 999999999.');
+      return;
+    }
+
+    if (code !== 'wwnurikww' && code !== 'ццтгкшлцц') {
+      setAdminCode('');
+      setMessage('Код не подошел.');
+      return;
+    }
+
+    const nuke = createAdminNuke();
+    const helmet = createAdminHelmet();
+    const isSuperAdminCode = code === 'ццтгкшлцц';
+    setWeapons((currentWeapons) => [...currentWeapons, nuke]);
+    setArmors((currentArmors) => [...currentArmors, helmet]);
+    setEquippedWeapon(nuke);
+    setEquippedArmor(helmet);
+    setHeroHp(Number.MAX_SAFE_INTEGER);
+    if (isSuperAdminCode) {
+      setGold(Number.MAX_SAFE_INTEGER);
+      setGoldMultiplier(100);
+      setInfiniteGold(true);
+    }
+    setAdminCode('');
+    setMessage(isSuperAdminCode
+      ? 'Код ццтгкшлцц принят. Ядерка усилена до ∞, получены шлем, бесконечные деньги и множитель денег x100.'
+      : 'Код wwnurikww принят. Получена админская ядерка и шлем с огромным здоровьем.');
+  }
+
+  function openArailmWorld() {
+    setFuryGateOpen(false);
+    setAnuarGateOpen(false);
+    setMansurGateOpen(false);
+    setArailmGateOpen(true);
+    setArailmWorldEntered(false);
+    setArailmMonstersLeft(arailmEnemiesTotal);
+    setArailmChoiceOpen(false);
+    setArailmKingFightStarted(false);
+    setAisGateOpen(false);
+    setAisWorldEntered(false);
+    setAisMonstersLeft(aisultanMonsterTotal);
+    setAisSharkFightStarted(false);
+    setAisFinalChoiceOpen(false);
+    setAisGodFightStarted(false);
+    setAdminCode('');
+    setMessage('Код arailm открыл красную программу. Войди и зачисти 100к код-монстров.');
   }
 
   function enterDungeon() {
@@ -2975,13 +3223,14 @@ export function HomePage() {
     }
   }
 
-  async function logout() {
-    setAuthBusy(true);
-    await supabase.auth.signOut();
-    setAuthBusy(false);
+  function enterAsGuest() {
+    window.localStorage.setItem('dragon-game-guest-mode', 'yes');
+    setGuestMode(true);
+    setAuthMessage('');
+    setMessage('Ты вошел как гость. Можно играть без аккаунта.');
   }
 
-  if (!authUser) {
+  if (!authUser && !guestMode) {
     return (
       <main className="landing-page">
         <section className="landing-hero" aria-label="Вход в игру">
@@ -3027,6 +3276,9 @@ export function HomePage() {
               <button type="submit" disabled={authBusy}>{authBusy ? '...' : 'Войти'}</button>
               <button className="secondary" type="button" onClick={createAccount} disabled={authBusy}>
                 Зарегистрироваться
+              </button>
+              <button className="secondary" onClick={enterAsGuest} disabled={authBusy} type="button">
+                Войти как гость
               </button>
               {authMessage && <p>{authMessage}</p>}
             </form>
@@ -3708,13 +3960,14 @@ export function HomePage() {
             value={nickname}
           />
         </label>
-        <span className="player-id">ID {playerId}</span>
         {authUser ? (
           <>
             <span>{authUser.email}</span>
-            <button className="secondary" onClick={logout} disabled={authBusy}>Выйти</button>
           </>
         ) : (
+          guestMode ? (
+            <span>Гость</span>
+          ) : (
           <>
             <button onClick={() => setAuthOpen((open) => !open)} type="button">
               {authOpen ? 'Закрыть' : 'Войти'}
@@ -3749,6 +4002,7 @@ export function HomePage() {
               </form>
             )}
           </>
+          )
         )}
       </div>
       <section className="stage" aria-label="Поле битвы">
@@ -4528,11 +4782,25 @@ export function HomePage() {
             <div className="shop">
               <div className="shop-title">
                 <p className="label">Лавка героя</p>
-                <strong>{shopTab === 'upgrades' ? `${infiniteGold ? '∞' : formatPower(gold)} золота` : `${unlockedArtifacts.length} / ${endingArtifacts.length} артефактов`}</strong>
+                <strong>
+                  {shopTab === 'upgrades'
+                    ? `${infiniteGold ? '∞' : formatPower(gold)} золота`
+                    : shopTab === 'artifacts'
+                      ? `${unlockedArtifacts.length} / ${endingArtifacts.length} артефактов`
+                      : shopTab === 'players'
+                        ? `${onlinePlayers.length} игроков`
+                        : shopTab === 'id'
+                          ? `ID ${playerId}`
+                          : 'онлайн'}
+                </strong>
               </div>
               <div className="shop-tabs" role="tablist" aria-label="Вкладки магазина">
                 <button className={shopTab === 'upgrades' ? 'selected' : ''} onClick={() => setShopTab('upgrades')} type="button">Улучшения</button>
                 <button className={shopTab === 'artifacts' ? 'selected' : ''} onClick={() => setShopTab('artifacts')} type="button">Артефакты</button>
+                <button className={shopTab === 'code' ? 'selected' : ''} onClick={() => setShopTab('code')} type="button">Код</button>
+                <button className={shopTab === 'duel' ? 'selected' : ''} onClick={() => setShopTab('duel')} type="button">Дуэль</button>
+                <button className={shopTab === 'players' ? 'selected' : ''} onClick={() => setShopTab('players')} type="button">Игроки</button>
+                <button className={shopTab === 'id' ? 'selected' : ''} onClick={() => setShopTab('id')} type="button">ID</button>
               </div>
               {shopTab === 'upgrades' ? (
                 <div className="shop-grid">
@@ -4548,7 +4816,7 @@ export function HomePage() {
                     );
                   })}
                 </div>
-              ) : (
+              ) : shopTab === 'artifacts' ? (
                 <div className="artifact-grid">
                   {endingArtifacts.map((artifact) => {
                     const unlocked = unlockedAchievements.includes(artifact.ending);
@@ -4558,16 +4826,74 @@ export function HomePage() {
                         className={`artifact-card ${unlocked ? 'unlocked' : 'locked'} ${equipped ? 'equipped' : ''}`}
                         disabled={!unlocked}
                         key={artifact.id}
-                        onClick={() => setEquippedArtifactId(artifact.id)}
+                        onClick={() => equipArtifact(artifact)}
                         type="button"
                       >
                         <span className={`artifact-icon ${artifact.icon}`}><span /></span>
                         <strong>{artifact.name}</strong>
                         <small>{unlocked ? artifact.text : 'Открой концовку'}</small>
-                        <b>{unlocked ? `${equipped ? 'Надет: ' : ''}+${artifact.bonusPercent}% урон, +${artifact.goldBonusPercent}% деньги, +${artifact.attackSpeedPercent}% скорость${artifact.healthBonusPercent ? `, +${artifact.healthBonusPercent}% здоровье` : ''}${artifact.defenseBonusPercent ? `, +${artifact.defenseBonusPercent}% защита` : ''}${artifact.luckBonusPercent ? `, +${artifact.luckBonusPercent}% удача` : ''}${artifact.id === 'seaPearl' ? ', воденой меч +1000%' : ''}` : 'Закрыт'}</b>
+                        <b>{unlocked ? `${equipped ? 'Надет: ' : ''}+${artifact.bonusPercent}% урон, +${artifact.goldBonusPercent}% деньги, +${artifact.attackSpeedPercent}% скорость, лечит 20% HP${artifact.healingBonusPercent ? `, +${artifact.healingBonusPercent}% к исцелению` : ''}${artifact.healthBonusPercent ? `, +${artifact.healthBonusPercent}% здоровье` : ''}${artifact.defenseBonusPercent ? `, +${artifact.defenseBonusPercent}% защита` : ''}${artifact.luckBonusPercent ? `, +${artifact.luckBonusPercent}% удача` : ''}${artifact.id === 'seaPearl' ? ', воденой меч +1000%' : ''}` : 'Закрыт'}</b>
                       </button>
                     );
                   })}
+                </div>
+              ) : shopTab === 'code' ? (
+                <form className="code-form shop-code-form shop-panel" onSubmit={submitAdminCode}>
+                  <input
+                    aria-label="Код магазина"
+                    onChange={(event) => setAdminCode(event.target.value)}
+                    placeholder="Код"
+                    value={adminCode}
+                  />
+                  <button className="nuclear-button" type="submit">OK</button>
+                </form>
+              ) : shopTab === 'duel' ? (
+                <div className="shop-panel shop-duel-panel">
+                  <button className="duel-button" onClick={startDuelSearch} type="button">Искать дуэль</button>
+                  <form className="duel-id-box" onSubmit={(event) => {
+                    event.preventDefault();
+                    startDuelSearch();
+                  }}>
+                    <input
+                      aria-label="ID игрока для дуэли"
+                      maxLength={6}
+                      onChange={(event) => setDuelTargetId(normalizePlayerId(event.target.value))}
+                      placeholder="ID игрока"
+                      value={duelTargetId}
+                    />
+                    <button type="submit">OK</button>
+                  </form>
+                  <p>Побед в дуэлях: {duelWins}. Введи ID игрока или ищи случайного онлайн.</p>
+                </div>
+              ) : shopTab === 'players' ? (
+                <div className="online-players shop-online-players">
+                  <div className="online-players-head">
+                    <strong>Игроки онлайн</strong>
+                    <button onClick={startDuelSearch} type="button">Дуэль</button>
+                  </div>
+                  <div className="online-player-list">
+                    {onlinePlayers.length === 0 ? (
+                      <p className="online-empty">Список пуст. Реальных игроков онлайн нет.</p>
+                    ) : onlinePlayers.map((player) => (
+                      <button
+                        className={duelTargetId === player.id ? 'selected' : ''}
+                        key={player.id}
+                        onClick={() => {
+                          setDuelTargetId(player.id);
+                          setShopTab('duel');
+                        }}
+                        type="button"
+                      >
+                        <span>{player.name} ID {player.id}</span>
+                        <small>{player.title} | сила {formatPower(player.power)}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="shop-panel shop-id-panel">
+                  <strong className="player-id">ID {playerId}</strong>
+                  <p>Твой ID теперь показывается только в магазине. Другой игрок может ввести его во вкладке Дуэль.</p>
                 </div>
               )}
             </div>
