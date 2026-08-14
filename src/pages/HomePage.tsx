@@ -114,6 +114,15 @@ type DuelChatMessage = {
   text: string;
 };
 
+type DuelRequest = {
+  id: string;
+  kind: 'fight' | 'trade';
+  fromId: string;
+  fromName: string;
+  toId: string;
+  createdAt: number;
+};
+
 type DuelTradeOffer =
   | { kind: 'weapon'; item: Weapon }
   | { kind: 'armor'; item: Armor }
@@ -407,6 +416,7 @@ const nuraliBoss: CityStage = {
 const presenceStorageKey = 'dragon-game-online-players';
 const leaderboardStorageKey = 'dragon-game-leaderboard-players';
 const dailyRewardStorageKey = 'dragon-game-daily-rewards';
+const duelRequestsStorageKey = 'dragon-game-duel-requests';
 const presenceTtlMs = 20_000;
 
 type DailyRewardState = {
@@ -484,6 +494,20 @@ function saveLeaderboardPresences(players: OnlinePresence[]) {
     .slice(0, 100);
   window.localStorage.setItem(leaderboardStorageKey, JSON.stringify(leaderboard));
   return leaderboard;
+}
+
+function readDuelRequests() {
+  try {
+    const now = Date.now();
+    return (JSON.parse(window.localStorage.getItem(duelRequestsStorageKey) ?? '[]') as DuelRequest[])
+      .filter((request) => now - request.createdAt < 60_000);
+  } catch {
+    return [];
+  }
+}
+
+function saveDuelRequests(requests: DuelRequest[]) {
+  window.localStorage.setItem(duelRequestsStorageKey, JSON.stringify(requests.slice(-20)));
 }
 
 function getLocalDateKey(date = new Date()) {
@@ -1117,6 +1141,7 @@ export function HomePage() {
   const [duelOpponentHp, setDuelOpponentHp] = useState(0);
   const [duelTradeOpen, setDuelTradeOpen] = useState(false);
   const [duelTradeOffer, setDuelTradeOffer] = useState<DuelTradeOffer>(null);
+  const [incomingDuelRequest, setIncomingDuelRequest] = useState<DuelRequest | null>(null);
   const [duelChatMessages, setDuelChatMessages] = useState<DuelChatMessage[]>([]);
   const [duelChatText, setDuelChatText] = useState('');
   const [onlinePlayers, setOnlinePlayers] = useState<DuelPlayer[]>([]);
@@ -2836,13 +2861,24 @@ export function HomePage() {
     setDuelChatMessages([]);
     setDuelStatus('searching');
     if (requestedPlayer) {
+      saveDuelRequests([
+        ...readDuelRequests().filter((request) => request.id !== `fight-${playerId}-${requestedPlayer.id}`),
+        {
+          id: `fight-${playerId}-${requestedPlayer.id}`,
+          kind: 'fight',
+          fromId: playerId,
+          fromName: playerName,
+          toId: requestedPlayer.id,
+          createdAt: Date.now(),
+        },
+      ]);
       setDuelOpponent(requestedPlayer);
       setDuelChatMessages([
         { id: `system-${Date.now()}`, from: 'Система', text: `Чат открыт: ${playerName} ID ${playerId} и ${requestedPlayer.name} ID ${requestedPlayer.id}.` },
         { id: `opponent-${Date.now()}`, from: requestedPlayer.name, text: 'Я онлайн. Можно драться, обменяться или просто писать.' },
       ]);
       setDuelStatus('challenge');
-      setMessage(`${playerName} вызвал игрока ${requestedPlayer.name} по ID ${requestedPlayer.id}.`);
+      setMessage(`${playerName} вызвал игрока ${requestedPlayer.name} по ID ${requestedPlayer.id}. У него появятся кнопки Принять / Отвергнуть.`);
       return;
     }
     setMessage(`${playerName} ищет игроков в сети для дуэли...`);
@@ -2885,6 +2921,49 @@ export function HomePage() {
     setDuelTradeOpen(false);
     setDuelTradeOffer(null);
     setMessage('Ты отказался от дуэли. Вызов закрыт.');
+  }
+
+  function clearIncomingDuelRequest() {
+    if (!incomingDuelRequest) return;
+    saveDuelRequests(readDuelRequests().filter((request) => request.id !== incomingDuelRequest.id));
+    setIncomingDuelRequest(null);
+  }
+
+  function acceptIncomingDuelRequest() {
+    if (!incomingDuelRequest) return;
+    const challenger = onlinePlayers.find((player) => player.id === incomingDuelRequest.fromId) ?? {
+      id: incomingDuelRequest.fromId,
+      name: incomingDuelRequest.fromName,
+      power: Math.max(1_000, currentPlayerPower),
+      title: 'игрок онлайн',
+      weapon: makePresenceFallbackWeapon(currentPlayerPower),
+      armor: makePresenceFallbackArmor(currentPlayerPower),
+    };
+    setDuelOpponent(challenger);
+    setDuelTargetId(challenger.id);
+    setDuelChatMessages([
+      { id: `system-${Date.now()}`, from: 'Система', text: `${incomingDuelRequest.fromName} отправил ${incomingDuelRequest.kind === 'trade' ? 'обмен' : 'дуэль'}.` },
+    ]);
+    if (incomingDuelRequest.kind === 'trade') {
+      setDuelStatus('challenge');
+      setDuelTradeOpen(true);
+      setMessage(`Обмен принят. Выбери предмет для обмена с ${challenger.name}.`);
+    } else {
+      setDuelStatus('fighting');
+      setDuelTradeOpen(false);
+      setDuelHeroHp(Math.max(currentHeroMaxHp, 1_000 + defenseBonus + attackBonus));
+      setDuelOpponentHp(challenger.power * 4);
+      setMessage(`Ты принял дуэль от ${challenger.name}. Бой начался на арене.`);
+    }
+    clearIncomingDuelRequest();
+  }
+
+  function rejectIncomingDuelRequest() {
+    if (!incomingDuelRequest) return;
+    const kindText = incomingDuelRequest.kind === 'trade' ? 'обмен' : 'дуэль';
+    const fromName = incomingDuelRequest.fromName;
+    clearIncomingDuelRequest();
+    setMessage(`${kindText} от ${fromName} отвергнут.`);
   }
 
   function acceptDuel() {
@@ -2966,8 +3045,20 @@ export function HomePage() {
       setMessage('Сначала найди игрока для обмена.');
       return;
     }
+    saveDuelRequests([
+      ...readDuelRequests().filter((request) => request.id !== `trade-${playerId}-${duelOpponent.id}`),
+      {
+        id: `trade-${playerId}-${duelOpponent.id}`,
+        kind: 'trade',
+        fromId: playerId,
+        fromName: playerName,
+        toId: duelOpponent.id,
+        createdAt: Date.now(),
+      },
+    ]);
     setDuelTradeOpen((open) => !open);
     setDuelTradeOffer(null);
+    setMessage(`Игроку ${duelOpponent.name} отправлена надпись: Обмен или нет.`);
   }
 
   function sendDuelChat(event: FormEvent<HTMLFormElement>) {
@@ -3102,6 +3193,26 @@ export function HomePage() {
       window.removeEventListener('storage', onStorage);
     };
   }, [currentPlayerPower, equippedArmor, equippedWeapon, playerId, playerName]);
+
+  useEffect(() => {
+    const refreshDuelRequests = () => {
+      const requests = readDuelRequests();
+      saveDuelRequests(requests);
+      setIncomingDuelRequest(requests.find((request) => request.toId === playerId && request.fromId !== playerId) ?? null);
+    };
+
+    refreshDuelRequests();
+    const interval = window.setInterval(refreshDuelRequests, 1_500);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === duelRequestsStorageKey) refreshDuelRequests();
+    };
+    window.addEventListener('storage', onStorage);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [playerId]);
 
   function restart() {
     const avalancheCompleted = unlockedAchievements.includes('monsterAvalanche');
@@ -3285,14 +3396,14 @@ export function HomePage() {
             <h2>Войти в игру</h2>
             <button className="google-button" onClick={signInWithGoogle} disabled={authBusy} type="button">
               <span>G</span>
-              Войти через Google
+              Войти через аккаунт
             </button>
-            <div className="auth-divider">или email</div>
+            <div className="auth-divider">или почта</div>
             <form className="landing-form" onSubmit={submitLogin}>
               <input
-                aria-label="Email"
+                aria-label="Почта"
                 onChange={(event) => setAuthEmail(event.target.value)}
-                placeholder="email"
+                placeholder="почта"
                 type="email"
                 value={authEmail}
                 required
@@ -4008,9 +4119,9 @@ export function HomePage() {
             {authOpen && (
               <form className="login-form" onSubmit={submitLogin}>
                 <input
-                  aria-label="Email"
+                  aria-label="Почта"
                   onChange={(event) => setAuthEmail(event.target.value)}
-                  placeholder="email"
+                  placeholder="почта"
                   type="email"
                   value={authEmail}
                   required
@@ -4029,7 +4140,7 @@ export function HomePage() {
                   Создать
                 </button>
                 <button className="secondary" type="button" onClick={signInWithGoogle} disabled={authBusy}>
-                  Google
+                  Аккаунт
                 </button>
                 {authMessage && <p>{authMessage}</p>}
               </form>
@@ -4301,6 +4412,11 @@ export function HomePage() {
               <>
                 <h2>Дуэль началась</h2>
                 <p><span className="admin-nick">{playerName}</span> сражается против {duelOpponent.name}.</p>
+                <div className="duel-arena" aria-hidden="true">
+                  <span className={`arena-fighter hero-side ${battlePulse % 2 ? 'strike' : ''}`} />
+                  <span className="arena-magic" />
+                  <span className={`arena-fighter opponent-side ${battlePulse % 2 ? '' : 'strike'}`} />
+                </div>
                 <div className="duel-fighters">
                   <div>
                     <strong className="admin-nick">{playerName}</strong>
@@ -4332,7 +4448,7 @@ export function HomePage() {
             )}
             {duelTradeOpen && duelOpponent && (
               <div className="duel-trade">
-                <strong>Обмен предметами</strong>
+                <strong>Обмен или нет</strong>
                 <p>Выбери предмет из своего инвентаря. Потом нажми принять или отвергнуть.</p>
                 <div className="duel-trade-target">
                   <div className="weapon weapon-card rare">
@@ -4435,7 +4551,7 @@ export function HomePage() {
             </div>
             {duelOpponent && (
               <div className="duel-chat">
-                <strong>Чат с {duelOpponent.name} ID {duelOpponent.id}</strong>
+                <strong>Магический чат с {duelOpponent.name} ID {duelOpponent.id}</strong>
                 <div className="duel-chat-log">
                   {duelChatMessages.length === 0 ? (
                     <span>Напиши сообщение игроку.</span>
@@ -4456,6 +4572,17 @@ export function HomePage() {
                 </form>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {incomingDuelRequest && (
+        <div className="duel-request-pop" role="dialog" aria-live="polite" aria-label="Входящий вызов">
+          <strong>{incomingDuelRequest.fromName}</strong>
+          <p>{incomingDuelRequest.kind === 'trade' ? 'Обмен или нет?' : 'Дуэль на арене?'}</p>
+          <div className="duel-actions">
+            <button onClick={acceptIncomingDuelRequest} type="button">Принять</button>
+            <button className="secondary" onClick={rejectIncomingDuelRequest} type="button">Отвергнуть</button>
           </div>
         </div>
       )}

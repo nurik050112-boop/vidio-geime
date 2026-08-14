@@ -812,6 +812,91 @@ button.secondary {
   font-size: 18px;
 }
 
+.duel-arena {
+  position: relative;
+  height: 190px;
+  overflow: hidden;
+  border: 3px solid rgba(255, 248, 232, 0.7);
+  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at 50% 80%, rgba(255, 242, 117, 0.28) 0 34%, transparent 35%),
+    linear-gradient(180deg, #31224d 0 52%, #8f5d35 53% 100%);
+  box-shadow: inset 0 -24px 0 rgba(37, 17, 5, 0.22);
+}
+
+.duel-arena::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 18px;
+  height: 48px;
+  border: 3px solid rgba(255, 248, 232, 0.44);
+  border-radius: 50%;
+  background: rgba(255, 209, 102, 0.18);
+}
+
+.arena-fighter {
+  position: absolute;
+  bottom: 48px;
+  width: 46px;
+  height: 64px;
+  background:
+    linear-gradient(90deg, #13295f 0 22%, #f3c45d 23% 38%, #d7dce1 39% 55%, #244f96 56%),
+    #244f96;
+  box-shadow:
+    0 -16px #d7dce1,
+    0 -24px #151521,
+    -8px 0 #151521,
+    8px 0 #151521,
+    0 8px #151521,
+    12px 18px #151521,
+    -12px 18px #151521;
+}
+
+.arena-fighter::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  width: 52px;
+  height: 8px;
+  background: #eef8ff;
+  box-shadow: 0 0 0 3px #151521;
+}
+
+.hero-side {
+  left: 22%;
+}
+
+.hero-side::after {
+  right: -46px;
+  transform: rotate(-22deg);
+}
+
+.opponent-side {
+  right: 22%;
+  background:
+    linear-gradient(90deg, #601818 0 22%, #f3c45d 23% 38%, #d7dce1 39% 55%, #9b2d2d 56%),
+    #9b2d2d;
+  transform: scaleX(-1);
+}
+
+.arena-fighter.strike {
+  animation: duel-arena-strike 420ms ease-in-out;
+}
+
+.arena-magic {
+  position: absolute;
+  left: calc(50% - 28px);
+  top: 70px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff8e8 0 16%, #56ccf2 17% 44%, transparent 45%);
+  filter: drop-shadow(0 0 18px #56ccf2);
+  animation: arena-magic-pulse 1.1s ease-in-out infinite;
+}
+
 .duel-loot,
 .duel-fighters,
 .duel-trade,
@@ -1007,6 +1092,31 @@ button.secondary {
   font-size: 14px;
 }
 
+.duel-request-pop {
+  position: fixed;
+  right: 16px;
+  top: 92px;
+  z-index: 120;
+  display: grid;
+  gap: 10px;
+  width: min(360px, calc(100vw - 32px));
+  padding: 16px;
+  border: 3px solid #fff8e8;
+  border-radius: 8px;
+  color: #fff8e8;
+  background:
+    linear-gradient(135deg, rgba(47, 128, 237, 0.82), rgba(208, 0, 0, 0.72)),
+    #1d1720;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.52);
+}
+
+.duel-request-pop strong,
+.duel-request-pop p {
+  margin: 0;
+  color: #fff8e8;
+  font-weight: 900;
+}
+
 .duel-scanner,
 .duel-clash {
   position: relative;
@@ -1059,6 +1169,14 @@ button.secondary {
 
 @keyframes duel-right {
   50% { transform: translateX(-18px) rotate(-18deg); }
+}
+
+@keyframes duel-arena-strike {
+  50% { transform: translateX(34px) rotate(-8deg); }
+}
+
+@keyframes arena-magic-pulse {
+  50% { transform: scale(1.18); opacity: 0.72; }
 }
 
 .code-form {
@@ -6501,6 +6619,119 @@ button.selected {
 }
 
 @media (max-width: 560px) {
+  button {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .game.play-page {
+    height: 100svh;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  .game.play-page .stage,
+  .game.play-page .sky {
+    height: 100svh;
+    min-height: 100svh;
+  }
+
+  .auth-panel {
+    top: max(6px, env(safe-area-inset-top));
+    left: 6px;
+    right: 6px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+    max-width: none;
+  }
+
+  .auth-panel > span,
+  .player-id {
+    min-height: 34px;
+    max-width: none;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .nickname-field {
+    grid-template-columns: auto minmax(0, 1fr);
+    min-height: 34px;
+    padding: 5px 7px;
+  }
+
+  .nickname-field span {
+    font-size: 12px;
+  }
+
+  .nickname-field input {
+    min-height: 30px;
+    padding: 5px 7px;
+    font-size: 14px;
+  }
+
+  .page-switch {
+    top: max(50px, calc(env(safe-area-inset-top) + 48px));
+    right: 7px;
+    min-height: 34px;
+    padding: 6px 9px;
+    font-size: 12px;
+    box-shadow: 0 6px 14px rgba(20, 8, 4, 0.28);
+  }
+
+  .achievements-link {
+    top: max(91px, calc(env(safe-area-inset-top) + 89px));
+  }
+
+  .quick-hud {
+    left: 7px;
+    right: 7px;
+    bottom: max(7px, env(safe-area-inset-bottom));
+    grid-template-columns: 1fr;
+    gap: 7px;
+    max-height: 126px;
+    overflow: auto;
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  .quick-hud div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px 8px;
+  }
+
+  .quick-hud strong {
+    grid-column: 1 / -1;
+    overflow: hidden;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .quick-hud span {
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .quick-hud button {
+    width: 100%;
+    min-height: 46px;
+    font-size: 15px;
+  }
+
+  .battle-2d {
+    touch-action: manipulation;
+  }
+
+  .monster-pack {
+    transform: scale(0.78);
+    transform-origin: bottom center;
+  }
+
   .actions,
   .dungeon,
   .ending-actions,
@@ -6522,14 +6753,55 @@ button.selected {
 
   .boss {
     right: -26px;
-    bottom: 132px;
-    scale: 0.72;
+    bottom: 108px;
+    scale: 0.64;
   }
 
   .hero {
-    left: 7%;
-    bottom: 122px;
-    scale: 0.78;
+    left: 5%;
+    bottom: 104px;
+    scale: 0.68;
+  }
+
+  .monster-pack {
+    bottom: 96px;
+  }
+
+  .duel-card {
+    width: 100%;
+    max-height: calc(100svh - 20px);
+    padding: 14px;
+  }
+
+  .duel-actions,
+  .duel-fighters,
+  .duel-trade-target,
+  .duel-trade-inventory,
+  .online-player-list {
+    grid-template-columns: 1fr;
+  }
+
+  .duel-arena {
+    height: 150px;
+  }
+
+  .duel-request-pop {
+    left: 8px;
+    right: 8px;
+    top: max(88px, calc(env(safe-area-inset-top) + 86px));
+    width: auto;
+  }
+
+  .hud {
+    padding: 10px;
+  }
+
+  .shop-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shop-duel-panel {
+    grid-template-columns: 1fr;
   }
 }
 
