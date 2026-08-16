@@ -362,12 +362,6 @@ const adminBoss: CityStage = {
   reaction: 'админ бьет так, будто нажал все кнопки сразу',
 };
 
-const worldLocations = [
-  'Астана', 'Бишкек', 'Ташкент', 'Дубай', 'Каир', 'Афины', 'Берлин',
-  'Мадрид', 'Прага', 'Сеул', 'Пекин', 'Сидней', 'Торонто', 'Мехико',
-  'Рио-де-Жанейро', 'Буэнос-Айрес', 'Кейптаун', 'Осло', 'Варшава', 'Дели',
-];
-
 const heroMaxHp = 200;
 const monstersPerCity = 1_000;
 const dungeonEnemiesTotal = 10_000;
@@ -5456,16 +5450,49 @@ export function HomePage() {
           </div>
         )}
 
-        <div className="world-map">
-          <p className="label">Большой мир</p>
-          <div>
-            {worldLocations.slice(0, 10).map((location) => (
-              <span key={location}>{location}</span>
-            ))}
+        <div className="adventure-map">
+          <div className="map-art" aria-label="Карта пройденных мест">
+            <span className="map-sea" />
+            <span className="map-river" />
+            <span className="map-road main" />
+            <span className="map-road branch-one" />
+            <span className="map-road branch-two" />
+            <span className="map-mountains" />
+            <span className="map-forest left" />
+            <span className="map-forest middle" />
+            <span className="map-forest right" />
+            <span className="map-compass">N</span>
+            {dragonSons.map((son, index) => {
+              const mapPoints = [
+                { x: 14, y: 69 },
+                { x: 24, y: 45 },
+                { x: 40, y: 63 },
+                { x: 48, y: 33 },
+                { x: 61, y: 73 },
+                { x: 70, y: 45 },
+                { x: 84, y: 59 },
+                { x: 33, y: 82 },
+                { x: 57, y: 51 },
+                { x: 76, y: 23 },
+              ];
+              const point = mapPoints[index % mapPoints.length];
+              const status = index < savedCities.length ? 'saved' : index === chapter ? 'active' : 'locked';
+              return (
+                <div
+                  className={`map-place ${status}`}
+                  key={son.name}
+                  style={{ '--x': `${point.x}%`, '--y': `${point.y}%` } as CSSProperties}
+                >
+                  <span>{index + 1}</span>
+                  <strong>{son.city}</strong>
+                  <small>{status === 'saved' ? 'Пройдено' : status === 'active' ? 'Сейчас тут' : son.monsterName}</small>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        <div className="cities">
+        <div className="cities" hidden>
           {dragonSons.map((son, index) => (
             <div className={`city ${index < savedCities.length ? 'saved' : index === chapter ? 'active' : ''}`} key={son.name}>
               <span>{index + 1}</span>

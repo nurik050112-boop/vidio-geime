@@ -61,7 +61,7 @@ const cityThemes = [
   { sky: '#051f28', fog: '#051f28', ground: '#153d46', accent: '#06d6a0', glow: '#75e6da' },
 ];
 
-function addPillar(scene: THREE.Scene, x: number, z: number, color: string, glow: string) {
+function addPillar(scene: THREE.Object3D, x: number, z: number, color: string, glow: string) {
   const pillar = new THREE.Group();
   const base = mesh(new THREE.CylinderGeometry(0.62, 0.78, 2.4, 8), color, [x, 1.16, z], { roughness: 0.72 });
   const spike = cone(color, 0.7, 1.9, [x, 3.28, z]);
@@ -72,8 +72,9 @@ function addPillar(scene: THREE.Scene, x: number, z: number, color: string, glow
   scene.add(pillar);
 }
 
-function add3DLocation(scene: THREE.Scene, sceneKey: string, chapter: number, locationIndex: number) {
+function add3DLocation(scene: THREE.Scene, root: THREE.Object3D, sceneKey: string, chapter: number, locationIndex: number) {
   const isEnding = sceneKey.startsWith('ending') || sceneKey.includes('final') || sceneKey.includes('death') || sceneKey.includes('admin');
+  const locationStyle = Math.abs(chapter) % 10;
   const theme = cityThemes[Math.abs(chapter + locationIndex) % cityThemes.length];
   const palette = isEnding
     ? { ...theme, sky: '#080509', fog: '#080509', ground: '#1d1418', accent: '#ff004c', glow: '#ff2a1f' }
@@ -84,28 +85,28 @@ function add3DLocation(scene: THREE.Scene, sceneKey: string, chapter: number, lo
 
   const ground = mesh(new THREE.PlaneGeometry(220, 220), palette.ground, [0, -0.055, 0], { roughness: 0.92 });
   ground.rotation.x = -Math.PI / 2;
-  scene.add(ground);
+  root.add(ground);
 
-  if (locationIndex === 0) {
+  if (locationStyle === 0) {
     for (let i = 0; i < 28; i += 1) {
       const x = -42 + (i % 7) * 13.4;
       const z = -27 + Math.floor(i / 7) * 15.5;
       const building = mesh(new THREE.BoxGeometry(2.6 + (i % 3), 2.2 + (i % 4) * 0.65, 2.2), i % 2 ? '#504238' : '#6b5741', [x, 1.05, z]);
       const roof = cone(palette.accent, 1.9, 1.25, [x, 2.85 + (i % 4) * 0.32, z]);
       roof.rotation.y = Math.PI / 4;
-      scene.add(building, roof);
+      root.add(building, roof);
     }
-  } else if (locationIndex === 1) {
+  } else if (locationStyle === 1) {
     for (let i = 0; i < 18; i += 1) {
       const x = -38 + (i % 6) * 15;
       const z = -24 + Math.floor(i / 6) * 20;
-      addPillar(scene, x, z, '#1c1717', palette.glow);
+      addPillar(root, x, z, '#1c1717', palette.glow);
     }
     const citadel = mesh(new THREE.CylinderGeometry(4.8, 6.4, 7.4, 10), '#171112', [0, 3.65, -18], { roughness: 0.6 });
     const citadelTop = cone('#090708', 5.2, 5.8, [0, 10.2, -18]);
     const core = mesh(new THREE.BoxGeometry(0.5, 5.2, 0.18), palette.glow, [0, 5.4, -13.15], { emissive: palette.glow, emissiveIntensity: 1.8 });
-    scene.add(citadel, citadelTop, core);
-  } else {
+    root.add(citadel, citadelTop, core);
+  } else if (locationStyle === 2) {
     for (let i = 0; i < 46; i += 1) {
       const x = -50 + (i % 12) * 9.2 + Math.sin(i) * 1.4;
       const z = -34 + Math.floor(i / 12) * 18 + Math.cos(i) * 1.8;
@@ -115,7 +116,7 @@ function add3DLocation(scene: THREE.Scene, sceneKey: string, chapter: number, lo
       const branch = mesh(new THREE.BoxGeometry(0.13, 1.6, 0.12), '#1d1510', [x + 0.28, 2.35, z]);
       branch.rotation.z = 0.9 + Math.sin(i) * 0.2;
       deadTree.add(trunk, branch);
-      scene.add(deadTree);
+      root.add(deadTree);
     }
     for (let i = 0; i < 16; i += 1) {
       const lava = mesh(new THREE.PlaneGeometry(2.2 + (i % 4), 0.38), palette.glow, [-42 + (i % 8) * 12, -0.01, -18 + Math.floor(i / 8) * 31], {
@@ -124,13 +125,80 @@ function add3DLocation(scene: THREE.Scene, sceneKey: string, chapter: number, lo
       });
       lava.rotation.x = -Math.PI / 2;
       lava.rotation.z = Math.sin(i) * 0.6;
-      scene.add(lava);
+      root.add(lava);
+    }
+  } else if (locationStyle === 3) {
+    for (let i = 0; i < 24; i += 1) {
+      const x = -42 + (i % 8) * 12;
+      const z = -30 + Math.floor(i / 8) * 24;
+      const hut = mesh(new THREE.BoxGeometry(2.4, 1.7, 2.2), i % 2 ? '#4c3a2c' : '#654a33', [x, 0.8, z]);
+      const roof = mesh(new THREE.ConeGeometry(1.9, 1.05, 4), '#30352a', [x, 2.15, z]);
+      roof.rotation.y = Math.PI / 4;
+      const stump = mesh(new THREE.CylinderGeometry(0.18, 0.24, 0.6, 8), '#3a2415', [x + 3.4, 0.26, z + 1.8]);
+      root.add(hut, roof, stump);
+    }
+  } else if (locationStyle === 4) {
+    for (let i = 0; i < 18; i += 1) {
+      const x = -44 + (i % 6) * 17;
+      const z = -30 + Math.floor(i / 6) * 24;
+      const wall = mesh(new THREE.BoxGeometry(7.2, 2.4, 0.8), '#7a5a3e', [x, 1.15, z]);
+      const tower = mesh(new THREE.CylinderGeometry(0.9, 1.1, 4.2, 10), '#654730', [x + 3.9, 2, z]);
+      const flag = mesh(new THREE.BoxGeometry(0.12, 1.3, 1.6), palette.accent, [x + 4.2, 4.2, z], { emissive: palette.accent, emissiveIntensity: 0.35 });
+      root.add(wall, tower, flag);
+    }
+  } else if (locationStyle === 5) {
+    for (let i = 0; i < 30; i += 1) {
+      const x = -48 + (i % 10) * 10.5;
+      const z = -33 + Math.floor(i / 10) * 27;
+      const ruin = mesh(new THREE.BoxGeometry(1.4 + (i % 3), 2.5 + (i % 4), 0.7), i % 2 ? '#9b8b72' : '#6f6658', [x, 1.2, z]);
+      ruin.rotation.y = Math.sin(i) * 0.25;
+      const rubble = mesh(new THREE.DodecahedronGeometry(0.45 + (i % 3) * 0.12), '#4c4942', [x + 2.2, 0.18, z + 1.4]);
+      rubble.scale.y = 0.38;
+      root.add(ruin, rubble);
+    }
+  } else if (locationStyle === 6) {
+    const water = mesh(new THREE.PlaneGeometry(78, 46), '#116b8c', [10, 0.005, -8], { transparent: true, opacity: 0.72, metalness: 0.15, roughness: 0.2 });
+    water.rotation.x = -Math.PI / 2;
+    root.add(water);
+    for (let i = 0; i < 22; i += 1) {
+      const x = -44 + (i % 11) * 8.8;
+      const z = i < 11 ? -35 : 24;
+      const dock = mesh(new THREE.BoxGeometry(3.8, 0.22, 1.2), '#5b3d28', [x, 0.2, z]);
+      dock.rotation.y = Math.sin(i) * 0.35;
+      root.add(dock);
+    }
+  } else if (locationStyle === 7) {
+    for (let i = 0; i < 34; i += 1) {
+      const x = -46 + (i % 9) * 11.5;
+      const z = -34 + Math.floor(i / 9) * 22;
+      const mushroom = cone(i % 2 ? '#d00000' : '#8338ec', 1.15 + (i % 3) * 0.2, 1.4, [x, 2.0, z]);
+      const stem = mesh(new THREE.CylinderGeometry(0.2, 0.34, 2.2, 8), '#e8d9b8', [x, 0.92, z]);
+      root.add(stem, mushroom);
+    }
+  } else if (locationStyle === 8) {
+    for (let i = 0; i < 20; i += 1) {
+      const x = -44 + (i % 5) * 21;
+      const z = -31 + Math.floor(i / 5) * 19;
+      const crystal = cone(i % 2 ? '#75e6da' : '#8ecae6', 0.75, 3.8 + (i % 4) * 0.7, [x, 1.85, z]);
+      crystal.rotation.z = Math.sin(i) * 0.18;
+      const light = new THREE.PointLight(i % 2 ? '#75e6da' : '#8ecae6', 1.8, 9);
+      light.position.set(x, 2.5, z);
+      root.add(crystal, light);
+    }
+  } else {
+    for (let i = 0; i < 24; i += 1) {
+      const x = -46 + (i % 8) * 12.8;
+      const z = -32 + Math.floor(i / 8) * 25;
+      const platform = mesh(new THREE.CylinderGeometry(1.8, 2.1, 0.55, 6), '#63564a', [x, 0.22, z]);
+      const obelisk = mesh(new THREE.BoxGeometry(0.72, 4.4, 0.72), '#312a30', [x, 2.35, z], { emissive: palette.glow, emissiveIntensity: 0.18 });
+      obelisk.rotation.y = Math.PI / 4;
+      root.add(platform, obelisk);
     }
   }
 
   if (isEnding) {
     for (let i = 0; i < 7; i += 1) {
-      addPillar(scene, -30 + i * 10, -34 + Math.sin(i) * 7, '#120b0d', palette.glow);
+      addPillar(root, -30 + i * 10, -34 + Math.sin(i) * 7, '#120b0d', palette.glow);
     }
   }
 }
@@ -247,63 +315,66 @@ function addCaveCity(scene: THREE.Scene) {
 
 function makeHero() {
   const hero = new THREE.Group();
-  const armor = material('#8a8d8a', { metalness: 0.78, roughness: 0.2 });
-  const darkArmor = material('#3a3a38', { metalness: 0.62, roughness: 0.28 });
+  const armor = material('#8f9290', { metalness: 0.9, roughness: 0.18 });
+  const darkArmor = material('#3d3d3a', { metalness: 0.72, roughness: 0.24 });
   const leather = material('#2b211d', { roughness: 0.82 });
-  const steelDark = material('#55585a', { metalness: 0.82, roughness: 0.22 });
-  const steelLight = material('#b9bab5', { metalness: 0.9, roughness: 0.16 });
+  const skin = material('#b7835f', { roughness: 0.58 });
+  const steelDark = material('#55585a', { metalness: 0.86, roughness: 0.2 });
+  const steelLight = material('#c7c8c1', { metalness: 0.94, roughness: 0.14 });
 
   const body = capsule('#8a8d8a', 0.34, 0.82, [0, 1.1, 0]);
-  body.scale.set(0.86, 1.08, 0.58);
+  body.scale.set(0.9, 1.08, 0.62);
   body.material = armor;
   const chestPlate = mesh(new THREE.BoxGeometry(0.68, 0.58, 0.16), '#777a78', [0, 1.18, 0.31], { metalness: 0.86, roughness: 0.18 });
   chestPlate.material = steelDark;
-  const skirt = mesh(new THREE.CylinderGeometry(0.42, 0.52, 0.58, 6), '#2b211d', [0, 0.62, 0.02]);
+  chestPlate.rotation.x = -0.08;
+  const chestRidge = mesh(new THREE.BoxGeometry(0.08, 0.66, 0.05), '#c7c8c1', [0, 1.2, 0.42], { metalness: 0.94, roughness: 0.14 });
+  const skirt = mesh(new THREE.CylinderGeometry(0.42, 0.54, 0.58, 6), '#2b211d', [0, 0.62, 0.02]);
   skirt.material = leather;
   const belt = mesh(new THREE.BoxGeometry(0.72, 0.12, 0.46), '#3a2415', [0, 0.88, 0.03]);
   const helmet = mesh(new THREE.SphereGeometry(0.36, 24, 14), '#8a8d8a', [0, 1.92, 0], { metalness: 0.82, roughness: 0.18 });
-  helmet.scale.set(0.78, 1.18, 0.72);
+  helmet.scale.set(0.72, 1.26, 0.7);
   helmet.material = steelLight;
-  const visor = mesh(new THREE.BoxGeometry(0.28, 0.42, 0.08), '#24282b', [0, 1.88, 0.3], { metalness: 0.72, roughness: 0.2 });
-  const visorSlit = mesh(new THREE.BoxGeometry(0.24, 0.035, 0.02), '#050607', [0, 1.96, 0.35]);
-  const noseGuard = mesh(new THREE.BoxGeometry(0.052, 0.44, 0.055), '#b7b8b0', [0, 1.82, 0.36], { metalness: 0.8, roughness: 0.16 });
+  const visor = mesh(new THREE.BoxGeometry(0.32, 0.5, 0.09), '#24282b', [0, 1.86, 0.3], { metalness: 0.72, roughness: 0.2 });
+  visor.rotation.x = -0.08;
+  const visorSlit = mesh(new THREE.BoxGeometry(0.26, 0.035, 0.025), '#050607', [0, 1.98, 0.36]);
+  const noseGuard = mesh(new THREE.BoxGeometry(0.06, 0.52, 0.06), '#b7b8b0', [0, 1.8, 0.37], { metalness: 0.8, roughness: 0.16 });
+  const helmetBack = mesh(new THREE.BoxGeometry(0.42, 0.44, 0.08), '#777a78', [0, 1.78, -0.26], { metalness: 0.86, roughness: 0.18 });
+  helmetBack.rotation.x = 0.22;
   const neckGuard = mesh(new THREE.CylinderGeometry(0.24, 0.32, 0.18, 12), '#55585a', [0, 1.6, 0], { metalness: 0.8, roughness: 0.22 });
   neckGuard.material = steelDark;
   const sword = new THREE.Group();
-  const blade = mesh(new THREE.BoxGeometry(0.07, 1.85, 0.035), '#dfe5e3', [0, 0.58, 0], {
+  const blade = mesh(new THREE.BoxGeometry(0.09, 2.25, 0.04), '#dfe5e3', [0, 0.75, 0], {
     metalness: 0.76,
     emissive: '#9fb6bf',
     emissiveIntensity: 0.18,
   });
-  const guard = mesh(new THREE.BoxGeometry(0.5, 0.07, 0.08), '#8a5b38', [0, -0.4, 0], { metalness: 0.3, roughness: 0.42 });
-  const pommel = mesh(new THREE.SphereGeometry(0.075, 12, 8), '#8a5b38', [0, -0.74, 0], { metalness: 0.34, roughness: 0.38 });
-  sword.add(blade, guard, pommel);
-  sword.position.set(0.86, 0.9, 0.16);
-  sword.rotation.z = -0.08;
+  const bladeTip = mesh(new THREE.ConeGeometry(0.075, 0.26, 12), '#dfe5e3', [0, 1.99, 0], { metalness: 0.76, roughness: 0.18 });
+  bladeTip.rotation.z = Math.PI;
+  const guard = mesh(new THREE.BoxGeometry(0.62, 0.08, 0.09), '#8a5b38', [0, -0.42, 0], { metalness: 0.3, roughness: 0.42 });
+  const pommel = mesh(new THREE.SphereGeometry(0.085, 12, 8), '#8a5b38', [0, -0.82, 0], { metalness: 0.34, roughness: 0.38 });
+  sword.add(blade, bladeTip, guard, pommel);
+  sword.position.set(0.72, 0.68, 0.18);
+  sword.rotation.set(0.12, 0, -1.34);
 
-  const leftShoulder = mesh(new THREE.SphereGeometry(0.2, 16, 10), '#8a8d8a', [-0.46, 1.48, 0.02], { metalness: 0.8, roughness: 0.16 });
-  leftShoulder.scale.set(1.25, 0.62, 0.9);
+  const leftShoulder = mesh(new THREE.SphereGeometry(0.26, 18, 10), '#8a8d8a', [-0.5, 1.48, 0.02], { metalness: 0.85, roughness: 0.16 });
+  leftShoulder.scale.set(1.34, 0.76, 1.05);
   const rightShoulder = leftShoulder.clone();
   rightShoulder.position.x = 0.46;
-  const leftArm = capsule('#8a8d8a', 0.095, 0.66, [-0.47, 1.12, 0.02]);
-  leftArm.material = armor;
-  leftArm.rotation.z = -0.42;
-  const rightArm = capsule('#8a8d8a', 0.095, 0.72, [0.48, 1.12, 0.02]);
-  rightArm.material = armor;
-  rightArm.rotation.z = 0.58;
-  const leftGauntlet = capsule('#3a3a38', 0.07, 0.24, [-0.6, 0.77, 0.07]);
+  const leftArm = capsule('#b7835f', 0.085, 0.7, [-0.5, 1.1, 0.02]);
+  leftArm.material = skin;
+  leftArm.rotation.z = -0.55;
+  const rightArm = capsule('#b7835f', 0.085, 0.78, [0.52, 1.17, 0.02]);
+  rightArm.material = skin;
+  rightArm.rotation.z = -1.18;
+  rightArm.rotation.x = -0.18;
+  const leftGauntlet = capsule('#3a3a38', 0.08, 0.34, [-0.62, 0.76, 0.07]);
   leftGauntlet.material = darkArmor;
-  const rightGauntlet = capsule('#3a3a38', 0.07, 0.24, [0.67, 0.77, 0.12]);
+  const rightGauntlet = capsule('#3a3a38', 0.075, 0.32, [0.88, 1.12, 0.12]);
   rightGauntlet.material = darkArmor;
-
-  const shield = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.3, 0.08, 5), armor);
-  shield.position.set(-0.68, 1.12, 0.28);
-  shield.rotation.set(Math.PI / 2, 0, 0.22);
-  shield.castShadow = true;
-  shield.receiveShadow = true;
-  const shieldFace = mesh(new THREE.BoxGeometry(0.14, 0.22, 0.03), '#3a3a38', [-0.68, 1.12, 0.34]);
-  shieldFace.material = darkArmor;
-  const shieldMark = mesh(new THREE.BoxGeometry(0.05, 0.14, 0.02), '#b9bab5', [-0.68, 1.12, 0.37], { metalness: 0.82, roughness: 0.18 });
+  const pointingHand = mesh(new THREE.SphereGeometry(0.075, 12, 8), '#b7835f', [1.05, 1.1, 0.16]);
+  const pointingFinger = capsule('#b7835f', 0.018, 0.26, [1.18, 1.1, 0.18]);
+  pointingFinger.rotation.z = Math.PI / 2;
 
   const leftLeg = capsule('#8a8d8a', 0.12, 0.72, [-0.18, 0.35, -0.08]);
   leftLeg.material = armor;
@@ -319,12 +390,14 @@ function makeHero() {
   hero.add(
     body,
     chestPlate,
+    chestRidge,
     skirt,
     belt,
     helmet,
     visor,
     visorSlit,
     noseGuard,
+    helmetBack,
     neckGuard,
     sword,
     leftShoulder,
@@ -333,9 +406,8 @@ function makeHero() {
     rightArm,
     leftGauntlet,
     rightGauntlet,
-    shield,
-    shieldFace,
-    shieldMark,
+    pointingHand,
+    pointingFinger,
     leftLeg,
     rightLeg,
     leftBoot,
@@ -355,19 +427,21 @@ function makeMonster(kind: string, index: number) {
   const isStone = kind === 'stone-brute';
   const isWire = kind === 'wire';
   const isPale = kind === 'pale';
+  const isGoblin = kind === 'goblin';
+  const goblinVariant = index % 4;
   const isLizardBrute = kind === 'lizard-brute';
   const isGiant = kind === 'giant' || kind === 'cave-titan';
   const usesReferenceBody = true;
   const isOrc = kind === 'orc' || kind === 'magma' || kind === 'avalanche';
   const isCrawler = kind === 'lizard' || kind === 'frost' || isLizardBrute;
-  const skinColor = isSpider ? '#d9c882' : isLizardBrute ? '#2f7f3f' : isStone ? '#888883' : isWire ? '#c8b29e' : isPale ? '#b8c5c9' : isGiant ? '#8d8f8c' : isOrc ? '#6f7d35' : isCrawler ? '#8a8f82' : kind === 'shadow' ? '#5c5364' : '#8f958a';
+  const skinColor = isGoblin ? ['#b8b2a8', '#9f9a91', '#c4beb3', '#8f928a'][goblinVariant] : isSpider ? '#d9c882' : isLizardBrute ? '#2f7f3f' : isStone ? '#888883' : isWire ? '#c8b29e' : isPale ? '#b8c5c9' : isGiant ? '#8d8f8c' : isOrc ? '#6f7d35' : isCrawler ? '#8a8f82' : kind === 'shadow' ? '#5c5364' : '#8f958a';
   const dark = kind === 'shadow' ? '#120916' : '#34261d';
-  const scale = isStone ? 1.32 : isGiant ? 1.42 : isOrc || isLizardBrute ? 1.2 : isCrawler ? 1.08 : kind === 'shadow' ? 0.98 : 0.94;
+  const scale = isGoblin ? 0.9 : isStone ? 1.32 : isGiant ? 1.42 : isOrc || isLizardBrute ? 1.2 : isCrawler ? 1.08 : kind === 'shadow' ? 0.98 : 0.94;
 
   const body = capsule(skinColor, usesReferenceBody ? 0.22 * scale : 0.34 * scale, isOrc ? 1.08 : 0.8, [0, 0.86 * scale, 0]);
-  body.scale.set(isSpider ? 1.15 : usesReferenceBody ? 0.72 : isCrawler ? 1.25 : 0.95, isStone ? 1.32 : usesReferenceBody ? 1.05 : isOrc ? 1.18 : 0.98, isSpider ? 1.45 : isCrawler ? 0.82 : 1);
+  body.scale.set(isGoblin ? (goblinVariant === 0 ? 0.52 : goblinVariant === 1 ? 0.72 : 0.58) : isSpider ? 1.15 : usesReferenceBody ? 0.72 : isCrawler ? 1.25 : 0.95, isGoblin ? (goblinVariant === 3 ? 0.82 : 1.02) : isStone ? 1.32 : usesReferenceBody ? 1.05 : isOrc ? 1.18 : 0.98, isGoblin ? (goblinVariant === 1 ? 0.92 : 0.66) : isSpider ? 1.45 : isCrawler ? 0.82 : 1);
   const belly = mesh(new THREE.SphereGeometry(0.28 * scale, 22, 14), skinColor, [0, 0.82 * scale, 0.18]);
-  belly.scale.set(isStone ? 1.45 : isPale ? 1.05 : 1.15, isStone ? 1.25 : isPale ? 1.7 : 1.02, isSpider ? 1.55 : 0.95);
+  belly.scale.set(isGoblin ? (goblinVariant === 1 ? 1.25 : 0.72) : isStone ? 1.45 : isPale ? 1.05 : 1.15, isGoblin ? (goblinVariant === 1 ? 1.25 : 1.02) : isStone ? 1.25 : isPale ? 1.7 : 1.02, isGoblin ? (goblinVariant === 1 ? 1.22 : 0.9) : isSpider ? 1.55 : 0.95);
   belly.visible = usesReferenceBody;
   const ribs = new THREE.Group();
   for (let i = 0; i < 4; i += 1) {
@@ -376,18 +450,20 @@ function makeMonster(kind: string, index: number) {
     ribs.add(rib);
   }
   const head = mesh(new THREE.SphereGeometry(0.32 * scale, 22, 14), skinColor, [0, 1.64 * scale, 0.08]);
-  head.scale.set(isSpider ? 0.58 : usesReferenceBody ? 0.9 : isOrc ? 1.25 : 1.05, isPale ? 0.78 : usesReferenceBody ? 1.16 : isCrawler ? 0.78 : 1, isLizardBrute ? 1.55 : usesReferenceBody ? 1.08 : isCrawler ? 1.35 : 1);
+  head.scale.set(isGoblin ? (goblinVariant === 2 ? 1.28 : 1.08) : isSpider ? 0.58 : usesReferenceBody ? 0.9 : isOrc ? 1.25 : 1.05, isGoblin ? 1.42 : isPale ? 0.78 : usesReferenceBody ? 1.16 : isCrawler ? 0.78 : 1, isGoblin ? 1.02 : isLizardBrute ? 1.55 : usesReferenceBody ? 1.08 : isCrawler ? 1.35 : 1);
   const brow = mesh(new THREE.BoxGeometry(0.34 * scale, 0.06 * scale, 0.08 * scale), '#747a70', [0, 1.7 * scale, 0.38 * scale]);
+  brow.scale.set(isGoblin ? 1.32 : 1, isGoblin ? 1.25 : 1, isGoblin ? 1.1 : 1);
+  brow.rotation.x = isGoblin ? 0.18 : 0;
   brow.visible = usesReferenceBody;
   const nose = mesh(new THREE.SphereGeometry(0.075 * scale, 10, 8), '#777d73', [0, 1.58 * scale, 0.42 * scale]);
-  nose.scale.set(0.8, 1, 1.35);
+  nose.scale.set(isGoblin ? 1.25 : 0.8, isGoblin ? 0.9 : 1, isGoblin ? 2.25 : 1.35);
   nose.visible = usesReferenceBody;
   const snout = cone(skinColor, usesReferenceBody ? 0.09 * scale : 0.18 * scale, usesReferenceBody ? 0.22 * scale : 0.46 * scale, [0, 1.57 * scale, 0.42 * scale]);
   snout.rotation.x = Math.PI / 2;
   snout.visible = !usesReferenceBody;
-  const jaw = mesh(new THREE.BoxGeometry(0.36 * scale, 0.08 * scale, 0.08 * scale), '#1b0908', [0, 1.43 * scale, 0.39 * scale]);
-  jaw.scale.x = usesReferenceBody ? 0.72 : 1;
-  const eyeMat = new THREE.MeshBasicMaterial({ color: kind === 'shadow' ? '#b56cff' : '#ff3b30' });
+  const jaw = mesh(new THREE.BoxGeometry(0.36 * scale, 0.08 * scale, 0.08 * scale), isGoblin ? '#2d170f' : '#1b0908', [0, 1.43 * scale, 0.39 * scale]);
+  jaw.scale.set(usesReferenceBody ? (isGoblin ? 0.92 : 0.72) : 1, isGoblin ? 1.7 : 1, isGoblin ? 1.25 : 1);
+  const eyeMat = new THREE.MeshBasicMaterial({ color: isGoblin ? '#101010' : kind === 'shadow' ? '#b56cff' : '#ff3b30' });
   const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.045 * scale, 8, 6), eyeMat);
   eyeL.position.set(-0.12 * scale, 1.68 * scale, 0.36 * scale);
   const eyeR = eyeL.clone();
@@ -409,6 +485,7 @@ function makeMonster(kind: string, index: number) {
   const earL = cone(skinColor, 0.105 * scale, 0.62 * scale, [-0.34 * scale, 1.63 * scale, 0.02]);
   earL.rotation.z = Math.PI / 2;
   earL.rotation.y = -0.28;
+  earL.scale.set(isGoblin ? 1.55 : 1, isGoblin ? 0.72 : 1, isGoblin ? 1.1 : 1);
   const earR = earL.clone();
   earR.position.x *= -1;
   earR.rotation.z = -Math.PI / 2;
@@ -417,8 +494,10 @@ function makeMonster(kind: string, index: number) {
 
   const armL = capsule(skinColor, 0.055 * scale, 0.82 * scale, [-0.42 * scale, 0.95 * scale, 0.05]);
   armL.rotation.z = -1.05;
+  armL.scale.set(isGoblin ? 0.74 : 1, isGoblin ? 1.34 : 1, isGoblin ? 0.74 : 1);
   const armR = capsule(skinColor, 0.055 * scale, 0.82 * scale, [0.42 * scale, 0.95 * scale, 0.05]);
   armR.rotation.z = 1.05;
+  armR.scale.copy(armL.scale);
   const handL = new THREE.Group();
   const handR = new THREE.Group();
   for (let i = 0; i < 4; i += 1) {
@@ -435,8 +514,12 @@ function makeMonster(kind: string, index: number) {
   const legR = capsule(skinColor, 0.07 * scale, 0.72 * scale, [0.17 * scale, 0.27 * scale, 0.08]);
   legL.rotation.z = 0.12;
   legR.rotation.z = -0.1;
+  legL.scale.set(isGoblin ? 0.76 : 1, isGoblin ? (goblinVariant === 3 ? 0.88 : 1.04) : 1, isGoblin ? 0.76 : 1);
+  legR.scale.copy(legL.scale);
   const footL = mesh(new THREE.BoxGeometry(0.24 * scale, 0.09 * scale, 0.34 * scale), skinColor, [-0.21 * scale, -0.08 * scale, 0.14]);
   const footR = mesh(new THREE.BoxGeometry(0.24 * scale, 0.09 * scale, 0.34 * scale), skinColor, [0.2 * scale, -0.08 * scale, 0.18]);
+  footL.scale.set(isGoblin ? 1.35 : 1, isGoblin ? 0.8 : 1, isGoblin ? 1.45 : 1);
+  footR.scale.copy(footL.scale);
   footL.visible = usesReferenceBody;
   footR.visible = usesReferenceBody;
   const club = new THREE.Group();
@@ -451,7 +534,47 @@ function makeMonster(kind: string, index: number) {
   const knifeGrip = mesh(new THREE.CylinderGeometry(0.025 * scale, 0.025 * scale, 0.22 * scale, 8), '#3a2415', [0.5 * scale, 0.76 * scale, 0.2]);
   knifeGrip.rotation.z = -1.25;
   knife.add(knifeBlade, knifeGrip);
-  knife.visible = kind === 'goblin';
+  knife.visible = isGoblin && goblinVariant !== 2;
+
+  const goblinDetails = new THREE.Group();
+  const loincloth = mesh(new THREE.BoxGeometry(0.34 * scale, 0.36 * scale, 0.1 * scale), '#3b332d', [0, 0.5 * scale, 0.37]);
+  const backCloth = mesh(new THREE.BoxGeometry(0.36 * scale, 0.34 * scale, 0.08 * scale), '#3b332d', [0, 0.5 * scale, -0.25]);
+  const toothMat = '#e8d6b8';
+  for (let i = 0; i < 4; i += 1) {
+    const tooth = cone(toothMat, 0.018 * scale, 0.09 * scale, [(-0.09 + i * 0.06) * scale, 1.39 * scale, 0.45 * scale]);
+    tooth.rotation.x = Math.PI;
+    goblinDetails.add(tooth);
+  }
+  for (let side = -1; side <= 1; side += 2) {
+    const cheek = mesh(new THREE.SphereGeometry(0.07 * scale, 10, 8), '#6f7f4f', [side * 0.19 * scale, 1.5 * scale, 0.37 * scale]);
+    cheek.scale.set(1.25, 0.55, 0.75);
+    const browSpike = cone('#5e6c42', 0.035 * scale, 0.18 * scale, [side * 0.18 * scale, 1.78 * scale, 0.34 * scale]);
+    browSpike.rotation.z = side * 0.62;
+    const toe1 = cone(toothMat, 0.018 * scale, 0.09 * scale, [side * 0.28 * scale, -0.07 * scale, 0.33 * scale]);
+    toe1.rotation.x = Math.PI / 2;
+    const toe2 = toe1.clone();
+    toe2.position.x -= side * 0.07 * scale;
+    goblinDetails.add(cheek, browSpike, toe1, toe2);
+  }
+  const collar = mesh(new THREE.TorusGeometry(0.28 * scale, 0.025 * scale, 8, 20), '#2e2924', [0, 1.27 * scale, 0.02]);
+  collar.rotation.x = Math.PI / 2;
+  const ribsMark = new THREE.Group();
+  for (let i = 0; i < 4; i += 1) {
+    const mark = mesh(new THREE.BoxGeometry(0.22 * scale, 0.018 * scale, 0.02 * scale), '#78746d', [0, (0.9 + i * 0.075) * scale, 0.35]);
+    mark.rotation.z = (i % 2 ? -0.08 : 0.08);
+    ribsMark.add(mark);
+  }
+  const goblinClub = new THREE.Group();
+  const goblinClubHandle = mesh(new THREE.CylinderGeometry(0.035 * scale, 0.045 * scale, 1.15 * scale, 7), '#2b211d', [0.68 * scale, 0.98 * scale, 0.24]);
+  goblinClubHandle.rotation.z = -1.05;
+  const goblinClubHead = mesh(new THREE.DodecahedronGeometry(0.22 * scale), '#6d6860', [1.02 * scale, 1.36 * scale, 0.26]);
+  goblinClub.add(goblinClubHandle, goblinClubHead);
+  goblinClub.visible = isGoblin && goblinVariant === 2;
+  const goblinShield = mesh(new THREE.CylinderGeometry(0.25 * scale, 0.29 * scale, 0.08 * scale, 7), '#5c554b', [-0.6 * scale, 0.95 * scale, 0.28], { metalness: 0.12, roughness: 0.7 });
+  goblinShield.rotation.set(Math.PI / 2, 0, 0.2);
+  goblinShield.visible = isGoblin && goblinVariant === 2;
+  goblinDetails.add(loincloth, backCloth, collar, ribsMark, goblinClub, goblinShield);
+  goblinDetails.visible = isGoblin;
 
   const armor = new THREE.Group();
   const chestPlate = mesh(new THREE.BoxGeometry(0.48 * scale, 0.34 * scale, 0.08 * scale), '#8d8f88', [0, 1.02 * scale, 0.39], { metalness: 0.62, roughness: 0.28 });
@@ -501,9 +624,15 @@ function makeMonster(kind: string, index: number) {
   wireFrame.add(wireSkin);
   wireFrame.visible = isWire;
 
-  group.add(body, belly, ribs, head, brow, nose, snout, jaw, eyeL, eyeR, hood, rag, hornL, hornR, earL, earR, armL, armR, handL, handR, legL, legR, footL, footR, club, knife, armor, saw, spiderLegs, rockNubs, wireFrame);
+  group.add(body, belly, ribs, head, brow, nose, snout, jaw, eyeL, eyeR, hood, rag, hornL, hornR, earL, earR, armL, armR, handL, handR, legL, legR, footL, footR, club, knife, goblinDetails, armor, saw, spiderLegs, rockNubs, wireFrame);
   group.scale.setScalar(0.86 + (index % 4) * 0.09);
-  group.userData = { body, head, armL, armR, club, legL, legR, footL, footR, baseY: 0, seed: index * 0.7 };
+  if (isGoblin && goblinVariant === 3) {
+    group.rotation.x = -0.16;
+    head.position.y -= 0.08;
+    armL.rotation.z = -1.28;
+    armR.rotation.z = 1.28;
+  }
+  group.userData = { body, head, jaw, earL, earR, armL, armR, club, knife, goblinClub, legL, legR, footL, footR, baseY: 0, seed: index * 0.7, isGoblin, goblinVariant };
   return group;
 }
 
@@ -571,7 +700,31 @@ export function BattleScene3D(props: BattleScene3DProps) {
     scene.add(key);
 
     addCaveCity(scene);
-    add3DLocation(scene, refs.current.sceneKey, refs.current.chapter, refs.current.locationIndex);
+    const locationRoot = new THREE.Group();
+    scene.add(locationRoot);
+    let activeLocationKey = '';
+    const disposeLocationObject = (object: THREE.Object3D) => {
+      object.traverse((entry) => {
+        if (entry instanceof THREE.Mesh) {
+          entry.geometry.dispose();
+          const objectMaterial = entry.material;
+          if (Array.isArray(objectMaterial)) objectMaterial.forEach((item) => item.dispose());
+          else objectMaterial.dispose();
+        }
+      });
+    };
+    const rebuildLocation = () => {
+      const data = refs.current;
+      const nextLocationKey = `${data.sceneKey}-${data.chapter}-${data.locationIndex}`;
+      if (nextLocationKey === activeLocationKey) return;
+      activeLocationKey = nextLocationKey;
+      while (locationRoot.children.length) {
+        const child = locationRoot.children.pop();
+        if (child) disposeLocationObject(child);
+      }
+      add3DLocation(scene, locationRoot, data.sceneKey, data.chapter, data.locationIndex);
+    };
+    rebuildLocation();
 
     const hero = makeHero();
     const dragon = makeDragon(refs.current.dragonColor);
@@ -615,6 +768,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
     let renderFacing = 0.25;
     const cameraTarget = new THREE.Vector3(0, 3, 10);
     const lookTarget = new THREE.Vector3(0, 1.5, 0);
+    const smoothLookTarget = new THREE.Vector3(0, 1.5, 0);
     let attackSwing = 0;
 
     const resize = () => {
@@ -629,6 +783,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const time = clock.getElapsedTime();
       const data = refs.current;
       const delta = clock.getDelta();
+      rebuildLocation();
       if (lastPulse !== data.battlePulse) {
         lastPulse = data.battlePulse;
         pulse = 0.38;
@@ -681,7 +836,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       hero.userData.rightArm.rotation.x = stride * (data.isHeroMoving ? 0.42 : 0.08);
       hero.userData.leftArm.rotation.z = -0.42 + Math.sin(time * 5) * 0.08 + stepLift * (data.isHeroMoving ? 0.08 : 0);
       hero.userData.rightArm.rotation.z = 0.58 - Math.sin(time * 5) * 0.08 - stepLift * (data.isHeroMoving ? 0.08 : 0);
-      hero.userData.sword.rotation.set(0, 0, -0.08);
+      hero.userData.sword.rotation.set(0.12, 0, -1.34);
       if (data.heroAnimation === 'strike') {
         const attackPhase = THREE.MathUtils.clamp(1 - attackSwing, 0, 1);
         const windup = THREE.MathUtils.smoothstep(attackPhase, 0, 0.24);
@@ -698,9 +853,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
         hero.userData.rightArm.rotation.x = -0.2 - windup * 1.3 - slash * 2.05 + recover * 1.05;
         hero.userData.leftArm.rotation.x = -0.22 + slash * 0.35;
         hero.userData.leftArm.rotation.z = -0.56 - lunge * 0.48 + recover * 0.22;
-        hero.userData.sword.rotation.x = -0.18 - windup * 1.35 - slash * 2.15 + recover * 1.1;
+        hero.userData.sword.rotation.x = 0.12 - windup * 1.35 - slash * 2.15 + recover * 1.1;
         hero.userData.sword.rotation.y = -impact * 0.28;
-        hero.userData.sword.rotation.z = -0.18 - slash * 1.75 + recover * 0.62;
+        hero.userData.sword.rotation.z = -1.34 - slash * 1.2 + recover * 0.62;
       } else if (data.heroAnimation === 'step' || data.isHeroMoving) {
         hero.position.x += Math.sin(renderFacing) * stride * 0.11;
         hero.position.z += Math.cos(renderFacing) * stride * 0.11;
@@ -762,16 +917,40 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const monsterHit = Math.sin(THREE.MathUtils.clamp((attackCycle - 0.28) / 0.36, 0, 1) * Math.PI);
         const monsterRecover = THREE.MathUtils.smoothstep(attackCycle, 0.62, 0.98);
         const monsterSwing = attack * Math.max(monsterHit, monsterWindup * (1 - monsterRecover));
-        current.rotation.x = -monsterSwing * 0.18;
-        current.userData.armL.rotation.x = Math.sin(walk) * 0.48 - monsterSwing * 1.1;
-        current.userData.armR.rotation.x = -Math.sin(walk) * 0.48 - monsterWindup * 1.2 - monsterHit * 1.7 + monsterRecover * 0.9;
-        current.userData.armR.rotation.z = 0.85 + Math.sin(walk + 1.2) * 0.2 + monsterSwing * 1.25;
-        current.userData.legL.rotation.x = Math.sin(walk) * 0.55;
-        current.userData.legR.rotation.x = -Math.sin(walk) * 0.55;
-        current.userData.footL.rotation.x = -Math.sin(walk) * 0.25;
-        current.userData.footR.rotation.x = Math.sin(walk) * 0.25;
-        current.userData.head.rotation.x = monsterSwing * 0.22 + Math.sin(walk * 0.6) * 0.04;
-        current.userData.club.rotation.z = attack ? -0.35 - monsterWindup * 0.9 - monsterHit * 1.1 + monsterRecover * 0.8 : Math.sin(walk) * 0.18;
+        if (current.userData.isGoblin) {
+          const skitter = Math.sin(walk * 1.45);
+          const stab = monsterHit * attack;
+          current.rotation.x = -0.12 - monsterSwing * 0.28;
+          current.rotation.z = Math.sin(walk * 0.7) * 0.08;
+          current.userData.armL.rotation.x = 0.25 + skitter * 0.38 - monsterSwing * 0.65;
+          current.userData.armL.rotation.z = -1.08 - monsterWindup * 0.3 + Math.sin(walk + 0.6) * 0.18;
+          current.userData.armR.rotation.x = -0.45 - skitter * 0.42 - monsterWindup * 1.65 - stab * 2.1 + monsterRecover * 1.2;
+          current.userData.armR.rotation.z = 1.15 + monsterWindup * 0.85 + stab * 0.55 + Math.sin(walk + 1.2) * 0.16;
+          current.userData.legL.rotation.x = skitter * 0.78;
+          current.userData.legR.rotation.x = -skitter * 0.78;
+          current.userData.footL.rotation.x = -0.12 - skitter * 0.32;
+          current.userData.footR.rotation.x = -0.12 + skitter * 0.32;
+          current.userData.head.rotation.x = -0.1 + monsterSwing * 0.35 + Math.sin(walk * 0.7) * 0.08;
+          current.userData.head.rotation.z = Math.sin(walk * 0.55) * 0.06;
+          current.userData.jaw.rotation.x = attack ? 0.18 + stab * 0.32 : Math.max(0, Math.sin(walk * 0.8)) * 0.08;
+          current.userData.earL.rotation.y = -0.34 + Math.sin(walk * 0.9) * 0.12;
+          current.userData.earR.rotation.y = 0.34 - Math.sin(walk * 0.9) * 0.12;
+          current.userData.knife.rotation.z = -0.18 - monsterWindup * 0.75 - stab * 1.05 + monsterRecover * 0.85;
+          current.userData.knife.position.z = 0.02 + stab * 0.18;
+          current.userData.goblinClub.rotation.z = -monsterWindup * 0.65 - stab * 1.15 + monsterRecover * 0.75 + Math.sin(walk) * 0.12;
+        } else {
+          current.rotation.x = -monsterSwing * 0.18;
+          current.rotation.z = 0;
+          current.userData.armL.rotation.x = Math.sin(walk) * 0.48 - monsterSwing * 1.1;
+          current.userData.armR.rotation.x = -Math.sin(walk) * 0.48 - monsterWindup * 1.2 - monsterHit * 1.7 + monsterRecover * 0.9;
+          current.userData.armR.rotation.z = 0.85 + Math.sin(walk + 1.2) * 0.2 + monsterSwing * 1.25;
+          current.userData.legL.rotation.x = Math.sin(walk) * 0.55;
+          current.userData.legR.rotation.x = -Math.sin(walk) * 0.55;
+          current.userData.footL.rotation.x = -Math.sin(walk) * 0.25;
+          current.userData.footR.rotation.x = Math.sin(walk) * 0.25;
+          current.userData.head.rotation.x = monsterSwing * 0.22 + Math.sin(walk * 0.6) * 0.04;
+          current.userData.club.rotation.z = attack ? -0.35 - monsterWindup * 0.9 - monsterHit * 1.1 + monsterRecover * 0.8 : Math.sin(walk) * 0.18;
+        }
       });
 
       dragon.visible = !data.isFinalReveal && data.monstersLeft <= 0;
@@ -810,17 +989,19 @@ export function BattleScene3D(props: BattleScene3DProps) {
           hero.position.z - Math.cos(renderFacing) * backDistance - Math.sin(renderFacing) * sideOffset
         );
         lookTarget.set(
-          hero.position.x + Math.sin(renderFacing) * 5.5,
-          hero.position.y + 1.55,
-          hero.position.z + Math.cos(renderFacing) * 5.5
+          hero.position.x,
+          hero.position.y + 1.45,
+          hero.position.z
         );
         const followSpeed = data.isHeroMoving ? 42 : 26;
         if (camera.position.distanceTo(cameraTarget) > 1.15) {
           camera.position.copy(cameraTarget);
+          smoothLookTarget.copy(lookTarget);
         } else {
           camera.position.lerp(cameraTarget, Math.min(1, delta * followSpeed));
+          smoothLookTarget.lerp(lookTarget, Math.min(1, delta * followSpeed));
         }
-        camera.lookAt(lookTarget);
+        camera.lookAt(smoothLookTarget);
       }
 
       renderer.render(scene, camera);
