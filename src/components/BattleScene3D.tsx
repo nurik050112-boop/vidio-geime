@@ -638,31 +638,122 @@ function makeMonster(kind: string, index: number) {
 
 function makeDragon(color: string) {
   const dragon = new THREE.Group();
-  const bodyMat = material(color, { roughness: 0.46 });
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.9, 32, 18), bodyMat);
-  body.scale.set(1.9, 0.8, 0.8);
-  body.position.set(0, 1.65, 0);
-  const neck = capsule(color, 0.2, 1, [0.9, 1.85, 0]);
-  neck.rotation.z = -0.85;
-  const head = mesh(new THREE.SphereGeometry(0.48, 24, 16), color, [1.46, 2.12, 0]);
-  head.scale.set(1.15, 0.78, 0.72);
-  const snout = cone(color, 0.27, 0.7, [1.9, 2.05, 0]);
+  const bodyMat = material(color, { metalness: 0.05, roughness: 0.42 });
+  const bellyMat = material('#d7c5a5', { roughness: 0.5 });
+  const hornMat = material('#d8d0bc', { metalness: 0.1, roughness: 0.28 });
+  const clawMat = material('#27231f', { metalness: 0.18, roughness: 0.32 });
+  const membraneMat = material(color, { transparent: true, opacity: 0.58, side: THREE.DoubleSide, roughness: 0.36 });
+
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.92, 32, 20), bodyMat);
+  body.scale.set(1.45, 1.18, 0.86);
+  body.position.set(0, 1.36, 0);
+  body.castShadow = true;
+  body.receiveShadow = true;
+  const belly = new THREE.Mesh(new THREE.SphereGeometry(0.54, 24, 14), bellyMat);
+  belly.scale.set(0.72, 1.25, 0.32);
+  belly.position.set(0.22, 1.26, 0.55);
+  belly.castShadow = true;
+  const chestPlate = mesh(new THREE.BoxGeometry(0.58, 0.12, 0.05), '#b8a98e', [0.34, 1.62, 0.86]);
+  chestPlate.rotation.x = -0.28;
+
+  const neck = capsule(color, 0.22, 1.18, [0.9, 1.84, 0.08]);
+  neck.rotation.z = -0.72;
+  neck.rotation.y = -0.08;
+  const head = mesh(new THREE.SphereGeometry(0.44, 28, 16), color, [1.62, 2.16, 0.1]);
+  head.scale.set(1.15, 0.82, 0.72);
+  const snout = cone(color, 0.25, 0.78, [2.06, 2.1, 0.1]);
   snout.rotation.z = -Math.PI / 2;
-  const wingL = mesh(new THREE.CircleGeometry(1, 3), color, [-0.3, 2.35, -0.62], { transparent: true, opacity: 0.72, side: THREE.DoubleSide });
-  wingL.scale.set(1.4, 1, 1);
-  wingL.rotation.set(0.9, 0.2, -0.78);
-  const wingR = wingL.clone();
-  wingR.position.z = 0.62;
-  wingR.scale.z = -1;
+  snout.scale.y = 0.78;
+  const jaw = mesh(new THREE.BoxGeometry(0.42, 0.12, 0.16), '#31241d', [1.95, 1.93, 0.1]);
+  jaw.rotation.z = -0.12;
+  const eyeMat = new THREE.MeshBasicMaterial({ color: '#ffd166' });
+  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), eyeMat);
+  eyeL.position.set(1.77, 2.24, 0.38);
+  const eyeR = eyeL.clone();
+  eyeR.position.z = -0.18;
+
+  const hornL = cone('#d8d0bc', 0.075, 0.88, [1.38, 2.55, 0.28]);
+  hornL.material = hornMat;
+  hornL.rotation.z = -0.45;
+  hornL.rotation.x = 0.42;
+  const hornR = hornL.clone();
+  hornR.position.z = -0.08;
+  hornR.rotation.x = -0.42;
+  const browL = cone(color, 0.08, 0.42, [1.84, 2.3, 0.34]);
+  browL.rotation.z = -1.1;
+  browL.rotation.x = 0.35;
+  const browR = browL.clone();
+  browR.position.z = -0.14;
+  browR.rotation.x = -0.35;
+
+  const spines = new THREE.Group();
+  for (let i = 0; i < 7; i += 1) {
+    const spine = cone('#d8d0bc', 0.06 - i * 0.004, 0.34 - i * 0.018, [1.26 - i * 0.36, 2.35 - i * 0.12, 0]);
+    spine.material = hornMat;
+    spine.rotation.z = -0.25 + i * 0.05;
+    spines.add(spine);
+  }
+
+  const makeWing = (side: 1 | -1) => {
+    const wing = new THREE.Group();
+    const root = [0.0, 1.95, side * 0.48] as [number, number, number];
+    const upper = capsule('#d8d0bc', 0.035, 1.6, [root[0] - 0.42, root[1] + 0.44, root[2] + side * 0.52]);
+    upper.material = hornMat;
+    upper.rotation.set(0.25, side * 0.3, side * 0.92);
+    const outer = capsule('#d8d0bc', 0.03, 1.5, [root[0] - 0.98, root[1] + 0.1, root[2] + side * 1.02]);
+    outer.material = hornMat;
+    outer.rotation.set(-0.18, side * 0.18, side * 1.24);
+    const membrane = new THREE.Mesh(new THREE.CircleGeometry(1, 4), membraneMat);
+    membrane.position.set(root[0] - 0.68, root[1] + 0.18, root[2] + side * 0.75);
+    membrane.scale.set(1.25, 0.7, 1);
+    membrane.rotation.set(0.75, side * 0.42, side * -0.62);
+    membrane.castShadow = true;
+    wing.add(upper, outer, membrane);
+    return wing;
+  };
+  const wingL = makeWing(1);
+  const wingR = makeWing(-1);
+
+  const makeLeg = (x: number, z: number, front: boolean) => {
+    const leg = new THREE.Group();
+    const upper = capsule(color, front ? 0.12 : 0.16, front ? 0.58 : 0.72, [x, front ? 0.92 : 0.78, z]);
+    upper.material = bodyMat;
+    upper.rotation.z = front ? 0.58 : -0.35;
+    const foot = mesh(new THREE.BoxGeometry(front ? 0.34 : 0.48, 0.16, 0.36), color, [x + (front ? 0.28 : -0.18), 0.28, z]);
+    for (let i = 0; i < 3; i += 1) {
+      const claw = cone('#27231f', 0.035, 0.16, [foot.position.x + 0.12 + i * 0.08, 0.29, z + (i - 1) * 0.08]);
+      claw.material = clawMat;
+      claw.rotation.z = -Math.PI / 2;
+      leg.add(claw);
+    }
+    leg.add(upper, foot);
+    return leg;
+  };
+  const legs = new THREE.Group();
+  legs.add(makeLeg(0.72, 0.52, true), makeLeg(0.72, -0.42, true), makeLeg(-0.62, 0.48, false), makeLeg(-0.62, -0.38, false));
+
+  const tail = new THREE.Group();
+  for (let i = 0; i < 7; i += 1) {
+    const segment = capsule(color, Math.max(0.07, 0.16 - i * 0.014), 0.38, [-1.05 - i * 0.28, 1.0 + Math.sin(i * 0.75) * 0.18, Math.sin(i * 0.8) * 0.38]);
+    segment.material = bodyMat;
+    segment.rotation.z = 1.12 - i * 0.08;
+    segment.rotation.y = Math.sin(i * 0.65) * 0.42;
+    tail.add(segment);
+  }
+  const tailTip = cone('#d8d0bc', 0.09, 0.36, [-2.9, 1.02, -0.12]);
+  tailTip.material = hornMat;
+  tailTip.rotation.z = Math.PI / 2;
+  tail.add(tailTip);
+
   const fire = new THREE.Mesh(
     new THREE.ConeGeometry(0.34, 1.55, 12),
     new THREE.MeshBasicMaterial({ color: '#ff8a1f', transparent: true, opacity: 0.88 })
   );
-  fire.position.set(2.45, 2.02, 0);
+  fire.position.set(2.58, 2.04, 0.1);
   fire.rotation.z = -Math.PI / 2;
-  dragon.add(body, neck, head, snout, wingL, wingR, fire);
+  dragon.add(body, belly, chestPlate, neck, head, snout, jaw, eyeL, eyeR, hornL, hornR, browL, browR, spines, wingL, wingR, legs, tail, fire);
   dragon.position.set(4.2, 0, -0.5);
-  dragon.userData = { bodyMat, wingL, wingR, fire };
+  dragon.userData = { bodyMat, body, head, neck, wingL, wingR, fire, jaw, tail, spines };
   return dragon;
 }
 
@@ -823,19 +914,21 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const walkCycle = data.isHeroMoving ? time * 12.5 : time * 4;
       const stride = Math.sin(walkCycle);
       const stepLift = Math.abs(Math.sin(walkCycle));
+      const runTilt = data.isHeroMoving ? Math.sin(walkCycle * 0.5) * 0.055 : 0;
       const walkPower = data.isHeroMoving ? 0.74 : 0.12;
       hero.scale.setScalar(1);
-      hero.position.y = jumpHeight + Math.sin(time * 2.6) * 0.035 + (data.isHeroMoving ? stepLift * 0.055 : 0);
+      hero.position.y = jumpHeight + Math.sin(time * 2.6) * 0.035 + (data.isHeroMoving ? stepLift * 0.095 : 0);
       hero.rotation.y = renderFacing + Math.sin(time * 1.8) * 0.025;
-      hero.rotation.x = data.isHeroMoving ? -0.045 + Math.sin(walkCycle * 0.5) * 0.025 : 0;
-      hero.rotation.z = data.isHeroMoving ? Math.sin(walkCycle) * 0.035 : 0;
-      hero.userData.cape.rotation.y = Math.sin(time * 2.2) * 0.04 - stride * (data.isHeroMoving ? 0.08 : 0);
+      hero.rotation.x = data.isHeroMoving ? -0.07 + runTilt : 0;
+      hero.rotation.z = data.isHeroMoving ? Math.sin(walkCycle) * 0.055 : 0;
+      hero.userData.cape.rotation.y = Math.sin(time * 2.2) * 0.04 - stride * (data.isHeroMoving ? 0.12 : 0);
+      hero.userData.cape.rotation.x = data.isHeroMoving ? -0.08 - stepLift * 0.08 : 0;
       hero.userData.leftLeg.rotation.x = stride * walkPower - jumpHeight * 0.28;
       hero.userData.rightLeg.rotation.x = -stride * walkPower - jumpHeight * 0.28;
-      hero.userData.leftArm.rotation.x = -stride * (data.isHeroMoving ? 0.42 : 0.08);
-      hero.userData.rightArm.rotation.x = stride * (data.isHeroMoving ? 0.42 : 0.08);
-      hero.userData.leftArm.rotation.z = -0.42 + Math.sin(time * 5) * 0.08 + stepLift * (data.isHeroMoving ? 0.08 : 0);
-      hero.userData.rightArm.rotation.z = 0.58 - Math.sin(time * 5) * 0.08 - stepLift * (data.isHeroMoving ? 0.08 : 0);
+      hero.userData.leftArm.rotation.x = -stride * (data.isHeroMoving ? 0.5 : 0.08);
+      hero.userData.rightArm.rotation.x = -0.18 + stride * (data.isHeroMoving ? 0.34 : 0.05);
+      hero.userData.leftArm.rotation.z = -0.55 + Math.sin(time * 5) * 0.08 + stepLift * (data.isHeroMoving ? 0.12 : 0);
+      hero.userData.rightArm.rotation.z = -1.18 - Math.sin(time * 5) * 0.05 - stepLift * (data.isHeroMoving ? 0.08 : 0);
       hero.userData.sword.rotation.set(0.12, 0, -1.34);
       if (data.heroAnimation === 'strike') {
         const attackPhase = THREE.MathUtils.clamp(1 - attackSwing, 0, 1);
@@ -846,9 +939,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const lunge = Math.max(slash, impact * 0.75) * (1 - recover * 0.35);
         hero.position.x += Math.sin(renderFacing) * (0.16 + lunge * 0.52);
         hero.position.z += Math.cos(renderFacing) * (0.16 + lunge * 0.52);
-        hero.position.y += impact * 0.08;
-        hero.rotation.x = -0.09 - lunge * 0.18 + recover * 0.08;
-        hero.rotation.z = -windup * 0.12 + impact * 0.18;
+        hero.position.y += impact * 0.12;
+        hero.rotation.x = -0.12 - lunge * 0.24 + recover * 0.08;
+        hero.rotation.z = -windup * 0.18 + impact * 0.26;
         hero.userData.rightArm.rotation.z = 0.62 + windup * 1.45 + slash * 0.82 - recover * 0.35;
         hero.userData.rightArm.rotation.x = -0.2 - windup * 1.3 - slash * 2.05 + recover * 1.05;
         hero.userData.leftArm.rotation.x = -0.22 + slash * 0.35;
@@ -861,7 +954,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
         hero.position.z += Math.cos(renderFacing) * stride * 0.11;
         hero.rotation.x -= stepLift * 0.035;
       } else if (data.heroAnimation === 'heal') {
-        hero.scale.setScalar(1 + Math.sin(time * 10) * 0.03);
+        hero.scale.setScalar(1 + Math.sin(time * 10) * 0.045);
+        hero.rotation.y += Math.sin(time * 8) * 0.035;
       } else {
         hero.rotation.x = 0;
         hero.rotation.z = 0;
@@ -920,8 +1014,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
         if (current.userData.isGoblin) {
           const skitter = Math.sin(walk * 1.45);
           const stab = monsterHit * attack;
-          current.rotation.x = -0.12 - monsterSwing * 0.28;
-          current.rotation.z = Math.sin(walk * 0.7) * 0.08;
+          current.rotation.x = -0.12 - monsterSwing * 0.28 + Math.abs(skitter) * 0.035;
+          current.rotation.z = Math.sin(walk * 0.7) * 0.11;
+          current.position.y += Math.abs(skitter) * 0.045;
           current.userData.armL.rotation.x = 0.25 + skitter * 0.38 - monsterSwing * 0.65;
           current.userData.armL.rotation.z = -1.08 - monsterWindup * 0.3 + Math.sin(walk + 0.6) * 0.18;
           current.userData.armR.rotation.x = -0.45 - skitter * 0.42 - monsterWindup * 1.65 - stab * 2.1 + monsterRecover * 1.2;
@@ -930,8 +1025,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
           current.userData.legR.rotation.x = -skitter * 0.78;
           current.userData.footL.rotation.x = -0.12 - skitter * 0.32;
           current.userData.footR.rotation.x = -0.12 + skitter * 0.32;
-          current.userData.head.rotation.x = -0.1 + monsterSwing * 0.35 + Math.sin(walk * 0.7) * 0.08;
-          current.userData.head.rotation.z = Math.sin(walk * 0.55) * 0.06;
+          current.userData.head.rotation.x = -0.1 + monsterSwing * 0.35 + Math.sin(walk * 0.7) * 0.1;
+          current.userData.head.rotation.z = Math.sin(walk * 0.55) * 0.09;
           current.userData.jaw.rotation.x = attack ? 0.18 + stab * 0.32 : Math.max(0, Math.sin(walk * 0.8)) * 0.08;
           current.userData.earL.rotation.y = -0.34 + Math.sin(walk * 0.9) * 0.12;
           current.userData.earR.rotation.y = 0.34 - Math.sin(walk * 0.9) * 0.12;
@@ -954,13 +1049,23 @@ export function BattleScene3D(props: BattleScene3DProps) {
       });
 
       dragon.visible = !data.isFinalReveal && data.monstersLeft <= 0;
-      const dragonData = dragon.userData as { bodyMat: THREE.MeshStandardMaterial; wingL: THREE.Mesh; wingR: THREE.Mesh; fire: THREE.Mesh };
+      const dragonData = dragon.userData as { bodyMat: THREE.MeshStandardMaterial; body: THREE.Mesh; head: THREE.Mesh; neck: THREE.Mesh; wingL: THREE.Group; wingR: THREE.Group; fire: THREE.Mesh; jaw: THREE.Mesh; tail: THREE.Group; spines: THREE.Group };
       dragonData.bodyMat.color.set(data.dragonColor);
       dragon.position.y = Math.sin(time * 2) * 0.16;
       dragon.position.x = 4.2 + shake * 1.2;
       dragon.rotation.y = Math.sin(time * 1.1) * 0.12;
-      dragonData.wingL.rotation.z = -0.78 + Math.sin(time * 6) * 0.34;
-      dragonData.wingR.rotation.z = 0.78 - Math.sin(time * 6) * 0.34;
+      dragonData.body.scale.y = 1.18 + Math.sin(time * 2.8) * 0.035;
+      dragonData.neck.rotation.z = -0.72 + Math.sin(time * 2.2) * 0.06;
+      dragonData.head.rotation.y = Math.sin(time * 2.1) * 0.08;
+      dragonData.head.rotation.z = Math.sin(time * 1.7) * 0.045;
+      dragonData.spines.rotation.z = Math.sin(time * 2.6) * 0.025;
+      dragonData.wingL.rotation.z = -0.78 + Math.sin(time * 6) * 0.42;
+      dragonData.wingR.rotation.z = 0.78 - Math.sin(time * 6) * 0.42;
+      dragonData.wingL.rotation.x = Math.sin(time * 4.5) * 0.08;
+      dragonData.wingR.rotation.x = -Math.sin(time * 4.5) * 0.08;
+      dragonData.jaw.rotation.z = -0.12 - burn * 0.12 - Math.max(0, Math.sin(time * 7)) * 0.11;
+      dragonData.tail.rotation.y = Math.sin(time * 1.8) * 0.24;
+      dragonData.tail.rotation.z = Math.sin(time * 1.35) * 0.08;
       dragonData.fire.scale.set(1, 0.75 + burn * 0.65 + Math.sin(time * 14) * 0.12, 1);
 
       motes.children.forEach((mote) => {
