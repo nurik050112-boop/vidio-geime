@@ -251,19 +251,36 @@ function makeHero() {
 
 function makeMonster(kind: string, index: number) {
   const group = new THREE.Group();
+  const isGoblin = kind === 'goblin';
   const isOrc = kind === 'orc' || kind === 'magma' || kind === 'avalanche';
   const isCrawler = kind === 'lizard' || kind === 'frost';
-  const skinColor = isOrc ? '#596b33' : isCrawler ? '#6f6b47' : kind === 'shadow' ? '#22152e' : '#8c9a3e';
+  const skinColor = isGoblin ? '#8f958a' : isOrc ? '#596b33' : isCrawler ? '#6f6b47' : kind === 'shadow' ? '#22152e' : '#8c9a3e';
   const dark = kind === 'shadow' ? '#120916' : '#34261d';
-  const scale = isOrc ? 1.35 : isCrawler ? 1.18 : 0.88;
+  const scale = isGoblin ? 0.94 : isOrc ? 1.35 : isCrawler ? 1.18 : 0.88;
 
-  const body = capsule(skinColor, 0.34 * scale, isOrc ? 1.08 : 0.8, [0, 0.86 * scale, 0]);
-  body.scale.set(isCrawler ? 1.25 : 0.95, isOrc ? 1.18 : 0.98, isCrawler ? 0.68 : 1);
+  const body = capsule(skinColor, isGoblin ? 0.22 * scale : 0.34 * scale, isOrc ? 1.08 : 0.8, [0, 0.86 * scale, 0]);
+  body.scale.set(isGoblin ? 0.72 : isCrawler ? 1.25 : 0.95, isGoblin ? 1.05 : isOrc ? 1.18 : 0.98, isCrawler ? 0.68 : 1);
+  const belly = mesh(new THREE.SphereGeometry(0.28 * scale, 22, 14), skinColor, [0, 0.82 * scale, 0.18]);
+  belly.scale.set(1.15, 1.02, 0.95);
+  belly.visible = isGoblin;
+  const ribs = new THREE.Group();
+  for (let i = 0; i < 4; i += 1) {
+    const rib = mesh(new THREE.BoxGeometry(0.34 * scale, 0.018 * scale, 0.025 * scale), '#6f756c', [0, (1.0 + i * 0.08) * scale, 0.34]);
+    rib.visible = isGoblin;
+    ribs.add(rib);
+  }
   const head = mesh(new THREE.SphereGeometry(0.32 * scale, 22, 14), skinColor, [0, 1.64 * scale, 0.08]);
-  head.scale.set(isOrc ? 1.25 : 1.05, isCrawler ? 0.78 : 1, isCrawler ? 1.35 : 1);
-  const snout = cone(skinColor, 0.18 * scale, 0.46 * scale, [0, 1.57 * scale, 0.42 * scale]);
+  head.scale.set(isGoblin ? 0.9 : isOrc ? 1.25 : 1.05, isGoblin ? 1.16 : isCrawler ? 0.78 : 1, isGoblin ? 1.08 : isCrawler ? 1.35 : 1);
+  const brow = mesh(new THREE.BoxGeometry(0.34 * scale, 0.06 * scale, 0.08 * scale), '#747a70', [0, 1.7 * scale, 0.38 * scale]);
+  brow.visible = isGoblin;
+  const nose = mesh(new THREE.SphereGeometry(0.075 * scale, 10, 8), '#777d73', [0, 1.58 * scale, 0.42 * scale]);
+  nose.scale.set(0.8, 1, 1.35);
+  nose.visible = isGoblin;
+  const snout = cone(skinColor, isGoblin ? 0.09 * scale : 0.18 * scale, isGoblin ? 0.22 * scale : 0.46 * scale, [0, 1.57 * scale, 0.42 * scale]);
   snout.rotation.x = Math.PI / 2;
+  snout.visible = !isGoblin;
   const jaw = mesh(new THREE.BoxGeometry(0.36 * scale, 0.08 * scale, 0.08 * scale), '#1b0908', [0, 1.43 * scale, 0.39 * scale]);
+  jaw.scale.x = isGoblin ? 0.72 : 1;
   const eyeMat = new THREE.MeshBasicMaterial({ color: kind === 'shadow' ? '#b56cff' : '#ff3b30' });
   const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.045 * scale, 8, 6), eyeMat);
   eyeL.position.set(-0.12 * scale, 1.68 * scale, 0.36 * scale);
@@ -271,7 +288,9 @@ function makeMonster(kind: string, index: number) {
   eyeR.position.x *= -1;
   const hood = mesh(new THREE.ConeGeometry(0.5 * scale, 0.62 * scale, 18, 1, true), dark, [0, 1.8 * scale, -0.02]);
   hood.rotation.x = Math.PI;
+  hood.visible = !isGoblin;
   const rag = mesh(new THREE.BoxGeometry(0.76 * scale, 0.38 * scale, 0.16 * scale), '#65412e', [0, 0.8 * scale, 0.34 * scale]);
+  rag.scale.set(isGoblin ? 0.7 : 1, isGoblin ? 0.8 : 1, 1);
 
   const hornL = cone('#d9c39b', 0.075 * scale, 0.54 * scale, [-0.28 * scale, 1.93 * scale, 0]);
   hornL.rotation.z = 0.72;
@@ -281,27 +300,49 @@ function makeMonster(kind: string, index: number) {
   hornL.visible = isOrc;
   hornR.visible = isOrc;
 
-  const earL = cone(skinColor, 0.08 * scale, 0.5 * scale, [-0.34 * scale, 1.63 * scale, 0.02]);
+  const earL = cone(skinColor, isGoblin ? 0.105 * scale : 0.08 * scale, isGoblin ? 0.62 * scale : 0.5 * scale, [-0.34 * scale, 1.63 * scale, 0.02]);
   earL.rotation.z = Math.PI / 2;
+  earL.rotation.y = isGoblin ? -0.28 : 0;
   const earR = earL.clone();
   earR.position.x *= -1;
   earR.rotation.z = -Math.PI / 2;
   earL.visible = !isOrc;
   earR.visible = !isOrc;
 
-  const armL = capsule(skinColor, 0.08 * scale, 0.62 * scale, [-0.42 * scale, 0.95 * scale, 0.05]);
-  armL.rotation.z = -0.55;
-  const armR = capsule(skinColor, 0.08 * scale, 0.62 * scale, [0.42 * scale, 0.95 * scale, 0.05]);
-  armR.rotation.z = 0.85;
+  const armL = capsule(skinColor, isGoblin ? 0.055 * scale : 0.08 * scale, isGoblin ? 0.82 * scale : 0.62 * scale, [-0.42 * scale, 0.95 * scale, 0.05]);
+  armL.rotation.z = isGoblin ? -1.05 : -0.55;
+  const armR = capsule(skinColor, isGoblin ? 0.055 * scale : 0.08 * scale, isGoblin ? 0.82 * scale : 0.62 * scale, [0.42 * scale, 0.95 * scale, 0.05]);
+  armR.rotation.z = isGoblin ? 1.05 : 0.85;
+  const handL = new THREE.Group();
+  const handR = new THREE.Group();
+  for (let i = 0; i < 4; i += 1) {
+    const fingerL = capsule(skinColor, 0.012 * scale, 0.18 * scale, [-0.66 * scale - i * 0.025 * scale, 0.55 * scale - i * 0.012 * scale, 0.08]);
+    fingerL.rotation.z = -1.3 - i * 0.1;
+    const fingerR = capsule(skinColor, 0.012 * scale, 0.18 * scale, [0.66 * scale + i * 0.025 * scale, 0.55 * scale - i * 0.012 * scale, 0.08]);
+    fingerR.rotation.z = 1.3 + i * 0.1;
+    fingerL.visible = isGoblin;
+    fingerR.visible = isGoblin;
+    handL.add(fingerL);
+    handR.add(fingerR);
+  }
+  const legL = capsule(skinColor, isGoblin ? 0.07 * scale : 0.09 * scale, isGoblin ? 0.72 * scale : 0.58 * scale, [-0.17 * scale, 0.27 * scale, 0]);
+  const legR = capsule(skinColor, isGoblin ? 0.07 * scale : 0.09 * scale, isGoblin ? 0.72 * scale : 0.58 * scale, [0.17 * scale, 0.27 * scale, 0.08]);
+  legL.rotation.z = isGoblin ? 0.12 : 0;
+  legR.rotation.z = isGoblin ? -0.1 : 0;
+  const footL = mesh(new THREE.BoxGeometry(0.24 * scale, 0.09 * scale, 0.34 * scale), skinColor, [-0.21 * scale, -0.08 * scale, 0.14]);
+  const footR = mesh(new THREE.BoxGeometry(0.24 * scale, 0.09 * scale, 0.34 * scale), skinColor, [0.2 * scale, -0.08 * scale, 0.18]);
+  footL.visible = isGoblin;
+  footR.visible = isGoblin;
   const club = new THREE.Group();
   const handle = mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.82 * scale, 8), '#2b1d12', [0.65 * scale, 1.05 * scale, 0.22]);
   handle.rotation.z = -0.85;
   const headClub = mesh(new THREE.DodecahedronGeometry(0.18 * scale), '#5a5147', [0.92 * scale, 1.36 * scale, 0.26]);
   club.add(handle, headClub);
+  club.visible = !isGoblin;
 
-  group.add(body, head, snout, jaw, eyeL, eyeR, hood, rag, hornL, hornR, earL, earR, armL, armR, club);
+  group.add(body, belly, ribs, head, brow, nose, snout, jaw, eyeL, eyeR, hood, rag, hornL, hornR, earL, earR, armL, armR, handL, handR, legL, legR, footL, footR, club);
   group.scale.setScalar(0.86 + (index % 4) * 0.09);
-  group.userData = { body, head, armL, armR, club, baseY: 0, seed: index * 0.7 };
+  group.userData = { body, head, armL, armR, club, legL, legR, baseY: 0, seed: index * 0.7 };
   return group;
 }
 
