@@ -665,43 +665,51 @@ export function BattleScene3D(props: BattleScene3DProps) {
       lastHeroX = heroX;
       lastHeroZ = heroZ;
 
-      hero.position.y = jumpHeight + Math.sin(time * 2.6) * 0.035;
+      const walkCycle = data.isHeroMoving ? time * 12.5 : time * 4;
+      const stride = Math.sin(walkCycle);
+      const stepLift = Math.abs(Math.sin(walkCycle));
+      const walkPower = data.isHeroMoving ? 0.74 : 0.12;
+      hero.scale.setScalar(1);
+      hero.position.y = jumpHeight + Math.sin(time * 2.6) * 0.035 + (data.isHeroMoving ? stepLift * 0.055 : 0);
       hero.rotation.y = renderFacing + Math.sin(time * 1.8) * 0.025;
-      hero.userData.cape.rotation.y = Math.sin(time * 2.2) * 0.04;
-      const walkCycle = data.isHeroMoving ? time * 10 : time * 4;
-      const walkPower = data.isHeroMoving ? 0.55 : 0.12;
-      hero.userData.leftLeg.rotation.x = Math.sin(walkCycle) * walkPower - jumpHeight * 0.28;
-      hero.userData.rightLeg.rotation.x = -Math.sin(walkCycle) * walkPower - jumpHeight * 0.28;
-      hero.userData.leftArm.rotation.x = 0;
-      hero.userData.rightArm.rotation.x = 0;
-      hero.userData.leftArm.rotation.z = -0.42 + Math.sin(time * 5) * 0.08;
-      hero.userData.rightArm.rotation.z = 0.58 - Math.sin(time * 5) * 0.08;
+      hero.rotation.x = data.isHeroMoving ? -0.045 + Math.sin(walkCycle * 0.5) * 0.025 : 0;
+      hero.rotation.z = data.isHeroMoving ? Math.sin(walkCycle) * 0.035 : 0;
+      hero.userData.cape.rotation.y = Math.sin(time * 2.2) * 0.04 - stride * (data.isHeroMoving ? 0.08 : 0);
+      hero.userData.leftLeg.rotation.x = stride * walkPower - jumpHeight * 0.28;
+      hero.userData.rightLeg.rotation.x = -stride * walkPower - jumpHeight * 0.28;
+      hero.userData.leftArm.rotation.x = -stride * (data.isHeroMoving ? 0.42 : 0.08);
+      hero.userData.rightArm.rotation.x = stride * (data.isHeroMoving ? 0.42 : 0.08);
+      hero.userData.leftArm.rotation.z = -0.42 + Math.sin(time * 5) * 0.08 + stepLift * (data.isHeroMoving ? 0.08 : 0);
+      hero.userData.rightArm.rotation.z = 0.58 - Math.sin(time * 5) * 0.08 - stepLift * (data.isHeroMoving ? 0.08 : 0);
       hero.userData.sword.rotation.set(0, 0, -0.08);
       if (data.heroAnimation === 'strike') {
         const attackPhase = THREE.MathUtils.clamp(1 - attackSwing, 0, 1);
-        const windup = THREE.MathUtils.smoothstep(attackPhase, 0, 0.28);
-        const slash = Math.sin(THREE.MathUtils.clamp((attackPhase - 0.18) / 0.62, 0, 1) * Math.PI);
-        const recover = THREE.MathUtils.smoothstep(attackPhase, 0.62, 1);
-        const swing = Math.max(windup * (1 - recover), slash);
-        const cut = Math.sin(THREE.MathUtils.clamp((attackPhase - 0.22) / 0.42, 0, 1) * Math.PI);
-        hero.position.x += Math.sin(renderFacing) * (0.12 + swing * 0.34);
-        hero.position.z += Math.cos(renderFacing) * (0.12 + swing * 0.34);
-        hero.rotation.x = -swing * 0.12;
-        hero.userData.rightArm.rotation.z = 0.78 + windup * 1.1 + cut * 0.65;
-        hero.userData.rightArm.rotation.x = -0.35 - windup * 1.15 - cut * 1.25 + recover * 0.55;
-        hero.userData.leftArm.rotation.z = -0.5 - swing * 0.38;
-        hero.userData.sword.rotation.x = -0.35 - windup * 1.15 - cut * 1.55 + recover * 0.7;
-        hero.userData.sword.rotation.z = -0.1 - cut * 1.35 + recover * 0.35;
+        const windup = THREE.MathUtils.smoothstep(attackPhase, 0, 0.24);
+        const slash = Math.sin(THREE.MathUtils.clamp((attackPhase - 0.16) / 0.34, 0, 1) * Math.PI);
+        const impact = Math.sin(THREE.MathUtils.clamp((attackPhase - 0.28) / 0.2, 0, 1) * Math.PI);
+        const recover = THREE.MathUtils.smoothstep(attackPhase, 0.5, 1);
+        const lunge = Math.max(slash, impact * 0.75) * (1 - recover * 0.35);
+        hero.position.x += Math.sin(renderFacing) * (0.16 + lunge * 0.52);
+        hero.position.z += Math.cos(renderFacing) * (0.16 + lunge * 0.52);
+        hero.position.y += impact * 0.08;
+        hero.rotation.x = -0.09 - lunge * 0.18 + recover * 0.08;
+        hero.rotation.z = -windup * 0.12 + impact * 0.18;
+        hero.userData.rightArm.rotation.z = 0.62 + windup * 1.45 + slash * 0.82 - recover * 0.35;
+        hero.userData.rightArm.rotation.x = -0.2 - windup * 1.3 - slash * 2.05 + recover * 1.05;
+        hero.userData.leftArm.rotation.x = -0.22 + slash * 0.35;
+        hero.userData.leftArm.rotation.z = -0.56 - lunge * 0.48 + recover * 0.22;
+        hero.userData.sword.rotation.x = -0.18 - windup * 1.35 - slash * 2.15 + recover * 1.1;
+        hero.userData.sword.rotation.y = -impact * 0.28;
+        hero.userData.sword.rotation.z = -0.18 - slash * 1.75 + recover * 0.62;
       } else if (data.heroAnimation === 'step' || data.isHeroMoving) {
-        const stride = Math.sin(time * 12);
         hero.position.x += Math.sin(renderFacing) * stride * 0.11;
         hero.position.z += Math.cos(renderFacing) * stride * 0.11;
-        hero.rotation.x = Math.sin(time * 12) * 0.045;
+        hero.rotation.x -= stepLift * 0.035;
       } else if (data.heroAnimation === 'heal') {
         hero.scale.setScalar(1 + Math.sin(time * 10) * 0.03);
       } else {
         hero.rotation.x = 0;
-        hero.scale.setScalar(1);
+        hero.rotation.z = 0;
       }
 
       const visibleCount = Math.ceil((data.monstersLeft / 100) * monsters.children.length);
