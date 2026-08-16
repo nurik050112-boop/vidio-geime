@@ -2,6 +2,7 @@
 import type { CSSProperties, FormEvent } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Link, useLocation } from 'wouter';
+import { BattleScene3D } from '../components/BattleScene3D';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 type DragonSon = {
@@ -3468,7 +3469,7 @@ export function HomePage() {
       <main className="landing-page">
         <section className="landing-hero" aria-label="Вход в игру">
           <div className="landing-copy">
-            <p className="landing-kicker">2D RPG battle game</p>
+            <p className="landing-kicker">3D RPG battle game</p>
             <h1>Меч против сыновей дракона</h1>
             <p>
               Спасай города, бей монстров, выбивай оружие и сражайся с драконами,
@@ -4249,6 +4250,20 @@ export function HomePage() {
           role="button"
           tabIndex={0}
         >
+          <div className="battle-3d-layer">
+            <BattleScene3D
+              dragonColor={enemy?.color ?? '#ffb703'}
+              heroAnimation={heroAnimation}
+              isFinalReveal={isFinalReveal}
+              burn={worldBurn}
+              heroPosition={heroPosition}
+              monstersLeft={currentMonsterTotal > 0 ? Math.min(100, (currentMonsters / currentMonsterTotal) * 100) : 0}
+              battlePulse={battlePulse}
+              cameraMode="third"
+              monsterKind={enemy?.monsterKind ?? 'goblin'}
+              viewDistance={900}
+            />
+          </div>
           <div className="sun" />
           <div className="dragon-shadow" />
           <div className="city-line">

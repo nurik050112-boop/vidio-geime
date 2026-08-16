@@ -1230,6 +1230,16 @@ button.secondary {
   min-height: 560px;
 }
 
+.battle-3d-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.battle-3d-layer ~ * {
+  display: none !important;
+}
+
 .battle-canvas {
   display: block;
   width: 100%;
