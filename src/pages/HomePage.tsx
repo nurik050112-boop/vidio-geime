@@ -130,13 +130,13 @@ type DuelTradeOffer =
   | null;
 
 const firstDragonCities: CityStage[] = [
-  { name: 'Игнис', city: 'Алматы', country: 'Казахстан', lair: 'Логово Искры в горах Заилийского Алатау', monsterKind: 'goblin', monsterName: 'гоблины', title: 'сын искры', power: 1_000, color: '#ffb703', attackSpeed: 0.85, reaction: 'бьет очень быстро' },
-  { name: 'Рубор', city: 'Стамбул', country: 'Турция', lair: 'Пепельное гнездо у древних стен', monsterKind: 'orc', monsterName: 'орки', title: 'сын пепла', power: 1_000_000, color: '#fb5607', attackSpeed: 1.3, reaction: 'бьет тяжелее и медленнее' },
-  { name: 'Каэрн', city: 'Рим', country: 'Италия', lair: 'Лавовая арена под Колизеем', monsterKind: 'lizard', monsterName: 'ящерицы', title: 'сын лавы', power: 1_000_000_000, color: '#d00000', attackSpeed: 0.65, reaction: 'молниеносная реакция' },
-  { name: 'Сольвар', city: 'Париж', country: 'Франция', lair: 'Дымная башня над Сеной', monsterKind: 'dwarf', monsterName: 'гномы', title: 'сын дымного неба', power: 1_000_000_000_000, color: '#8ecae6', attackSpeed: 1.65, reaction: 'выжидает и бьет медленно' },
-  { name: 'Мэйдзин', city: 'Токио', country: 'Япония', lair: 'Черное святилище огня', monsterKind: 'shadow', monsterName: 'теневые воины', title: 'сын черного огня', power: 1_000_000_000_000_000, color: '#8338ec', attackSpeed: 0.75, reaction: 'атакует рывками' },
-  { name: 'Аурокс', city: 'Нью-Йорк', country: 'США', lair: 'Гнездо раскаленного ветра над небоскребами', monsterKind: 'magma', monsterName: 'лавовые звери', title: 'сын раскаленного ветра', power: 1_000_000_000_000_000_000, color: '#3a86ff', attackSpeed: 1.1, reaction: 'держит ровный темп' },
-  { name: 'Ноктар', city: 'Лондон', country: 'Великобритания', lair: 'Последнее логово в тумане Темзы', monsterKind: 'frost', monsterName: 'ледяные стражи', title: 'последний сын дракона', power: 1_000_000_000_000_000_000_000, color: '#06d6a0', attackSpeed: 1.9, reaction: 'медленно готовит ледяной удар' },
+  { name: 'Игнис', city: 'Клинковая Нора', country: 'Подземное королевство', lair: 'Площадь ржавых ножей под первым городом', monsterKind: 'goblin', monsterName: 'ножевые гоблины', title: 'сын искры', power: 1_000, color: '#ffb703', attackSpeed: 0.85, reaction: 'бьет очень быстро' },
+  { name: 'Рубор', city: 'Орочий Вал', country: 'Земли тяжелых племен', lair: 'Крепость наплечников и костяных трофеев', monsterKind: 'orc', monsterName: 'броневые орки', title: 'сын пепла', power: 1_000_000, color: '#fb5607', attackSpeed: 1.3, reaction: 'бьет тяжелее и медленнее' },
+  { name: 'Каэрн', city: 'Серый Исполин', country: 'Пепельные холмы', lair: 'Арена каменных великанов с длинными руками', monsterKind: 'giant', monsterName: 'серые великаны', title: 'сын лавы', power: 1_000_000_000, color: '#d00000', attackSpeed: 0.65, reaction: 'молниеносная реакция' },
+  { name: 'Сольвар', city: 'Громовая Утесина', country: 'Горные глубины', lair: 'Разлом, где ходят голые пещерные титаны', monsterKind: 'cave-titan', monsterName: 'пещерные титаны', title: 'сын дымного неба', power: 1_000_000_000_000, color: '#8ecae6', attackSpeed: 1.65, reaction: 'выжидает и бьет медленно' },
+  { name: 'Мэйдзин', city: 'Камнебрюх', country: 'Серые рудники', lair: 'Шахта круглых каменных громил', monsterKind: 'stone-brute', monsterName: 'каменные громилы', title: 'сын черного огня', power: 1_000_000_000_000_000, color: '#8338ec', attackSpeed: 0.75, reaction: 'атакует рывками' },
+  { name: 'Аурокс', city: 'Проволочный Разлом', country: 'Мир пустой кожи', lair: 'Темный зал прозрачных сетчатых монстров', monsterKind: 'wire', monsterName: 'сетчатые твари', title: 'сын раскаленного ветра', power: 1_000_000_000_000_000_000, color: '#3a86ff', attackSpeed: 1.1, reaction: 'держит ровный темп' },
+  { name: 'Ноктар', city: 'Белый Слизень', country: 'Холодные болота', lair: 'Скользкая тропа бледных пузатых существ', monsterKind: 'pale', monsterName: 'бледные ходоки', title: 'последний сын дракона', power: 1_000_000_000_000_000_000_000, color: '#06d6a0', attackSpeed: 1.9, reaction: 'медленно готовит ледяной удар' },
 ];
 
 const extraDragonCities = [
@@ -153,29 +153,38 @@ const extraDragonCities = [
 ];
 
 const monsterKinds = [
-  ['goblin', 'гоблины'],
-  ['orc', 'орки'],
-  ['lizard', 'ящерицы'],
-  ['dwarf', 'гномы'],
-  ['shadow', 'теневые воины'],
-  ['magma', 'лавовые звери'],
-  ['frost', 'ледяные стражи'],
+  ['goblin', 'ножевые гоблины'],
+  ['orc', 'броневые орки'],
+  ['giant', 'серые великаны'],
+  ['cave-titan', 'пещерные титаны'],
+  ['stone-brute', 'каменные громилы'],
+  ['wire', 'сетчатые твари'],
+  ['pale', 'бледные ходоки'],
+  ['lizard-brute', 'ящеры-громилы'],
+  ['saw-warrior', 'воины с пилой'],
+  ['spider', 'пещерные пауки'],
+] as const;
+
+const extraCityStages = [
+  { city: 'Зеленая Чешуя', country: 'Болотная империя', lair: 'Лагерь ящеров-громил с железными наплечниками', monsterKind: 'lizard-brute', monsterName: 'ящеры-громилы' },
+  { city: 'Пила Черепа', country: 'Черный арсенал', lair: 'Кузница воинов с зубчатыми клинками', monsterKind: 'saw-warrior', monsterName: 'воины с пилой' },
+  { city: 'Паучий Фонарь', country: 'Светящаяся паутина', lair: 'Гнездо огромных пещерных пауков', monsterKind: 'spider', monsterName: 'пещерные пауки' },
 ] as const;
 
 const dragonColors = ['#ffb703', '#fb5607', '#d00000', '#8ecae6', '#8338ec', '#3a86ff', '#06d6a0'];
 
 const dragonSons: CityStage[] = [
   ...firstDragonCities,
-  ...extraDragonCities.slice(0, 3).map((city, index) => {
+  ...extraDragonCities.slice(0, 3).map((_, index) => {
     const number = index + 8;
-    const monster = monsterKinds[index % monsterKinds.length];
+    const stage = extraCityStages[index];
     return {
       name: `Дракон ${number}`,
-      city,
-      country: 'Большой мир',
-      lair: `Логово дракона ${number} в городе ${city}`,
-      monsterKind: monster[0],
-      monsterName: monster[1],
+      city: stage.city,
+      country: stage.country,
+      lair: stage.lair,
+      monsterKind: stage.monsterKind,
+      monsterName: stage.monsterName,
       title: number === 100 ? 'финальный дракон' : 'драконий страж',
       power: 1_000 * number,
       color: dragonColors[index % dragonColors.length],
@@ -360,7 +369,7 @@ const worldLocations = [
 ];
 
 const heroMaxHp = 200;
-const monstersPerCity = 10_000;
+const monstersPerCity = 1_000;
 const dungeonEnemiesTotal = 10_000;
 const furyDungeonEnemiesTotal = 100_000;
 const anuarBombEnemiesTotal = 100_000;
@@ -401,6 +410,9 @@ const finalSpiritMonsterTotal = 1_000_000;
 const finalSpiritMonsterHp = 2_500_000_000;
 const finalSpiritMonsterDamage = 250_000;
 const deathSwordDamageText = '999999999999999999999999999999999999999999999';
+const citySizeMeters = 200;
+const cityHalfSize = (citySizeMeters / 2) * 1_000;
+const monsterAttackRange = 5_000;
 
 const monsterAvalancheWorld: CityStage = {
   name: 'Лавина монстров',
@@ -1161,6 +1173,8 @@ export function HomePage() {
   const [heroAnimation, setHeroAnimation] = useState<HeroAnimation>('idle');
   const [heroPosition, setHeroPosition] = useState({ x: -18_000, z: 0 });
   const [heroHeight, setHeroHeight] = useState(0);
+  const [heroMoving, setHeroMoving] = useState(false);
+  const [heroDirection, setHeroDirection] = useState({ x: 0, z: -1 });
   const verticalVelocity = useRef(0);
   const pressedKeys = useRef<Set<string>>(new Set());
   const [cityMonsters, setCityMonsters] = useState(() => dragonSons.map(() => monstersPerCity));
@@ -1389,6 +1403,32 @@ export function HomePage() {
         : 'Плохая концовка. Пустое небо. Герой сразился с семьей драконов.'
       : '';
   const cityScene = `scene-city-${chapter % 20}`;
+  const mapLocationIndex = isFinalReveal || secretEnding || impossibleEnding || bbiBadEnding || isDeathGodBoss || isFinalSpiritBoss || isFinalBoss || isFamilyBoss
+    ? 1
+    : heroPosition.x < -17_000
+      ? 0
+      : heroPosition.x > 17_000
+        ? 2
+        : 1;
+  const mapSceneKey = isFinalReveal
+    ? `ending-${endingChoice ?? 'choice'}`
+    : secretEnding
+      ? `ending-${secretEnding}`
+      : impossibleEnding
+        ? 'ending-impossible'
+        : bbiBadEnding
+          ? 'ending-bbi'
+          : isDeathGodBoss
+            ? 'death-god'
+            : isFinalSpiritBoss || finalSpiritWorldOpen
+              ? 'final-spirit'
+              : isAdminWorld || isAdminWorldBosses || isAdminBoss || adminFinalChoiceOpen
+                ? 'admin-city'
+                : isAisWorld || isAisSharkBoss || isAisGodBoss || aisFinalChoiceOpen
+                  ? 'sea-city'
+                  : isDungeon
+                    ? `dungeon-${chapter}-${mapLocationIndex}`
+                    : `city-${chapter}-${mapLocationIndex}`;
   const battleScene = isDeathGodBoss
     ? 'scene-death-god'
     : isFinalSpiritBoss || finalSpiritWorldOpen
@@ -2050,8 +2090,8 @@ export function HomePage() {
   function moveHero(dx: number, dz: number) {
     playHeroAnimation('step', 360);
     setHeroPosition((position) => ({
-      x: Math.max(-30_000, Math.min(30_000, position.x + dx)),
-      z: Math.max(-4_400, Math.min(4_400, position.z + dz)),
+      x: Math.max(-cityHalfSize, Math.min(cityHalfSize, position.x + dx)),
+      z: Math.max(-cityHalfSize, Math.min(cityHalfSize, position.z + dz)),
     }));
   }
 
@@ -2060,14 +2100,23 @@ export function HomePage() {
       const keys = pressedKeys.current;
       let dx = 0;
       let dz = 0;
-      if (keys.has('w')) dz -= 260;
-      if (keys.has('s')) dz += 260;
-      if (keys.has('a')) dx += 260;
-      if (keys.has('d')) dx -= 260;
-      if (dx !== 0 || dz !== 0) moveHero(dx, dz);
+      if (keys.has('w') || keys.has('arrowup')) dz -= 260;
+      if (keys.has('s') || keys.has('arrowdown')) dz += 260;
+      if (keys.has('a') || keys.has('arrowleft')) dx -= 260;
+      if (keys.has('d') || keys.has('arrowright')) dx += 260;
+      const moving = dx !== 0 || dz !== 0;
+      setHeroMoving(moving);
+      if (moving) {
+        const length = Math.max(1, Math.hypot(dx, dz));
+        setHeroDirection({ x: dx / length, z: dz / length });
+        moveHero(dx, dz);
+      }
     }, 80);
 
-    return () => window.clearInterval(moveTimer);
+    return () => {
+      window.clearInterval(moveTimer);
+      setHeroMoving(false);
+    };
   }, []);
 
   useEffect(() => {
@@ -2090,6 +2139,12 @@ export function HomePage() {
   function fightMonster() {
     if (isFinalReveal || heroHp === 0 || currentMonsters <= 0) {
       setMessage(currentMonsters <= 0 ? `В этом городе все ${formatPower(monstersPerCity)} монстров уже побеждены.` : 'Сначала восстанови героя.');
+      return;
+    }
+    const distanceToMonsters = Math.hypot(heroPosition.x, heroPosition.z);
+    if (distanceToMonsters > monsterAttackRange) {
+      setMessage(`Подойди ближе к монстрам. Бить можно только в радиусе ${monsterAttackRange / 1000} метров.`);
+      playHeroAnimation('step', 260);
       return;
     }
 
@@ -2618,7 +2673,10 @@ export function HomePage() {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
-      if (['w', 'a', 's', 'd'].includes(key)) pressedKeys.current.add(key);
+      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+        pressedKeys.current.add(key);
+        event.preventDefault();
+      }
       if (event.code === 'Space' && verticalVelocity.current === 0) {
         verticalVelocity.current = 24;
         playHeroAnimation('step', 360);
@@ -2636,6 +2694,19 @@ export function HomePage() {
       window.removeEventListener('keyup', onKeyUp);
     };
   }, []);
+
+  useEffect(() => {
+    function onAttackKey(event: KeyboardEvent) {
+      const key = event.key.toLowerCase();
+      if (event.repeat || (key !== 'e' && key !== 'f')) return;
+      event.preventDefault();
+      if (currentMonsters > 0) fightMonster();
+      else strike();
+    }
+
+    window.addEventListener('keydown', onAttackKey);
+    return () => window.removeEventListener('keydown', onAttackKey);
+  }, [currentMonsters, heroHp, heroPosition, enemyHp, equippedWeapon, equippedArtifactId, items, shopLevels]);
 
   useEffect(() => {
     if (isFinalReveal || heroHp === 0 || currentMonsters <= 0) return;
@@ -3476,7 +3547,7 @@ export function HomePage() {
               которые становятся сильнее после каждой победы.
             </p>
             <div className="landing-features">
-              <span>10 000 монстров в городе</span>
+              <span>1000 монстров в городе</span>
               <span>Редкое оружие и броня</span>
               <span>Пещеры, боссы и концовки</span>
             </div>
@@ -4252,16 +4323,23 @@ export function HomePage() {
         >
           <div className="battle-3d-layer">
             <BattleScene3D
+              key={mapSceneKey}
               dragonColor={enemy?.color ?? '#ffb703'}
               heroAnimation={heroAnimation}
+              isHeroMoving={heroMoving}
               isFinalReveal={isFinalReveal}
               burn={worldBurn}
               heroPosition={heroPosition}
+              heroHeight={heroHeight}
+              heroDirection={heroDirection}
               monstersLeft={currentMonsterTotal > 0 ? Math.min(100, (currentMonsters / currentMonsterTotal) * 100) : 0}
               battlePulse={battlePulse}
               cameraMode="third"
               monsterKind={enemy?.monsterKind ?? 'goblin'}
               viewDistance={900}
+              sceneKey={mapSceneKey}
+              chapter={chapter}
+              locationIndex={mapLocationIndex}
             />
           </div>
           <div className="sun" />
@@ -5115,7 +5193,7 @@ export function HomePage() {
               <div className="dungeon">
                 <div>
                   <p className="label">Король гоблинов</p>
-                  <strong>После 10000 врагов открылся трон гоблинов</strong>
+                  <strong>После 1000 врагов открылся трон гоблинов</strong>
                   <p>Выбор: сражаться с ним или не сражаться. Победа откроет секретную концовку про бедных гоблинов.</p>
                 </div>
                 <div className="ending-actions">
@@ -5395,7 +5473,7 @@ export function HomePage() {
                 <strong>{son.city}</strong>
                 <p>{son.country}</p>
                 <small>{son.lair}</small>
-                <small>Монстры: разные виды {formatPower(cityMonsters[index])} / {formatPower(monstersPerCity)}</small>
+                <small>Монстры: {son.monsterName} {formatPower(cityMonsters[index])} / {formatPower(monstersPerCity)}</small>
               </div>
             </div>
           ))}
