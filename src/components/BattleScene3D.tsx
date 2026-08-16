@@ -806,7 +806,12 @@ export function BattleScene3D(props: BattleScene3DProps) {
           hero.position.y + 1.55,
           hero.position.z + Math.cos(renderFacing) * 5.5
         );
-        camera.position.lerp(cameraTarget, Math.min(1, delta * 12));
+        const followSpeed = data.isHeroMoving ? 42 : 26;
+        if (camera.position.distanceTo(cameraTarget) > 1.15) {
+          camera.position.copy(cameraTarget);
+        } else {
+          camera.position.lerp(cameraTarget, Math.min(1, delta * followSpeed));
+        }
         camera.lookAt(lookTarget);
       }
 
