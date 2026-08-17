@@ -551,6 +551,64 @@ button.secondary {
   box-shadow: 0 10px 26px rgba(20, 8, 4, 0.32);
 }
 
+.mobile-joystick,
+.mobile-attack {
+  display: none;
+}
+
+.mobile-joystick {
+  position: absolute;
+  left: max(18px, env(safe-area-inset-left));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 55;
+  width: 132px;
+  height: 132px;
+  border: 3px solid rgba(255, 248, 232, 0.72);
+  border-radius: 50%;
+  background: rgba(37, 17, 5, 0.42);
+  box-shadow: inset 0 0 28px rgba(255, 230, 109, 0.16), 0 16px 34px rgba(0, 0, 0, 0.32);
+  touch-action: none;
+  user-select: none;
+}
+
+.mobile-joystick::before,
+.mobile-joystick span {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.mobile-joystick::before {
+  width: 52px;
+  height: 52px;
+  border: 2px solid rgba(255, 248, 232, 0.38);
+}
+
+.mobile-joystick span {
+  width: 54px;
+  height: 54px;
+  margin-left: -27px;
+  margin-top: -27px;
+  border: 3px solid #251105;
+  background: linear-gradient(180deg, #ffe66d, #ff9f1c);
+  box-shadow: 0 8px 0 #9b3d16, 0 18px 28px rgba(20, 8, 4, 0.32);
+}
+
+.mobile-attack {
+  position: absolute;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(36px, env(safe-area-inset-bottom));
+  z-index: 55;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  font-size: 18px;
+  touch-action: manipulation;
+}
+
 .play-link {
   position: sticky;
   top: 0;
@@ -564,6 +622,28 @@ button.secondary {
   top: 60px;
 }
 
+.guide-button {
+  position: absolute;
+  top: 108px;
+  right: 12px;
+  z-index: 30;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 2px solid rgba(255, 248, 232, 0.78);
+  border-radius: 8px;
+  color: #251105;
+  font-size: 14px;
+  font-weight: 900;
+  background: #ffe66d;
+  box-shadow: 0 10px 26px rgba(20, 8, 4, 0.32);
+}
+
+.guide-world-button {
+  border-color: #251105;
+  color: #251105;
+  background: #ffe66d;
+}
+
 .world-nav {
   position: sticky;
   top: 0;
@@ -575,6 +655,128 @@ button.secondary {
 
 .world-nav .page-switch {
   position: static;
+}
+
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  background: rgba(6, 8, 12, 0.38);
+}
+
+.tutorial-card,
+.tutorial-tip {
+  position: fixed;
+  pointer-events: auto;
+  border: 3px solid #fff8e8;
+  border-radius: 8px;
+  color: #fff8e8;
+  background: rgba(31, 18, 13, 0.92);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+}
+
+.tutorial-main {
+  left: 50%;
+  top: 82px;
+  width: min(520px, calc(100vw - 28px));
+  padding: 16px;
+  transform: translateX(-50%);
+}
+
+.tutorial-main h2 {
+  margin: 4px 0 8px;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.tutorial-main p,
+.tutorial-tip p {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.tutorial-main button {
+  margin-top: 12px;
+}
+
+.tutorial-tip {
+  width: 250px;
+  padding: 12px 12px 12px 44px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.tutorial-tip b {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #251105;
+  background: #ffe66d;
+}
+
+.tutorial-goblin {
+  left: 42%;
+  bottom: 170px;
+}
+
+.tutorial-world {
+  right: 118px;
+  top: 18px;
+}
+
+.tutorial-upgrade {
+  right: 24px;
+  bottom: 188px;
+}
+
+.tutorial-play {
+  right: 118px;
+  top: 18px;
+}
+
+.game.play-page .tutorial-play,
+.game.world-page .tutorial-goblin,
+.game.world-page .tutorial-world,
+.game.world-page .tutorial-upgrade {
+  display: none;
+}
+
+.tutorial-arrow {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+}
+
+.tutorial-arrow::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-top: 6px solid #ffe66d;
+  border-right: 6px solid #ffe66d;
+}
+
+.tutorial-arrow-down {
+  left: 50%;
+  bottom: -54px;
+  transform: translateX(-50%) rotate(135deg);
+}
+
+.tutorial-arrow-up {
+  left: 50%;
+  top: -54px;
+  transform: translateX(-50%) rotate(-45deg);
+}
+
+.tutorial-arrow-right {
+  right: -54px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
 }
 
 .auth-panel {
@@ -7062,6 +7264,17 @@ button.selected {
   }
 }
 
+@media (pointer: coarse) {
+  .mobile-joystick,
+  .mobile-attack {
+    display: block;
+  }
+
+  .game.play-page .quick-hud {
+    bottom: max(148px, calc(env(safe-area-inset-bottom) + 142px));
+  }
+}
+
 @media (max-width: 560px) {
   button {
     min-height: 44px;
@@ -7128,10 +7341,18 @@ button.selected {
     top: max(91px, calc(env(safe-area-inset-top) + 89px));
   }
 
+  .guide-button {
+    top: max(132px, calc(env(safe-area-inset-top) + 130px));
+    right: 7px;
+    min-height: 34px;
+    padding: 6px 9px;
+    font-size: 12px;
+  }
+
   .quick-hud {
     left: 7px;
     right: 7px;
-    bottom: max(7px, env(safe-area-inset-bottom));
+    bottom: max(148px, calc(env(safe-area-inset-bottom) + 142px));
     grid-template-columns: 1fr;
     gap: 7px;
     max-height: 126px;
@@ -7209,6 +7430,47 @@ button.selected {
 
   .monster-pack {
     bottom: 96px;
+  }
+
+  .mobile-joystick,
+  .mobile-attack {
+    display: block;
+  }
+
+  .tutorial-main {
+    top: max(96px, calc(env(safe-area-inset-top) + 92px));
+    padding: 12px;
+  }
+
+  .tutorial-main h2 {
+    font-size: 22px;
+  }
+
+  .tutorial-tip {
+    width: min(236px, calc(100vw - 18px));
+    padding: 10px 10px 10px 40px;
+    font-size: 12px;
+  }
+
+  .tutorial-goblin {
+    left: 10px;
+    bottom: 146px;
+  }
+
+  .tutorial-world,
+  .tutorial-play {
+    right: 8px;
+    top: max(132px, calc(env(safe-area-inset-top) + 128px));
+  }
+
+  .tutorial-upgrade {
+    right: 8px;
+    bottom: 144px;
+  }
+
+  .tutorial-arrow {
+    width: 34px;
+    height: 34px;
   }
 
   .duel-card {

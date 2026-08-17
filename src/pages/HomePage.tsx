@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, FormEvent } from 'react';
+import type { CSSProperties, FormEvent, PointerEvent as ReactPointerEvent } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Link, useLocation } from 'wouter';
 import { BattleScene3D } from '../components/BattleScene3D';
@@ -405,6 +405,97 @@ const citySizeMeters = 200;
 const cityHalfSize = (citySizeMeters / 2) * 1_000;
 const monsterAttackRange = 5_000;
 
+type CollisionBox = {
+  x: number;
+  z: number;
+  halfX: number;
+  halfZ: number;
+};
+
+function collidesWithBox(x: number, z: number, box: CollisionBox, radius = 0.72) {
+  return Math.abs(x - box.x) < box.halfX + radius && Math.abs(z - box.z) < box.halfZ + radius;
+}
+
+function getWorldCollisionBoxes(chapter: number, locationIndex: number) {
+  const boxes: CollisionBox[] = [];
+
+  for (let i = 0; i < 42; i += 1) {
+    boxes.push({
+      x: -24 + (i % 14) * 3.6,
+      z: -11 - Math.floor(i / 10) * 3.1,
+      halfX: 0.95,
+      halfZ: 0.9,
+    });
+  }
+
+  [-24, -16, -8, 0, 8, 16, 24].forEach((x) => {
+    boxes.push({ x, z: -25.8, halfX: 0.72, halfZ: 0.34 });
+  });
+
+  const locationStyle = Math.abs(chapter) % 10;
+  if (locationStyle === 0) {
+    for (let i = 0; i < 28; i += 1) {
+      boxes.push({
+        x: -42 + (i % 7) * 13.4,
+        z: -27 + Math.floor(i / 7) * 15.5,
+        halfX: 1.7 + (i % 3) * 0.5,
+        halfZ: 1.35,
+      });
+    }
+  } else if (locationStyle === 1) {
+    for (let i = 0; i < 18; i += 1) {
+      boxes.push({
+        x: -38 + (i % 6) * 15,
+        z: -24 + Math.floor(i / 6) * 20,
+        halfX: 1.05,
+        halfZ: 1.05,
+      });
+    }
+    boxes.push({ x: 0, z: -18, halfX: 6.8, halfZ: 6.8 });
+  } else if (locationStyle === 3) {
+    for (let i = 0; i < 24; i += 1) {
+      const x = -42 + (i % 8) * 12;
+      const z = -30 + Math.floor(i / 8) * 24;
+      boxes.push({ x, z, halfX: 1.55, halfZ: 1.45 });
+      boxes.push({ x: x + 3.4, z: z + 1.8, halfX: 0.5, halfZ: 0.5 });
+    }
+  } else if (locationStyle === 4) {
+    for (let i = 0; i < 18; i += 1) {
+      const x = -44 + (i % 6) * 17;
+      const z = -30 + Math.floor(i / 6) * 24;
+      boxes.push({ x, z, halfX: 4.25, halfZ: 0.85 });
+      boxes.push({ x: x + 3.9, z, halfX: 1.35, halfZ: 1.35 });
+    }
+  } else if (locationStyle === 5) {
+    for (let i = 0; i < 30; i += 1) {
+      const x = -48 + (i % 10) * 10.5;
+      const z = -33 + Math.floor(i / 10) * 27;
+      boxes.push({ x, z, halfX: 1.15 + (i % 3) * 0.45, halfZ: 0.75 });
+      boxes.push({ x: x + 2.2, z: z + 1.4, halfX: 0.7, halfZ: 0.7 });
+    }
+  } else if (locationStyle === 9) {
+    for (let i = 0; i < 24; i += 1) {
+      boxes.push({
+        x: -46 + (i % 8) * 12.8,
+        z: -32 + Math.floor(i / 8) * 25,
+        halfX: 1.45,
+        halfZ: 1.45,
+      });
+    }
+  }
+
+  return boxes.map((box) => ({
+    ...box,
+    x: box.x + Math.sin(locationIndex + box.z) * 0,
+  }));
+}
+
+function isHeroBlockedAt(position: { x: number; z: number }, chapter: number, locationIndex: number) {
+  const heroWorldX = -3.4 + position.x / 1000;
+  const heroWorldZ = 1.2 + position.z / 1000;
+  return getWorldCollisionBoxes(chapter, locationIndex).some((box) => collidesWithBox(heroWorldX, heroWorldZ, box));
+}
+
 const monsterAvalancheWorld: CityStage = {
   name: 'Лавина монстров',
   city: '5 мир',
@@ -435,6 +526,7 @@ const nuraliBoss: CityStage = {
 const presenceStorageKey = 'dragon-game-online-players';
 const leaderboardStorageKey = 'dragon-game-leaderboard-players';
 const dailyRewardStorageKey = 'dragon-game-daily-rewards';
+const winStreakStorageKey = 'dragon-game-win-streak';
 const duelRequestsStorageKey = 'dragon-game-duel-requests';
 const presenceTtlMs = 20_000;
 
@@ -443,6 +535,12 @@ type DailyRewardState = {
   lastRewardDate: string;
   streak: number;
   bestStreak: number;
+};
+
+type WinStreakState = {
+  current: number;
+  best: number;
+  totalWins: number;
 };
 
 function makePlayerId() {
@@ -558,6 +656,23 @@ function readDailyRewardState(): DailyRewardState {
 
 function saveDailyRewardState(state: DailyRewardState) {
   window.localStorage.setItem(dailyRewardStorageKey, JSON.stringify(state));
+}
+
+function readWinStreakState(): WinStreakState {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(winStreakStorageKey) ?? 'null') as Partial<WinStreakState> | null;
+    return {
+      current: parsed?.current ?? 0,
+      best: parsed?.best ?? 0,
+      totalWins: parsed?.totalWins ?? 0,
+    };
+  } catch {
+    return { current: 0, best: 0, totalWins: 0 };
+  }
+}
+
+function saveWinStreakState(state: WinStreakState) {
+  window.localStorage.setItem(winStreakStorageKey, JSON.stringify(state));
 }
 
 function readRealtimePresenceEntries(state: Record<string, unknown[]>) {
@@ -1087,6 +1202,7 @@ export function HomePage() {
   const [location, navigate] = useLocation();
   const isWorldPage = location === '/world';
   const isAchievementsPage = location === '/achievements';
+  const [tutorialOpen, setTutorialOpen] = useState(true);
   const [chapter, setChapter] = useState(0);
   const [healthLevel, setHealthLevel] = useState(0);
   const [heroHp, setHeroHp] = useState(heroMaxHp);
@@ -1166,9 +1282,12 @@ export function HomePage() {
   const [heroHeight, setHeroHeight] = useState(0);
   const [heroMoving, setHeroMoving] = useState(false);
   const [heroDirection, setHeroDirection] = useState({ x: 0, z: -1 });
+  const [joystickThumb, setJoystickThumb] = useState({ x: 0, y: 0 });
   const verticalVelocity = useRef(0);
   const heroAnimationTimer = useRef<number | null>(null);
   const pressedKeys = useRef<Set<string>>(new Set());
+  const joystickVector = useRef({ x: 0, z: 0 });
+  const joystickPointerId = useRef<number | null>(null);
   const [cityMonsters, setCityMonsters] = useState(() => dragonSons.map(() => monstersPerCity));
   const [, setMonsterAttackCount] = useState(0);
   const [battlePulse, setBattlePulse] = useState(0);
@@ -1190,6 +1309,8 @@ export function HomePage() {
   const [leaderboardPlayers, setLeaderboardPlayers] = useState<OnlinePresence[]>(() => readLeaderboardPresences());
   const [dailyRewardState, setDailyRewardState] = useState<DailyRewardState>(() => readDailyRewardState());
   const [dailyRewardText, setDailyRewardText] = useState('');
+  const [winStreakState, setWinStreakState] = useState<WinStreakState>(() => readWinStreakState());
+  const [winStreakText, setWinStreakText] = useState('');
   const [nickname, setNickname] = useState(() => window.localStorage.getItem('hero-nickname') ?? 'BBI герой');
   const [playerId] = useState(() => {
     const savedId = window.localStorage.getItem('hero-player-id');
@@ -1418,6 +1539,11 @@ export function HomePage() {
                   : isDungeon
                     ? `dungeon-${chapter}-${mapLocationIndex}`
                     : `city-${chapter}-${mapLocationIndex}`;
+  const collisionContextRef = useRef({ chapter, mapLocationIndex });
+
+  useEffect(() => {
+    collisionContextRef.current = { chapter, mapLocationIndex };
+  }, [chapter, mapLocationIndex]);
   const battleScene = isDeathGodBoss
     ? 'scene-death-god'
     : isFinalSpiritBoss || finalSpiritWorldOpen
@@ -1650,39 +1776,96 @@ export function HomePage() {
     setGold((currentGold) => Math.min(Number.MAX_SAFE_INTEGER, currentGold + amount * goldMultiplier * artifactGoldMultiplier));
   }
 
+  function addWinStreak(reason: string) {
+    const nextCurrent = winStreakState.current + 1;
+    const nextState = {
+      current: nextCurrent,
+      best: Math.max(winStreakState.best, nextCurrent),
+      totalWins: winStreakState.totalWins + 1,
+    };
+    const bonusGold = Math.min(Number.MAX_SAFE_INTEGER, Math.max(100, nextCurrent * nextCurrent * (chapter + 1) * 150));
+    addGold(bonusGold);
+
+    let rewardText = `Винстрик x${nextCurrent}: ${reason}. Бонус ${formatPower(bonusGold)} золота.`;
+    if (nextCurrent % 10 === 0) {
+      const weapon = createWeapon('Легендарка', Math.max(chapter + 2, Math.floor(nextCurrent / 2)));
+      setWeapons((currentWeapons) => [...currentWeapons, weapon]);
+      setEquippedWeapon(weapon);
+      rewardText += ` За серию ${nextCurrent} получено оружие ${getWeaponDisplayName(weapon)}.`;
+    } else if (nextCurrent % 5 === 0) {
+      setShopLevels((levels) => ({ ...levels, sword: levels.sword + 1, health: levels.health + 1 }));
+      setItems((items) => ({ ...items, sword: items.sword + 1, health: items.health + 1 }));
+      setHealthLevel((level) => level + 1);
+      setHeroHp((hp) => Math.min(currentHeroMaxHp, hp + 250));
+      rewardText += ` За серию ${nextCurrent}: +1 урон и +1 здоровье.`;
+    }
+
+    setWinStreakState(nextState);
+    saveWinStreakState(nextState);
+    setWinStreakText(rewardText);
+    return rewardText;
+  }
+
+  function resetWinStreak(reason: string) {
+    if (winStreakState.current === 0) return;
+    const nextState = { ...winStreakState, current: 0 };
+    setWinStreakState(nextState);
+    saveWinStreakState(nextState);
+    setWinStreakText(`Винстрик сброшен: ${reason}. Лучший рекорд ${nextState.best}.`);
+  }
+
   function grantDailyReward(day: number) {
     // Замечание: здесь лежат награды за рекорд дней захода, меняй этот список если нужны новые подарки.
     if (day === 1) {
-      addGold(1_000);
-      return 'День 1: получено 1000 монет.';
+      addGold(25_000);
+      setShopLevels((levels) => ({ ...levels, sword: levels.sword + 3, health: levels.health + 2 }));
+      setItems((items) => ({ ...items, sword: items.sword + 3, health: items.health + 2 }));
+      setHealthLevel((level) => level + 2);
+      setHeroHp((hp) => hp + 500);
+      return 'День 1: получено 25к монет, +3 урона меча и +2 здоровья.';
     }
 
     if (day === 2) {
       const weapon = createWeapon('Эпик', Math.max(2, chapter + 2));
       setWeapons((currentWeapons) => [...currentWeapons, weapon]);
       setEquippedWeapon(weapon);
-      return `День 2: получен эпический меч ${getWeaponDisplayName(weapon)}.`;
+      addGold(75_000);
+      return `День 2: 75к монет и эпический меч ${getWeaponDisplayName(weapon)}.`;
     }
 
     if (day === 3) {
-      return 'День 3: код BBI показан. Введи код bbi, чтобы открыть BBI мир.';
+      const armor = rollArmor(100, Math.max(4, chapter + 4));
+      if (armor) {
+        setArmors((currentArmors) => [...currentArmors, armor]);
+        setEquippedArmor(armor);
+      }
+      setShopLevels((levels) => ({ ...levels, doubleStrike: levels.doubleStrike + 2 }));
+      setItems((items) => ({ ...items, doubleStrike: items.doubleStrike + 2 }));
+      return `День 3: +2 мультиудара${armor ? ` и броня ${armor.name}` : ''}. Код BBI: bbi.`;
     }
 
     if (day === 4) {
       const weapon = createWeapon('Легендарка', Math.max(4, chapter + 4));
       setWeapons((currentWeapons) => [...currentWeapons, weapon]);
       setEquippedWeapon(weapon);
-      return `День 4: получен легендарный меч ${getWeaponDisplayName(weapon)}.`;
+      addGold(250_000);
+      return `День 4: 250к монет и легендарный меч ${getWeaponDisplayName(weapon)}.`;
     }
 
     if (day === 5) {
       const weapon = createSecretWeapon(Math.max(5, chapter + 5));
       setWeapons((currentWeapons) => [...currentWeapons, weapon]);
       setEquippedWeapon(weapon);
-      return `День 5: получен секретный меч ${getWeaponDisplayName(weapon)}.`;
+      addGold(1_000_000);
+      return `День 5: 1 миллион монет и секретный меч ${getWeaponDisplayName(weapon)}.`;
     }
 
-    return `Рекорд дней: ${day}. Все главные награды уже получены.`;
+    const bonusGold = Math.min(Number.MAX_SAFE_INTEGER, day * day * 100_000);
+    const weapon = day % 3 === 0 ? createSecretWeapon(Math.max(day, chapter + day)) : createWeapon(day % 2 === 0 ? 'Легендарка' : 'Эпик', Math.max(day, chapter + day));
+    addGold(bonusGold);
+    setWeapons((currentWeapons) => [...currentWeapons, weapon]);
+    setEquippedWeapon(weapon);
+    return `День ${day}: ${formatPower(bonusGold)} монет и оружие серии ${getWeaponDisplayName(weapon)}.`;
   }
 
   function sellWeapon(weapon: Weapon) {
@@ -1980,6 +2163,7 @@ export function HomePage() {
     if (heroHp > 0 || isFinalReveal || isMonsterAvalancheWorld || isFinalSpiritWorld || isFinalSpiritBoss) return;
 
     window.setTimeout(() => {
+      resetWinStreak('герой погиб');
       restart();
       setMessage('Здоровье героя упало до 0. Игра началась заново.');
     }, 700);
@@ -2054,6 +2238,10 @@ export function HomePage() {
     }, duration);
   }
 
+  function closeTutorial() {
+    setTutorialOpen(false);
+  }
+
   function equipArtifact(artifact: Artifact) {
     const healingPercent = 20 * (1 + (artifact.healingBonusPercent ?? 0) / 100);
     const healingAmount = Math.max(1, Math.floor(currentHeroMaxHp * (healingPercent / 100)));
@@ -2065,10 +2253,65 @@ export function HomePage() {
 
   function moveHero(dx: number, dz: number) {
     playHeroAnimation('step', 360);
-    setHeroPosition((position) => ({
-      x: Math.max(-cityHalfSize, Math.min(cityHalfSize, position.x + dx)),
-      z: Math.max(-cityHalfSize, Math.min(cityHalfSize, position.z + dz)),
-    }));
+    setHeroPosition((position) => {
+      const clampPosition = (nextPosition: { x: number; z: number }) => ({
+        x: Math.max(-cityHalfSize, Math.min(cityHalfSize, nextPosition.x)),
+        z: Math.max(-cityHalfSize, Math.min(cityHalfSize, nextPosition.z)),
+      });
+      const collisionContext = collisionContextRef.current;
+      const nextPosition = clampPosition({ x: position.x + dx, z: position.z + dz });
+      if (!isHeroBlockedAt(nextPosition, collisionContext.chapter, collisionContext.mapLocationIndex)) return nextPosition;
+
+      const slideX = clampPosition({ x: position.x + dx, z: position.z });
+      if (!isHeroBlockedAt(slideX, collisionContext.chapter, collisionContext.mapLocationIndex)) return slideX;
+
+      const slideZ = clampPosition({ x: position.x, z: position.z + dz });
+      if (!isHeroBlockedAt(slideZ, collisionContext.chapter, collisionContext.mapLocationIndex)) return slideZ;
+
+      return position;
+    });
+  }
+
+  function updateJoystick(event: ReactPointerEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const rawX = event.clientX - centerX;
+    const rawY = event.clientY - centerY;
+    const maxRadius = rect.width * 0.36;
+    const distance = Math.hypot(rawX, rawY);
+    const strength = Math.min(1, distance / maxRadius);
+    const angle = Math.atan2(rawY, rawX);
+    const thumbX = Math.cos(angle) * strength * maxRadius;
+    const thumbY = Math.sin(angle) * strength * maxRadius;
+    joystickVector.current = {
+      x: Math.cos(angle) * strength,
+      z: Math.sin(angle) * strength,
+    };
+    setJoystickThumb({ x: thumbX, y: thumbY });
+  }
+
+  function startJoystick(event: ReactPointerEvent<HTMLDivElement>) {
+    joystickPointerId.current = event.pointerId;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    updateJoystick(event);
+  }
+
+  function moveJoystick(event: ReactPointerEvent<HTMLDivElement>) {
+    if (joystickPointerId.current !== event.pointerId) return;
+    updateJoystick(event);
+  }
+
+  function stopJoystick(event: ReactPointerEvent<HTMLDivElement>) {
+    if (joystickPointerId.current !== event.pointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    joystickPointerId.current = null;
+    joystickVector.current = { x: 0, z: 0 };
+    setJoystickThumb({ x: 0, y: 0 });
+    setHeroMoving(false);
   }
 
   useEffect(() => {
@@ -2076,16 +2319,19 @@ export function HomePage() {
       const keys = pressedKeys.current;
       let dx = 0;
       let dz = 0;
-      if (keys.has('w') || keys.has('arrowup')) dz -= 260;
-      if (keys.has('s') || keys.has('arrowdown')) dz += 260;
-      if (keys.has('a') || keys.has('arrowleft')) dx -= 260;
-      if (keys.has('d') || keys.has('arrowright')) dx += 260;
-      const moving = dx !== 0 || dz !== 0;
+      if (keys.has('w') || keys.has('keyw') || keys.has('arrowup')) dz -= 1;
+      if (keys.has('s') || keys.has('keys') || keys.has('arrowdown')) dz += 1;
+      if (keys.has('a') || keys.has('keya') || keys.has('arrowleft')) dx -= 1;
+      if (keys.has('d') || keys.has('keyd') || keys.has('arrowright')) dx += 1;
+      dx += joystickVector.current.x;
+      dz += joystickVector.current.z;
+      const moving = Math.hypot(dx, dz) > 0.05;
       setHeroMoving(moving);
       if (moving) {
         const length = Math.max(1, Math.hypot(dx, dz));
-        setHeroDirection({ x: dx / length, z: dz / length });
-        moveHero(dx, dz);
+        const direction = { x: dx / length, z: dz / length };
+        setHeroDirection(direction);
+        moveHero(direction.x * 280, direction.z * 280);
       }
     }, 80);
 
@@ -2255,6 +2501,7 @@ export function HomePage() {
       setCityMonsters(nextCityMonsters);
     }
     addGold(2 + chapter);
+    const streakRewardText = addWinStreak('монстр побежден');
 
     if (monsterWeapon) {
       setWeapons([...weapons, monsterWeapon]);
@@ -2275,7 +2522,7 @@ export function HomePage() {
         ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${currentMonsterTotal}. Выпало оружие: ${getWeaponDisplayName(monsterWeapon)} (${monsterWeapon.rarity}).`
         : monsterArmor
           ? `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${currentMonsterTotal}. Выпала броня: ${monsterArmor.name} (${monsterArmor.rarity}).`
-        : `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${currentMonsterTotal}. Получено золото.`
+        : `Удар задел ${monstersPerHit} враг. Осталось ${nextMonsters} из ${currentMonsterTotal}. Получено золото. ${streakRewardText}`
     );
 
     if (nextMonsters === 0) {
@@ -2378,6 +2625,7 @@ export function HomePage() {
   function clearCity() {
     if (!enemy) return;
     setEnemyBurning(false);
+    addWinStreak(currentMonsters === 0 ? 'дракон или босс побежден' : 'город очищен');
 
     if (isDeathGodBoss) {
       const deathSword = createDeathSword();
@@ -2649,8 +2897,10 @@ export function HomePage() {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+      const code = event.code.toLowerCase();
+      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key) || ['keyw', 'keya', 'keys', 'keyd'].includes(code)) {
         pressedKeys.current.add(key);
+        pressedKeys.current.add(code);
         event.preventDefault();
       }
       if (event.code === 'Space' && verticalVelocity.current === 0) {
@@ -2661,6 +2911,7 @@ export function HomePage() {
 
     function onKeyUp(event: KeyboardEvent) {
       pressedKeys.current.delete(event.key.toLowerCase());
+      pressedKeys.current.delete(event.code.toLowerCase());
     }
 
     window.addEventListener('keydown', onKeyDown);
@@ -3101,8 +3352,9 @@ export function HomePage() {
       const duelReward = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1_000, 1_000 + Math.floor(duelOpponent.power / 10)));
       setDuelWins((wins) => wins + 1);
       addGold(duelReward);
+      const streakRewardText = addWinStreak('дуэль выиграна');
       setDuelStatus('won');
-      setMessage(`${playerName} победил ${duelOpponent.name} в настоящей дуэли. Награда: ${formatPower(duelReward)} золота.`);
+      setMessage(`${playerName} победил ${duelOpponent.name} в настоящей дуэли. Награда: ${formatPower(duelReward)} золота. ${streakRewardText}`);
       return;
     }
 
@@ -3110,6 +3362,7 @@ export function HomePage() {
     setDuelHeroHp(nextHeroDuelHp);
     if (nextHeroDuelHp === 0) {
       setDuelStatus('declined');
+      resetWinStreak('поражение в дуэли');
       setMessage(`${duelOpponent.name} победил в дуэли. Можно найти другого игрока.`);
       return;
     }
@@ -4244,9 +4497,40 @@ export function HomePage() {
           )
         )}
       </div>
+      {tutorialOpen && (
+        <div className="tutorial-overlay" role="dialog" aria-label="Обучение игре">
+          <div className="tutorial-card tutorial-main">
+            <p className="eyebrow">Обучение</p>
+            <h2>Что делать в игре</h2>
+            <p>В каждом городе 1000 монстров. Всего 10 городов и 10 драконов. Победи драконов и одолей короля дракона.</p>
+            <button onClick={closeTutorial} type="button">Понял, играть</button>
+          </div>
+          <div className="tutorial-tip tutorial-goblin">
+            <span className="tutorial-arrow tutorial-arrow-down" />
+            <b>1</b>
+            <p>Иди к гоблину и убей его. Двигайся WASD или стрелками, бей кликом, E или F.</p>
+          </div>
+          <div className="tutorial-tip tutorial-world">
+            <span className="tutorial-arrow tutorial-arrow-up" />
+            <b>2</b>
+            <p>Нажми “Пылающий мир”, чтобы открыть карту и мир игры.</p>
+          </div>
+          <div className="tutorial-tip tutorial-upgrade">
+            <span className="tutorial-arrow tutorial-arrow-right" />
+            <b>3</b>
+            <p>Улучшай урон в магазине, чтобы быстрее убивать монстров и драконов.</p>
+          </div>
+          <div className="tutorial-tip tutorial-play">
+            <span className="tutorial-arrow tutorial-arrow-up" />
+            <b>4</b>
+            <p>Нажми “Играть”, чтобы вернуться в бой.</p>
+          </div>
+        </div>
+      )}
       <section className="stage" aria-label="Поле битвы">
         <Link className="page-switch world-link" href="/world">Пылающий мир</Link>
         <Link className="page-switch achievements-link" href="/achievements">Достижения</Link>
+        <button className="guide-button" onClick={() => setTutorialOpen(true)} type="button">Гайд</button>
         <div
           className={`sky battle-2d ${battleScene} ${battlePulse % 2 ? 'hit' : ''}`}
           onClick={() => (currentMonsters > 0 ? fightMonster() : strike())}
@@ -4278,6 +4562,7 @@ export function HomePage() {
               sceneKey={mapSceneKey}
               chapter={chapter}
               locationIndex={mapLocationIndex}
+              equippedArtifactIcon={equippedArtifact?.icon ?? null}
             />
           </div>
           <div className="sun" />
@@ -4512,6 +4797,29 @@ export function HomePage() {
           {enemyBurning && (isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss) && (
             <div className="enemy-burn-effect special-burn" />
           )}
+          <div
+            className="mobile-joystick"
+            onPointerDown={startJoystick}
+            onPointerMove={moveJoystick}
+            onPointerUp={stopJoystick}
+            onPointerCancel={stopJoystick}
+            role="application"
+            aria-label="Джойстик движения"
+          >
+            <span style={{ transform: `translate(${joystickThumb.x}px, ${joystickThumb.y}px)` }} />
+          </div>
+          <button
+            className="mobile-attack"
+            disabled={heroHp === 0}
+            onClick={(event) => {
+              event.stopPropagation();
+              if (currentMonsters > 0) fightMonster();
+              else strike();
+            }}
+            type="button"
+          >
+            Удар
+          </button>
         </div>
       </section>
 
@@ -4734,6 +5042,7 @@ export function HomePage() {
             <span>Здоровье {heroHealthText}</span>
             <span>{currentEnemyHealthText}</span>
             <span>{isFinalSpiritWorld ? 'Подземные монстры' : isDungeon ? 'Пещера' : 'Монстры'}: {formatPower(currentMonsters)}</span>
+            <span>Винстрик x{winStreakState.current} | рекорд {winStreakState.best}</span>
           </div>
           {currentMonsters === 0 && (
             <button onClick={strike} disabled={heroHp === 0}>{isFinalSpiritBoss ? 'Бить души' : 'Бить дракона'}</button>
@@ -4746,6 +5055,7 @@ export function HomePage() {
         <div className="world-nav">
           <Link className="page-switch play-link" href="/">Играть</Link>
           <Link className="page-switch play-link" href="/achievements">Достижения</Link>
+          <button className="page-switch play-link guide-world-button" onClick={() => setTutorialOpen(true)} type="button">Гайд</button>
         </div>
         <div className="story">
           <p className="eyebrow">Пылающий мир</p>
@@ -4762,6 +5072,14 @@ export function HomePage() {
             </div>
           </div>
         )}
+
+        <div className="dungeon win-streak-panel">
+          <div>
+            <p className="label">Винстрик</p>
+            <strong>x{winStreakState.current} сейчас | рекорд x{winStreakState.best} | побед всего {winStreakState.totalWins}</strong>
+            <p>{winStreakText || 'Побеждай монстров, драконов и игроков подряд. За серию 5 дается прокачка, за серию 10 оружие.'}</p>
+          </div>
+        </div>
 
         {impossibleEnding ? (
           <div className="reveal impossible-ending">

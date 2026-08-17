@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 type BattleScene3DProps = {
   dragonColor: string;
@@ -19,6 +20,7 @@ type BattleScene3DProps = {
   sceneKey: string;
   chapter: number;
   locationIndex: number;
+  equippedArtifactIcon: string | null;
 };
 
 function material(color: string, options: Partial<THREE.MeshStandardMaterialParameters> = {}) {
@@ -324,26 +326,34 @@ function makeHero() {
   const steelLight = material('#c7c8c1', { metalness: 0.94, roughness: 0.14 });
 
   const body = capsule('#8a8d8a', 0.34, 0.82, [0, 1.1, 0]);
-  body.scale.set(0.9, 1.08, 0.62);
+  body.scale.set(0.82, 1.18, 0.52);
   body.material = armor;
-  const chestPlate = mesh(new THREE.BoxGeometry(0.68, 0.58, 0.16), '#777a78', [0, 1.18, 0.31], { metalness: 0.86, roughness: 0.18 });
+  const chestPlate = mesh(new THREE.BoxGeometry(0.72, 0.72, 0.18), '#777a78', [0, 1.22, 0.28], { metalness: 0.86, roughness: 0.18 });
   chestPlate.material = steelDark;
   chestPlate.rotation.x = -0.08;
-  const chestRidge = mesh(new THREE.BoxGeometry(0.08, 0.66, 0.05), '#c7c8c1', [0, 1.2, 0.42], { metalness: 0.94, roughness: 0.14 });
-  const skirt = mesh(new THREE.CylinderGeometry(0.42, 0.54, 0.58, 6), '#2b211d', [0, 0.62, 0.02]);
+  const chestRidge = mesh(new THREE.BoxGeometry(0.08, 0.74, 0.05), '#c7c8c1', [0, 1.24, 0.42], { metalness: 0.94, roughness: 0.14 });
+  const ribL = mesh(new THREE.BoxGeometry(0.24, 0.05, 0.045), '#b7b8b0', [-0.19, 1.34, 0.42], { metalness: 0.82, roughness: 0.16 });
+  const ribR = ribL.clone();
+  ribR.position.x = 0.19;
+  const chainmail = mesh(new THREE.CylinderGeometry(0.36, 0.42, 0.52, 16), '#3d3d3a', [0, 0.82, 0.02], { metalness: 0.6, roughness: 0.36 });
+  chainmail.scale.set(0.9, 1, 0.58);
+  const skirt = mesh(new THREE.CylinderGeometry(0.38, 0.5, 0.42, 8), '#2b211d', [0, 0.54, 0.02]);
   skirt.material = leather;
-  const belt = mesh(new THREE.BoxGeometry(0.72, 0.12, 0.46), '#3a2415', [0, 0.88, 0.03]);
-  const helmet = mesh(new THREE.SphereGeometry(0.36, 24, 14), '#8a8d8a', [0, 1.92, 0], { metalness: 0.82, roughness: 0.18 });
-  helmet.scale.set(0.72, 1.26, 0.7);
+  const belt = mesh(new THREE.BoxGeometry(0.76, 0.11, 0.42), '#3a2415', [0, 0.9, 0.03]);
+  const beltBuckle = mesh(new THREE.BoxGeometry(0.12, 0.12, 0.045), '#caa76a', [0, 0.91, 0.27], { metalness: 0.65, roughness: 0.22 });
+  const helmet = mesh(new THREE.SphereGeometry(0.34, 28, 18), '#8a8d8a', [0, 1.94, 0], { metalness: 0.82, roughness: 0.18 });
+  helmet.scale.set(0.78, 1.18, 0.74);
   helmet.material = steelLight;
-  const visor = mesh(new THREE.BoxGeometry(0.32, 0.5, 0.09), '#24282b', [0, 1.86, 0.3], { metalness: 0.72, roughness: 0.2 });
+  const visor = mesh(new THREE.BoxGeometry(0.36, 0.42, 0.08), '#24282b', [0, 1.86, 0.29], { metalness: 0.72, roughness: 0.2 });
   visor.rotation.x = -0.08;
-  const visorSlit = mesh(new THREE.BoxGeometry(0.26, 0.035, 0.025), '#050607', [0, 1.98, 0.36]);
-  const noseGuard = mesh(new THREE.BoxGeometry(0.06, 0.52, 0.06), '#b7b8b0', [0, 1.8, 0.37], { metalness: 0.8, roughness: 0.16 });
+  const visorSlit = mesh(new THREE.BoxGeometry(0.28, 0.035, 0.025), '#050607', [0, 1.98, 0.35]);
+  const noseGuard = mesh(new THREE.BoxGeometry(0.055, 0.5, 0.055), '#b7b8b0', [0, 1.79, 0.36], { metalness: 0.8, roughness: 0.16 });
   const helmetBack = mesh(new THREE.BoxGeometry(0.42, 0.44, 0.08), '#777a78', [0, 1.78, -0.26], { metalness: 0.86, roughness: 0.18 });
   helmetBack.rotation.x = 0.22;
   const neckGuard = mesh(new THREE.CylinderGeometry(0.24, 0.32, 0.18, 12), '#55585a', [0, 1.6, 0], { metalness: 0.8, roughness: 0.22 });
   neckGuard.material = steelDark;
+  const plume = mesh(new THREE.BoxGeometry(0.1, 0.42, 0.06), '#8f1d1d', [0, 2.32, -0.05], { roughness: 0.7 });
+  plume.rotation.x = 0.22;
   const sword = new THREE.Group();
   const blade = mesh(new THREE.BoxGeometry(0.09, 2.25, 0.04), '#dfe5e3', [0, 0.75, 0], {
     metalness: 0.76,
@@ -358,57 +368,85 @@ function makeHero() {
   sword.position.set(0.72, 0.68, 0.18);
   sword.rotation.set(0.12, 0, -1.34);
 
-  const leftShoulder = mesh(new THREE.SphereGeometry(0.26, 18, 10), '#8a8d8a', [-0.5, 1.48, 0.02], { metalness: 0.85, roughness: 0.16 });
-  leftShoulder.scale.set(1.34, 0.76, 1.05);
+  const leftShoulder = mesh(new THREE.SphereGeometry(0.24, 18, 10), '#8a8d8a', [-0.48, 1.5, 0.02], { metalness: 0.85, roughness: 0.16 });
+  leftShoulder.scale.set(1.42, 0.62, 0.92);
   const rightShoulder = leftShoulder.clone();
   rightShoulder.position.x = 0.46;
-  const leftArm = capsule('#b7835f', 0.085, 0.7, [-0.5, 1.1, 0.02]);
+  const leftArm = capsule('#8a8d8a', 0.082, 0.72, [-0.5, 1.1, 0.02]);
   leftArm.material = skin;
   leftArm.rotation.z = -0.55;
-  const rightArm = capsule('#b7835f', 0.085, 0.78, [0.52, 1.17, 0.02]);
+  const rightArm = capsule('#8a8d8a', 0.082, 0.78, [0.52, 1.17, 0.02]);
   rightArm.material = skin;
   rightArm.rotation.z = -1.18;
   rightArm.rotation.x = -0.18;
-  const leftGauntlet = capsule('#3a3a38', 0.08, 0.34, [-0.62, 0.76, 0.07]);
+  const leftElbow = mesh(new THREE.SphereGeometry(0.09, 12, 8), '#b7b8b0', [-0.58, 0.93, 0.08], { metalness: 0.8, roughness: 0.18 });
+  const rightElbow = leftElbow.clone();
+  rightElbow.position.set(0.72, 1.02, 0.1);
+  const leftGauntlet = capsule('#3a3a38', 0.078, 0.36, [-0.62, 0.76, 0.07]);
   leftGauntlet.material = darkArmor;
   const rightGauntlet = capsule('#3a3a38', 0.075, 0.32, [0.88, 1.12, 0.12]);
   rightGauntlet.material = darkArmor;
-  const pointingHand = mesh(new THREE.SphereGeometry(0.075, 12, 8), '#b7835f', [1.05, 1.1, 0.16]);
-  const pointingFinger = capsule('#b7835f', 0.018, 0.26, [1.18, 1.1, 0.18]);
+  const pointingHand = mesh(new THREE.SphereGeometry(0.08, 12, 8), '#3a3a38', [1.04, 1.1, 0.16], { metalness: 0.72, roughness: 0.22 });
+  pointingHand.scale.set(1.05, 0.82, 0.72);
+  const pointingFinger = capsule('#3a3a38', 0.014, 0.22, [1.16, 1.1, 0.18]);
+  pointingFinger.material = darkArmor;
   pointingFinger.rotation.z = Math.PI / 2;
+  const leftHand = mesh(new THREE.SphereGeometry(0.07, 12, 8), '#3a3a38', [-0.7, 0.65, 0.08], { metalness: 0.72, roughness: 0.22 });
+  leftHand.scale.set(1, 0.8, 0.7);
 
-  const leftLeg = capsule('#8a8d8a', 0.12, 0.72, [-0.18, 0.35, -0.08]);
+  const leftLeg = capsule('#8a8d8a', 0.105, 0.78, [-0.18, 0.32, -0.08]);
   leftLeg.material = armor;
-  const rightLeg = capsule('#8a8d8a', 0.12, 0.72, [0.18, 0.35, 0.08]);
+  const rightLeg = capsule('#8a8d8a', 0.105, 0.78, [0.18, 0.32, 0.08]);
   rightLeg.material = armor;
-  const leftBoot = mesh(new THREE.BoxGeometry(0.28, 0.14, 0.42), '#2c241f', [-0.19, -0.03, 0.04]);
-  const rightBoot = mesh(new THREE.BoxGeometry(0.28, 0.14, 0.42), '#2c241f', [0.2, -0.03, 0.18]);
+  const thighL = mesh(new THREE.CapsuleGeometry(0.11, 0.42, 8, 12), '#777a78', [-0.2, 0.56, -0.02], { metalness: 0.78, roughness: 0.2 });
+  thighL.material = steelDark;
+  thighL.rotation.x = 0.08;
+  const thighR = thighL.clone();
+  thighR.position.x = 0.2;
+  thighR.position.z = 0.08;
+  const leftBoot = mesh(new THREE.BoxGeometry(0.28, 0.16, 0.46), '#2c241f', [-0.2, -0.05, 0.08]);
+  leftBoot.rotation.x = -0.06;
+  const rightBoot = mesh(new THREE.BoxGeometry(0.28, 0.16, 0.46), '#2c241f', [0.2, -0.05, 0.18]);
+  rightBoot.rotation.x = -0.06;
   const kneeL = mesh(new THREE.SphereGeometry(0.11, 12, 8), '#b7b8b0', [-0.18, 0.64, 0.08], { metalness: 0.72, roughness: 0.18 });
   kneeL.scale.set(1.1, 0.65, 0.8);
   const kneeR = kneeL.clone();
   kneeR.position.x = 0.18;
+  const cape = mesh(new THREE.BoxGeometry(0.86, 1.22, 0.08), '#491414', [0, 0.95, -0.32], { roughness: 0.82 });
+  cape.rotation.x = 0.16;
 
   hero.add(
+    cape,
     body,
     chestPlate,
     chestRidge,
+    ribL,
+    ribR,
+    chainmail,
     skirt,
     belt,
+    beltBuckle,
     helmet,
     visor,
     visorSlit,
     noseGuard,
     helmetBack,
     neckGuard,
+    plume,
     sword,
     leftShoulder,
     rightShoulder,
     leftArm,
     rightArm,
+    leftElbow,
+    rightElbow,
     leftGauntlet,
     rightGauntlet,
     pointingHand,
     pointingFinger,
+    leftHand,
+    thighL,
+    thighR,
     leftLeg,
     rightLeg,
     leftBoot,
@@ -416,9 +454,80 @@ function makeHero() {
     kneeL,
     kneeR
   );
-  hero.userData = { cape: skirt, sword, rightArm, leftArm, leftLeg, rightLeg };
+  hero.userData = { cape, sword, rightArm, leftArm, leftLeg, rightLeg };
   hero.position.set(-3.4, 0, 1.2);
   return hero;
+}
+
+function makeHeroArtifact() {
+  const group = new THREE.Group();
+  const glowMat = new THREE.MeshStandardMaterial({
+    color: '#ffe66d',
+    emissive: '#ffb703',
+    emissiveIntensity: 1.45,
+    roughness: 0.22,
+    metalness: 0.42,
+  });
+  const gemMat = new THREE.MeshStandardMaterial({
+    color: '#75e6da',
+    emissive: '#3a86ff',
+    emissiveIntensity: 1.1,
+    roughness: 0.18,
+    metalness: 0.18,
+    transparent: true,
+    opacity: 0.9,
+  });
+  const darkMat = new THREE.MeshStandardMaterial({
+    color: '#251105',
+    emissive: '#8338ec',
+    emissiveIntensity: 0.6,
+    roughness: 0.5,
+    metalness: 0.2,
+  });
+
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.035, 10, 32), glowMat);
+  ring.castShadow = true;
+  const core = new THREE.Mesh(new THREE.OctahedronGeometry(0.16, 0), gemMat);
+  core.castShadow = true;
+  const orb = new THREE.Mesh(new THREE.SphereGeometry(0.11, 18, 12), gemMat);
+  orb.position.y = 0.03;
+  orb.castShadow = true;
+  const pendant = mesh(new THREE.ConeGeometry(0.12, 0.26, 5), '#8338ec', [0, -0.02, 0], { emissive: '#b56cff', emissiveIntensity: 0.8, metalness: 0.25 });
+  pendant.rotation.z = Math.PI;
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.012, 8, 30), glowMat);
+  halo.rotation.x = Math.PI / 2;
+  const light = new THREE.PointLight('#75e6da', 1.6, 4);
+  group.add(ring, core, orb, pendant, halo, light);
+  group.userData = { ring, core, orb, pendant, halo, light, glowMat, gemMat, darkMat };
+  return group;
+}
+
+function updateHeroArtifactStyle(artifact: THREE.Group, icon: string | null) {
+  const data = artifact.userData as {
+    ring: THREE.Mesh;
+    core: THREE.Mesh;
+    orb: THREE.Mesh;
+    pendant: THREE.Mesh;
+    halo: THREE.Mesh;
+    light: THREE.PointLight;
+    glowMat: THREE.MeshStandardMaterial;
+    gemMat: THREE.MeshStandardMaterial;
+  };
+  artifact.visible = Boolean(icon);
+  if (!icon) return;
+
+  data.ring.visible = icon.includes('ring') || icon.includes('hoop') || icon.includes('medallion');
+  data.core.visible = icon.includes('crystal') || icon.includes('relic') || icon.includes('medallion');
+  data.orb.visible = icon.includes('orb') || icon.includes('pearl') || icon.includes('globe') || icon.includes('bottle');
+  data.pendant.visible = icon.includes('pendant') || icon.includes('head') || icon.includes('crown');
+  data.halo.visible = icon.includes('ring') || icon.includes('orb') || icon.includes('pearl');
+
+  const color = icon.includes('death') || icon.includes('god') ? '#ff004c' : icon.includes('sea') ? '#75e6da' : icon.includes('snow') ? '#d9f7ff' : icon.includes('moon') ? '#b56cff' : icon.includes('green') ? '#06d6a0' : icon.includes('sun') || icon.includes('gold') ? '#ffe66d' : '#ffb703';
+  data.glowMat.color.set(color);
+  data.glowMat.emissive.set(color);
+  data.gemMat.color.set(color);
+  data.gemMat.emissive.set(color);
+  data.light.color.set(color);
 }
 
 function makeMonster(kind: string, index: number) {
@@ -841,7 +950,7 @@ function makeDragon(color: string) {
 
   const gltfLoader = new GLTFLoader();
   gltfLoader.load(
-    '/models/fatalis/scene.gltf',
+    '/models/khronos-dragon/dragon.glb',
     (gltf) => {
       fallback.visible = false;
       const model = gltf.scene;
@@ -857,7 +966,7 @@ function makeDragon(color: string) {
       const center = box.getCenter(new THREE.Vector3());
       model.position.sub(center);
       model.position.y += size.y / 2;
-      model.scale.setScalar(size.y > 0 ? 7.5 / size.y : 1);
+      model.scale.setScalar(size.y > 0 ? 8.5 / size.y : 1);
       dragon.add(model);
       dragon.userData.loadedModel = model;
     },
@@ -1137,13 +1246,14 @@ export function BattleScene3D(props: BattleScene3DProps) {
     rebuildLocation();
 
     const hero = makeHero();
+    const heroArtifact = makeHeroArtifact();
     const dragon = makeDragon(refs.current.dragonColor);
     const nightKingBoss = new THREE.Group();
     const nightKingFallback = makeNightKingFallback();
     nightKingBoss.add(nightKingFallback);
     nightKingBoss.position.set(0, 0, -18);
     nightKingBoss.scale.setScalar(3.8);
-    scene.add(hero, dragon, nightKingBoss);
+    scene.add(hero, heroArtifact, dragon, nightKingBoss);
 
     const gltfLoader = new GLTFLoader();
     gltfLoader.load(
@@ -1207,10 +1317,18 @@ export function BattleScene3D(props: BattleScene3DProps) {
     }
     scene.add(monsters);
 
+    const monsterMixers: THREE.AnimationMixer[] = [];
     const monsterLoader = new GLTFLoader();
-    monsterLoader.load(
-      '/models/latest-monster/scene.gltf',
-      (gltf) => {
+    const monsterModelPaths = [
+      '/models/gobkit-minions/minion-a01.glb',
+      '/models/gobkit-minions/minion-b01.glb',
+      '/models/gobkit-minions/minion-c01.glb',
+      '/models/gobkit-minions/minion-d01.glb',
+    ];
+    monsterModelPaths.forEach((modelPath, modelIndex) => {
+      monsterLoader.load(
+        modelPath,
+        (gltf) => {
         const template = gltf.scene;
         template.traverse((object) => {
           if (object instanceof THREE.Mesh) {
@@ -1219,15 +1337,23 @@ export function BattleScene3D(props: BattleScene3DProps) {
           }
         });
         monsters.children.forEach((monster, index) => {
+          if (index % monsterModelPaths.length !== modelIndex) return;
           const current = monster as THREE.Group;
           const fallback = current.userData.replacementFallback;
           if (fallback instanceof THREE.Object3D) fallback.visible = false;
-          const model = template.clone(true);
+          const model = cloneSkeleton(template);
           fitMonsterModel(model);
           model.rotation.y += (index % 2 ? 0.08 : -0.08);
           model.name = 'replacement-monster-model';
           current.add(model);
           current.userData.replacementModel = model;
+          if (gltf.animations.length > 0) {
+            const mixer = new THREE.AnimationMixer(model);
+            const idleClip = THREE.AnimationUtils.subclip(gltf.animations[0], 'idle', 0, 30, 24);
+            mixer.clipAction(idleClip).play();
+            monsterMixers.push(mixer);
+            current.userData.replacementMixer = mixer;
+          }
         });
       },
       undefined,
@@ -1237,7 +1363,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
           if (fallback instanceof THREE.Object3D) fallback.visible = true;
         });
       }
-    );
+      );
+    });
 
     const ashMat = new THREE.MeshBasicMaterial({ color: '#aee9e3', transparent: true, opacity: 0.58 });
     const motes = new THREE.Group();
@@ -1275,6 +1402,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const time = clock.getElapsedTime();
       const data = refs.current;
       const delta = clock.getDelta();
+      monsterMixers.forEach((mixer) => mixer.update(delta));
       rebuildLocation();
       const startedStrike = lastHeroAnimation !== data.heroAnimation && data.heroAnimation === 'strike';
       lastHeroAnimation = data.heroAnimation;
@@ -1364,6 +1492,20 @@ export function BattleScene3D(props: BattleScene3DProps) {
         hero.rotation.z = 0;
       }
 
+      updateHeroArtifactStyle(heroArtifact, data.equippedArtifactIcon);
+      if (heroArtifact.visible) {
+        const orbit = time * 1.8;
+        const side = 0.72 + Math.sin(time * 1.3) * 0.08;
+        heroArtifact.position.set(
+          hero.position.x + Math.cos(renderFacing) * side + Math.sin(orbit) * 0.12,
+          hero.position.y + 1.58 + Math.sin(time * 3.1) * 0.12,
+          hero.position.z - Math.sin(renderFacing) * side + Math.cos(orbit) * 0.12
+        );
+        heroArtifact.rotation.y = time * 2.4;
+        heroArtifact.rotation.x = Math.sin(time * 2.2) * 0.28;
+        heroArtifact.scale.setScalar(1 + Math.sin(time * 4) * 0.08);
+      }
+
       const visibleCount = Math.ceil((data.monstersLeft / 100) * monsters.children.length);
       monsters.children.forEach((monster, index) => {
         const current = monster as THREE.Group;
@@ -1382,20 +1524,19 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const toHeroX = heroWorldX - current.position.x;
         const toHeroZ = heroWorldZ - current.position.z;
         const distance = Math.max(0.001, Math.hypot(toHeroX, toHeroZ));
-        const chaseRange = 10;
         const attackRange = 5;
-        const homeX = current.userData.homeX as number;
-        const homeZ = current.userData.homeZ as number;
-        const targetX = distance <= chaseRange ? heroWorldX : homeX + Math.sin(time * 0.7 + index) * 1.4;
-        const targetZ = distance <= chaseRange ? heroWorldZ : homeZ + Math.cos(time * 0.8 + index) * 1.4;
+        const targetX = heroWorldX;
+        const targetZ = heroWorldZ;
         const moveX = targetX - current.position.x;
         const moveZ = targetZ - current.position.z;
         const moveDistance = Math.max(0.001, Math.hypot(moveX, moveZ));
-        const speed = (current.userData.speed as number) * (distance <= chaseRange ? 2.45 : 0.55);
+        const speed = (current.userData.speed as number) * 2.65;
 
         if (distance > attackRange) {
-          current.position.x += (moveX / moveDistance) * speed * delta * 60 + shake * (index % 2 ? 0.012 : -0.012);
-          current.position.z += (moveZ / moveDistance) * speed * delta * 60;
+          const stopDistance = attackRange * 0.82;
+          const stepDistance = Math.min(Math.max(0, distance - stopDistance), speed * delta * 60);
+          current.position.x += (moveX / moveDistance) * stepDistance + shake * (index % 2 ? 0.012 : -0.012);
+          current.position.z += (moveZ / moveDistance) * stepDistance;
           current.userData.attackFlash = Math.max(0, (current.userData.attackFlash as number) - delta * 1.8);
           current.userData.attackCycle = 0;
         } else {
@@ -1405,10 +1546,14 @@ export function BattleScene3D(props: BattleScene3DProps) {
           current.position.z -= (toHeroZ / distance) * 0.018 * Math.sin(time * 14 + index);
         }
 
-        const walk = time * (distance <= chaseRange ? 9.6 : 3.4) + index;
+        const walk = time * (distance > attackRange ? 9.8 : 5.4) + index;
         const attack = current.userData.attackFlash as number;
         current.position.y = Math.max(0, Math.sin(walk * 2) * 0.08) + (attack > 0.4 ? Math.sin(time * 22 + index) * 0.06 : 0);
-        current.rotation.y = Math.atan2(moveX, moveZ) + Math.PI + Math.sin(walk) * 0.06;
+        const faceHero = Math.atan2(toHeroX, toHeroZ) + Math.PI;
+        let monsterTurnDelta = faceHero - current.rotation.y;
+        monsterTurnDelta = Math.atan2(Math.sin(monsterTurnDelta), Math.cos(monsterTurnDelta));
+        current.rotation.y += monsterTurnDelta * Math.min(1, delta * 8);
+        current.rotation.y += Math.sin(walk) * (distance > attackRange ? 0.035 : 0.06);
         const attackCycle = current.userData.attackCycle as number;
         const monsterWindup = THREE.MathUtils.smoothstep(attackCycle, 0.05, 0.34);
         const monsterHit = Math.sin(THREE.MathUtils.clamp((attackCycle - 0.28) / 0.36, 0, 1) * Math.PI);
