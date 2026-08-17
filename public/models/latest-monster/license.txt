@@ -1,0 +1,11 @@
+Model Information:
+* title:	МОНСТР
+* source:	https://sketchfab.com/3d-models/9720b90f801d4d9898d7fd5f58d1c3fa
+* author:	toryanik.mitya (https://sketchfab.com/toryanik.mitya)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "МОНСТР" (https://sketchfab.com/3d-models/9720b90f801d4d9898d7fd5f58d1c3fa) by toryanik.mitya (https://sketchfab.com/toryanik.mitya) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

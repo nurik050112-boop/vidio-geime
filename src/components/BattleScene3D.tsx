@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 type BattleScene3DProps = {
   dragonColor: string;
@@ -12,7 +13,7 @@ type BattleScene3DProps = {
   heroDirection: { x: number; z: number };
   monstersLeft: number;
   battlePulse: number;
-  cameraMode: 'third' | 'second';
+  cameraMode: 'third';
   monsterKind: string;
   viewDistance: number;
   sceneKey: string;
@@ -434,14 +435,14 @@ function makeMonster(kind: string, index: number) {
   const usesReferenceBody = true;
   const isOrc = kind === 'orc' || kind === 'magma' || kind === 'avalanche';
   const isCrawler = kind === 'lizard' || kind === 'frost' || isLizardBrute;
-  const skinColor = isGoblin ? ['#b8b2a8', '#9f9a91', '#c4beb3', '#8f928a'][goblinVariant] : isSpider ? '#d9c882' : isLizardBrute ? '#2f7f3f' : isStone ? '#888883' : isWire ? '#c8b29e' : isPale ? '#b8c5c9' : isGiant ? '#8d8f8c' : isOrc ? '#6f7d35' : isCrawler ? '#8a8f82' : kind === 'shadow' ? '#5c5364' : '#8f958a';
+  const skinColor = isGoblin ? ['#a9aaa5', '#949893', '#b8b9b2', '#858b86'][goblinVariant] : isSpider ? '#d9c882' : isLizardBrute ? '#2f7f3f' : isStone ? '#888883' : isWire ? '#c8b29e' : isPale ? '#b8c5c9' : isGiant ? '#8d8f8c' : isOrc ? '#6f7d35' : isCrawler ? '#8a8f82' : kind === 'shadow' ? '#5c5364' : '#8f958a';
   const dark = kind === 'shadow' ? '#120916' : '#34261d';
   const scale = isGoblin ? 0.9 : isStone ? 1.32 : isGiant ? 1.42 : isOrc || isLizardBrute ? 1.2 : isCrawler ? 1.08 : kind === 'shadow' ? 0.98 : 0.94;
 
   const body = capsule(skinColor, usesReferenceBody ? 0.22 * scale : 0.34 * scale, isOrc ? 1.08 : 0.8, [0, 0.86 * scale, 0]);
-  body.scale.set(isGoblin ? (goblinVariant === 0 ? 0.52 : goblinVariant === 1 ? 0.72 : 0.58) : isSpider ? 1.15 : usesReferenceBody ? 0.72 : isCrawler ? 1.25 : 0.95, isGoblin ? (goblinVariant === 3 ? 0.82 : 1.02) : isStone ? 1.32 : usesReferenceBody ? 1.05 : isOrc ? 1.18 : 0.98, isGoblin ? (goblinVariant === 1 ? 0.92 : 0.66) : isSpider ? 1.45 : isCrawler ? 0.82 : 1);
-  const belly = mesh(new THREE.SphereGeometry(0.28 * scale, 22, 14), skinColor, [0, 0.82 * scale, 0.18]);
-  belly.scale.set(isGoblin ? (goblinVariant === 1 ? 1.25 : 0.72) : isStone ? 1.45 : isPale ? 1.05 : 1.15, isGoblin ? (goblinVariant === 1 ? 1.25 : 1.02) : isStone ? 1.25 : isPale ? 1.7 : 1.02, isGoblin ? (goblinVariant === 1 ? 1.22 : 0.9) : isSpider ? 1.55 : 0.95);
+  body.scale.set(isGoblin ? (goblinVariant === 0 ? 0.56 : goblinVariant === 1 ? 0.68 : 0.6) : isSpider ? 1.15 : usesReferenceBody ? 0.72 : isCrawler ? 1.25 : 0.95, isGoblin ? (goblinVariant === 3 ? 0.88 : 1.08) : isStone ? 1.32 : usesReferenceBody ? 1.05 : isOrc ? 1.18 : 0.98, isGoblin ? (goblinVariant === 1 ? 0.82 : 0.62) : isSpider ? 1.45 : isCrawler ? 0.82 : 1);
+  const belly = mesh(new THREE.SphereGeometry(0.28 * scale, 22, 14), skinColor, [0, 0.78 * scale, 0.2]);
+  belly.scale.set(isGoblin ? (goblinVariant === 1 ? 1.34 : 1.02) : isStone ? 1.45 : isPale ? 1.05 : 1.15, isGoblin ? (goblinVariant === 1 ? 1.22 : 1.05) : isStone ? 1.25 : isPale ? 1.7 : 1.02, isGoblin ? (goblinVariant === 1 ? 1.32 : 1.12) : isSpider ? 1.55 : 0.95);
   belly.visible = usesReferenceBody;
   const ribs = new THREE.Group();
   for (let i = 0; i < 4; i += 1) {
@@ -450,7 +451,7 @@ function makeMonster(kind: string, index: number) {
     ribs.add(rib);
   }
   const head = mesh(new THREE.SphereGeometry(0.32 * scale, 22, 14), skinColor, [0, 1.64 * scale, 0.08]);
-  head.scale.set(isGoblin ? (goblinVariant === 2 ? 1.28 : 1.08) : isSpider ? 0.58 : usesReferenceBody ? 0.9 : isOrc ? 1.25 : 1.05, isGoblin ? 1.42 : isPale ? 0.78 : usesReferenceBody ? 1.16 : isCrawler ? 0.78 : 1, isGoblin ? 1.02 : isLizardBrute ? 1.55 : usesReferenceBody ? 1.08 : isCrawler ? 1.35 : 1);
+  head.scale.set(isGoblin ? (goblinVariant === 2 ? 1.26 : 1.12) : isSpider ? 0.58 : usesReferenceBody ? 0.9 : isOrc ? 1.25 : 1.05, isGoblin ? 1.34 : isPale ? 0.78 : usesReferenceBody ? 1.16 : isCrawler ? 0.78 : 1, isGoblin ? 0.9 : isLizardBrute ? 1.55 : usesReferenceBody ? 1.08 : isCrawler ? 1.35 : 1);
   const brow = mesh(new THREE.BoxGeometry(0.34 * scale, 0.06 * scale, 0.08 * scale), '#747a70', [0, 1.7 * scale, 0.38 * scale]);
   brow.scale.set(isGoblin ? 1.32 : 1, isGoblin ? 1.25 : 1, isGoblin ? 1.1 : 1);
   brow.rotation.x = isGoblin ? 0.18 : 0;
@@ -482,10 +483,10 @@ function makeMonster(kind: string, index: number) {
   hornL.visible = isOrc || isSawWarrior;
   hornR.visible = isOrc || isSawWarrior;
 
-  const earL = cone(skinColor, 0.105 * scale, 0.62 * scale, [-0.34 * scale, 1.63 * scale, 0.02]);
+  const earL = cone(skinColor, 0.105 * scale, 0.78 * scale, [-0.38 * scale, 1.64 * scale, 0.02]);
   earL.rotation.z = Math.PI / 2;
-  earL.rotation.y = -0.28;
-  earL.scale.set(isGoblin ? 1.55 : 1, isGoblin ? 0.72 : 1, isGoblin ? 1.1 : 1);
+  earL.rotation.y = -0.36;
+  earL.scale.set(isGoblin ? 1.95 : 1, isGoblin ? 0.56 : 1, isGoblin ? 1.06 : 1);
   const earR = earL.clone();
   earR.position.x *= -1;
   earR.rotation.z = -Math.PI / 2;
@@ -537,8 +538,32 @@ function makeMonster(kind: string, index: number) {
   knife.visible = isGoblin && goblinVariant !== 2;
 
   const goblinDetails = new THREE.Group();
-  const loincloth = mesh(new THREE.BoxGeometry(0.34 * scale, 0.36 * scale, 0.1 * scale), '#3b332d', [0, 0.5 * scale, 0.37]);
-  const backCloth = mesh(new THREE.BoxGeometry(0.36 * scale, 0.34 * scale, 0.08 * scale), '#3b332d', [0, 0.5 * scale, -0.25]);
+  const loincloth = mesh(new THREE.BoxGeometry(0.42 * scale, 0.38 * scale, 0.1 * scale), '#3b332d', [0, 0.5 * scale, 0.38]);
+  const backCloth = mesh(new THREE.BoxGeometry(0.4 * scale, 0.34 * scale, 0.08 * scale), '#3b332d', [0, 0.5 * scale, -0.25]);
+  const pecL = mesh(new THREE.SphereGeometry(0.12 * scale, 12, 8), skinColor, [-0.12 * scale, 1.12 * scale, 0.32 * scale]);
+  const pecR = pecL.clone();
+  pecR.position.x *= -1;
+  pecL.scale.set(1.2, 0.55, 0.45);
+  pecR.scale.copy(pecL.scale);
+  const shoulderMuscleL = mesh(new THREE.SphereGeometry(0.12 * scale, 12, 8), skinColor, [-0.42 * scale, 1.2 * scale, 0.08]);
+  const shoulderMuscleR = shoulderMuscleL.clone();
+  shoulderMuscleR.position.x *= -1;
+  shoulderMuscleL.scale.set(1.15, 0.85, 0.75);
+  shoulderMuscleR.scale.copy(shoulderMuscleL.scale);
+  const bicepL = mesh(new THREE.SphereGeometry(0.095 * scale, 12, 8), skinColor, [-0.58 * scale, 0.93 * scale, 0.07]);
+  const bicepR = bicepL.clone();
+  bicepR.position.x *= -1;
+  bicepL.scale.set(0.75, 1.25, 0.75);
+  bicepR.scale.copy(bicepL.scale);
+  const calfL = mesh(new THREE.SphereGeometry(0.085 * scale, 12, 8), skinColor, [-0.2 * scale, 0.22 * scale, -0.04]);
+  const calfR = calfL.clone();
+  calfR.position.x *= -1;
+  calfR.position.z = 0.06;
+  calfL.scale.set(0.85, 1.28, 0.78);
+  calfR.scale.copy(calfL.scale);
+  const kneeL = mesh(new THREE.SphereGeometry(0.06 * scale, 10, 8), '#c2c2ba', [-0.18 * scale, 0.5 * scale, 0.12]);
+  const kneeR = kneeL.clone();
+  kneeR.position.x *= -1;
   const toothMat = '#e8d6b8';
   for (let i = 0; i < 4; i += 1) {
     const tooth = cone(toothMat, 0.018 * scale, 0.09 * scale, [(-0.09 + i * 0.06) * scale, 1.39 * scale, 0.45 * scale]);
@@ -558,6 +583,12 @@ function makeMonster(kind: string, index: number) {
   }
   const collar = mesh(new THREE.TorusGeometry(0.28 * scale, 0.025 * scale, 8, 20), '#2e2924', [0, 1.27 * scale, 0.02]);
   collar.rotation.x = Math.PI / 2;
+  const clothTears = new THREE.Group();
+  for (let i = 0; i < 5; i += 1) {
+    const tear = cone('#2d2824', 0.035 * scale, (0.14 + (i % 2) * 0.08) * scale, [(-0.18 + i * 0.09) * scale, 0.25 * scale, 0.4 * scale]);
+    tear.rotation.x = Math.PI;
+    clothTears.add(tear);
+  }
   const ribsMark = new THREE.Group();
   for (let i = 0; i < 4; i += 1) {
     const mark = mesh(new THREE.BoxGeometry(0.22 * scale, 0.018 * scale, 0.02 * scale), '#78746d', [0, (0.9 + i * 0.075) * scale, 0.35]);
@@ -573,7 +604,7 @@ function makeMonster(kind: string, index: number) {
   const goblinShield = mesh(new THREE.CylinderGeometry(0.25 * scale, 0.29 * scale, 0.08 * scale, 7), '#5c554b', [-0.6 * scale, 0.95 * scale, 0.28], { metalness: 0.12, roughness: 0.7 });
   goblinShield.rotation.set(Math.PI / 2, 0, 0.2);
   goblinShield.visible = isGoblin && goblinVariant === 2;
-  goblinDetails.add(loincloth, backCloth, collar, ribsMark, goblinClub, goblinShield);
+  goblinDetails.add(loincloth, backCloth, pecL, pecR, shoulderMuscleL, shoulderMuscleR, bicepL, bicepR, calfL, calfR, kneeL, kneeR, collar, clothTears, ribsMark, goblinClub, goblinShield);
   goblinDetails.visible = isGoblin;
 
   const armor = new THREE.Group();
@@ -624,7 +655,74 @@ function makeMonster(kind: string, index: number) {
   wireFrame.add(wireSkin);
   wireFrame.visible = isWire;
 
-  group.add(body, belly, ribs, head, brow, nose, snout, jaw, eyeL, eyeR, hood, rag, hornL, hornR, earL, earR, armL, armR, handL, handR, legL, legR, footL, footR, club, knife, goblinDetails, armor, saw, spiderLegs, rockNubs, wireFrame);
+  const monsterDetails = new THREE.Group();
+  const backSpikes = new THREE.Group();
+  for (let i = 0; i < 5; i += 1) {
+    const spike = cone(isLizardBrute ? '#174d25' : '#6f756c', 0.045 * scale, 0.24 * scale, [0, (0.92 + i * 0.18) * scale, -0.3 * scale]);
+    spike.rotation.x = -0.72;
+    backSpikes.add(spike);
+  }
+  backSpikes.visible = isLizardBrute || isStone;
+
+  const lizardTail = new THREE.Group();
+  for (let i = 0; i < 4; i += 1) {
+    const segment = capsule(skinColor, Math.max(0.04, 0.11 * scale - i * 0.018), 0.34 * scale, [0, 0.42 * scale, (-0.38 - i * 0.26) * scale]);
+    segment.rotation.x = 1.22 - i * 0.08;
+    lizardTail.add(segment);
+  }
+  lizardTail.visible = isCrawler || isLizardBrute;
+
+  const orcAxe = new THREE.Group();
+  const axeHandle = mesh(new THREE.CylinderGeometry(0.035 * scale, 0.04 * scale, 1.08 * scale, 8), '#28190f', [-0.7 * scale, 1.05 * scale, 0.22]);
+  axeHandle.rotation.z = 0.95;
+  const axeBlade = mesh(new THREE.BoxGeometry(0.38 * scale, 0.28 * scale, 0.04 * scale), '#c1c4bd', [-0.98 * scale, 1.42 * scale, 0.24], { metalness: 0.78, roughness: 0.2 });
+  axeBlade.rotation.z = 0.42;
+  orcAxe.add(axeHandle, axeBlade);
+  orcAxe.visible = isOrc;
+
+  const giantDetails = new THREE.Group();
+  const shoulderStoneL = mesh(new THREE.DodecahedronGeometry(0.22 * scale), '#7f817b', [-0.55 * scale, 1.35 * scale, 0.05]);
+  const shoulderStoneR = shoulderStoneL.clone();
+  shoulderStoneR.position.x *= -1;
+  const jawStone = mesh(new THREE.BoxGeometry(0.44 * scale, 0.16 * scale, 0.1 * scale), '#6c6f69', [0, 1.42 * scale, 0.42]);
+  giantDetails.add(shoulderStoneL, shoulderStoneR, jawStone);
+  giantDetails.visible = isGiant || isStone;
+
+  const spiderFace = new THREE.Group();
+  for (let i = 0; i < 6; i += 1) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.035 * scale, 8, 6), eyeMat);
+    eye.position.set((-0.16 + (i % 3) * 0.16) * scale, (1.66 + Math.floor(i / 3) * 0.1) * scale, 0.45 * scale);
+    spiderFace.add(eye);
+  }
+  const spiderAbdomen = mesh(new THREE.SphereGeometry(0.38 * scale, 18, 12), skinColor, [0, 0.66 * scale, -0.34 * scale]);
+  spiderAbdomen.scale.set(1.05, 0.72, 1.35);
+  spiderFace.add(spiderAbdomen);
+  spiderFace.visible = isSpider;
+
+  const paleDetails = new THREE.Group();
+  const paleBelly = mesh(new THREE.SphereGeometry(0.3 * scale, 18, 12), '#d9e1df', [0, 0.86 * scale, 0.38 * scale], { transparent: true, opacity: 0.76 });
+  paleBelly.scale.set(0.84, 1.35, 0.62);
+  const drool = mesh(new THREE.CylinderGeometry(0.018 * scale, 0.012 * scale, 0.34 * scale, 6), '#aee9e3', [0.09 * scale, 1.25 * scale, 0.48 * scale], { emissive: '#75e6da', emissiveIntensity: 0.35 });
+  paleDetails.add(paleBelly, drool);
+  paleDetails.visible = isPale;
+
+  const sawHelmet = new THREE.Group();
+  const helmetBand = mesh(new THREE.BoxGeometry(0.56 * scale, 0.14 * scale, 0.16 * scale), '#151515', [0, 1.82 * scale, 0.18], { metalness: 0.65, roughness: 0.25 });
+  for (let i = 0; i < 4; i += 1) {
+    const tooth = cone('#d8d8d2', 0.035 * scale, 0.14 * scale, [(-0.21 + i * 0.14) * scale, 1.95 * scale, 0.18]);
+    tooth.rotation.x = Math.PI;
+    sawHelmet.add(tooth);
+  }
+  sawHelmet.add(helmetBand);
+  sawHelmet.visible = isSawWarrior;
+
+  const wireGlow = new THREE.PointLight('#f0d6b8', 1.3, 4);
+  wireGlow.position.set(0, 1.2 * scale, 0.1);
+  wireGlow.visible = isWire;
+
+  monsterDetails.add(backSpikes, lizardTail, orcAxe, giantDetails, spiderFace, paleDetails, sawHelmet, wireGlow);
+
+  group.add(body, belly, ribs, head, brow, nose, snout, jaw, eyeL, eyeR, hood, rag, hornL, hornR, earL, earR, armL, armR, handL, handR, legL, legR, footL, footR, club, knife, goblinDetails, armor, saw, spiderLegs, rockNubs, wireFrame, monsterDetails);
   group.scale.setScalar(0.86 + (index % 4) * 0.09);
   if (isGoblin && goblinVariant === 3) {
     group.rotation.x = -0.16;
@@ -632,11 +730,148 @@ function makeMonster(kind: string, index: number) {
     armL.rotation.z = -1.28;
     armR.rotation.z = 1.28;
   }
-  group.userData = { body, head, jaw, earL, earR, armL, armR, club, knife, goblinClub, legL, legR, footL, footR, baseY: 0, seed: index * 0.7, isGoblin, goblinVariant };
+  group.userData = { body, head, jaw, earL, earR, armL, armR, club, knife, goblinClub, legL, legR, footL, footR, lizardTail, backSpikes, baseY: 0, seed: index * 0.7, isGoblin, goblinVariant };
   return group;
 }
 
+function makeReplacementMonsterFallback() {
+  const group = new THREE.Group();
+  const skin = material('#3f4f38', { roughness: 0.66, metalness: 0.05 });
+  const body = capsule('#3f4f38', 0.18, 0.62, [0, 0.58, 0]);
+  body.material = skin;
+  body.scale.set(0.75, 1.08, 0.62);
+  const head = mesh(new THREE.SphereGeometry(0.22, 16, 10), '#465d40', [0, 1.13, 0.04]);
+  head.scale.set(1.05, 0.86, 0.9);
+  const eyeMat = new THREE.MeshBasicMaterial({ color: '#ff5a1f' });
+  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), eyeMat);
+  eyeL.position.set(-0.07, 1.17, 0.22);
+  const eyeR = eyeL.clone();
+  eyeR.position.x *= -1;
+  const armL = capsule('#3f4f38', 0.045, 0.5, [-0.28, 0.65, 0.02]);
+  armL.material = skin;
+  armL.rotation.z = -0.95;
+  const armR = armL.clone();
+  armR.position.x *= -1;
+  armR.rotation.z = 0.95;
+  const legL = capsule('#354631', 0.055, 0.46, [-0.1, 0.2, 0]);
+  const legR = legL.clone();
+  legR.position.x *= -1;
+  group.add(body, head, eyeL, eyeR, armL, armR, legL, legR);
+  return group;
+}
+
+function fitMonsterModel(model: THREE.Object3D) {
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  model.position.sub(center);
+  model.position.y += size.y / 2;
+  model.scale.setScalar(size.y > 0 ? 1.65 / size.y : 1);
+  model.rotation.y = Math.PI;
+}
+
+function fitLocationModel(model: THREE.Object3D) {
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  model.position.sub(center);
+  model.position.y += size.y / 2;
+  const widestSide = Math.max(size.x, size.z, 1);
+  model.scale.setScalar(58 / widestSide);
+  model.rotation.y = Math.PI;
+}
+
 function makeDragon(color: string) {
+  {
+  const dragon = new THREE.Group();
+  const fallback = new THREE.Group();
+  const darkScale = 1.5;
+  const bodyMat = material('#15100e', { metalness: 0.12, roughness: 0.42 });
+  const frostEye = new THREE.MeshBasicMaterial({ color: '#ff5a1f' });
+  const body = capsule('#15100e', 0.5 * darkScale, 1.8 * darkScale, [0, 1.55 * darkScale, 0]);
+  body.material = bodyMat;
+  body.scale.set(1.7, 0.92, 0.82);
+  const neck = capsule('#15100e', 0.18 * darkScale, 1.0 * darkScale, [0.82 * darkScale, 2.02 * darkScale, 0]);
+  neck.material = bodyMat;
+  neck.rotation.z = -0.62;
+  const head = mesh(new THREE.SphereGeometry(0.34 * darkScale, 22, 14), '#15100e', [1.42 * darkScale, 2.38 * darkScale, 0]);
+  head.material = bodyMat;
+  head.scale.set(1.35, 0.82, 0.72);
+  const jaw = mesh(new THREE.BoxGeometry(0.52 * darkScale, 0.12 * darkScale, 0.14 * darkScale), '#2b1510', [1.68 * darkScale, 2.22 * darkScale, 0]);
+  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.04 * darkScale, 8, 6), frostEye);
+  eyeL.position.set(1.6 * darkScale, 2.44 * darkScale, 0.24 * darkScale);
+  const eyeR = eyeL.clone();
+  eyeR.position.z *= -1;
+  const wingL = new THREE.Group();
+  const wingR = new THREE.Group();
+  const makeWing = (side: 1 | -1) => {
+    const wing = side === 1 ? wingL : wingR;
+    const membrane = new THREE.Mesh(
+      new THREE.CircleGeometry(1.25 * darkScale, 4),
+      new THREE.MeshStandardMaterial({ color: '#211716', side: THREE.DoubleSide, transparent: true, opacity: 0.78, roughness: 0.5 })
+    );
+    membrane.position.set(-0.35 * darkScale, 2.25 * darkScale, side * 0.8 * darkScale);
+    membrane.rotation.set(0.8, side * 0.42, side * -0.78);
+    membrane.scale.set(1.35, 0.76, 1);
+    wing.add(membrane);
+  };
+  makeWing(1);
+  makeWing(-1);
+  const tail = new THREE.Group();
+  for (let i = 0; i < 5; i += 1) {
+    const segment = capsule('#15100e', (0.18 - i * 0.022) * darkScale, 0.48 * darkScale, [(-0.72 - i * 0.36) * darkScale, (1.08 - i * 0.06) * darkScale, Math.sin(i) * 0.18 * darkScale]);
+    segment.material = bodyMat;
+    segment.rotation.z = 1.12 - i * 0.12;
+    tail.add(segment);
+  }
+  const spines = new THREE.Group();
+  for (let i = 0; i < 8; i += 1) {
+    const spine = cone('#d8d0bc', (0.065 - i * 0.004) * darkScale, (0.32 - i * 0.012) * darkScale, [(0.9 - i * 0.34) * darkScale, (2.28 - i * 0.12) * darkScale, 0]);
+    spine.rotation.z = -0.18;
+    spines.add(spine);
+  }
+  const fire = new THREE.Mesh(
+    new THREE.ConeGeometry(0.28 * darkScale, 1.35 * darkScale, 12),
+    new THREE.MeshBasicMaterial({ color: '#ff8a1f', transparent: true, opacity: 0.88 })
+  );
+  fire.position.set(2.05 * darkScale, 2.28 * darkScale, 0);
+  fire.rotation.z = -Math.PI / 2;
+  fallback.add(body, neck, head, jaw, eyeL, eyeR, wingL, wingR, tail, spines, fire);
+  dragon.add(fallback);
+
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.load(
+    '/models/fatalis/scene.gltf',
+    (gltf) => {
+      fallback.visible = false;
+      const model = gltf.scene;
+      model.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.castShadow = true;
+          object.receiveShadow = true;
+        }
+      });
+      model.rotation.y = -Math.PI / 2;
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.sub(center);
+      model.position.y += size.y / 2;
+      model.scale.setScalar(size.y > 0 ? 7.5 / size.y : 1);
+      dragon.add(model);
+      dragon.userData.loadedModel = model;
+    },
+    undefined,
+    () => {
+      fallback.visible = true;
+    }
+  );
+
+  dragon.position.set(4.2, 0, -0.5);
+  dragon.userData = { bodyMat, body, head, neck, wingL, wingR, fire, jaw, tail, spines };
+  return dragon;
+  }
+
   const dragon = new THREE.Group();
   const bodyMat = material(color, { metalness: 0.05, roughness: 0.42 });
   const bellyMat = material('#d7c5a5', { roughness: 0.5 });
@@ -757,6 +992,54 @@ function makeDragon(color: string) {
   return dragon;
 }
 
+function makeNightKingFallback() {
+  const boss = new THREE.Group();
+  const iceSkin = material('#b8c5c9', { roughness: 0.48, metalness: 0.08 });
+  const armor = material('#1b2430', { roughness: 0.34, metalness: 0.45 });
+  const frost = material('#d9f7ff', { emissive: '#75e6da', emissiveIntensity: 0.45, roughness: 0.26 });
+
+  const body = capsule('#1b2430', 0.56, 2.1, [0, 2.25, 0]);
+  body.material = armor;
+  body.scale.set(0.82, 1.12, 0.58);
+  const bellyArmor = mesh(new THREE.BoxGeometry(0.9, 1.25, 0.18), '#273445', [0, 2.34, 0.42], { metalness: 0.5, roughness: 0.3 });
+  const head = mesh(new THREE.SphereGeometry(0.42, 24, 16), '#b8c5c9', [0, 3.75, 0.12]);
+  head.material = iceSkin;
+  head.scale.set(0.82, 1.22, 0.78);
+  const crown = new THREE.Group();
+  for (let i = 0; i < 7; i += 1) {
+    const spike = cone('#d9f7ff', 0.06, 0.62 + Math.abs(i - 3) * 0.08, [(-0.36 + i * 0.12), 4.18 + Math.abs(i - 3) * 0.04, 0.06]);
+    spike.material = frost;
+    spike.rotation.z = (i - 3) * 0.18;
+    crown.add(spike);
+  }
+  const eyeMat = new THREE.MeshBasicMaterial({ color: '#9bf6ff' });
+  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 8), eyeMat);
+  eyeL.position.set(-0.13, 3.8, 0.44);
+  const eyeR = eyeL.clone();
+  eyeR.position.x *= -1;
+  const armL = capsule('#b8c5c9', 0.11, 1.75, [-0.78, 2.34, 0.05]);
+  armL.material = iceSkin;
+  armL.rotation.z = -1.12;
+  const armR = armL.clone();
+  armR.position.x *= -1;
+  armR.rotation.z = 1.12;
+  const legL = capsule('#1b2430', 0.14, 1.38, [-0.26, 0.86, 0]);
+  legL.material = armor;
+  const legR = legL.clone();
+  legR.position.x *= -1;
+  const cape = mesh(new THREE.BoxGeometry(1.2, 2.5, 0.1), '#090d14', [0, 2.05, -0.36], { roughness: 0.82 });
+  cape.rotation.x = 0.12;
+  const sword = new THREE.Group();
+  const blade = mesh(new THREE.BoxGeometry(0.08, 2.45, 0.04), '#d9f7ff', [0.82, 1.92, 0.3], { emissive: '#75e6da', emissiveIntensity: 0.5, metalness: 0.6 });
+  blade.rotation.z = -0.25;
+  const guard = mesh(new THREE.BoxGeometry(0.46, 0.08, 0.06), '#6d7b87', [0.62, 0.82, 0.3], { metalness: 0.55 });
+  sword.add(blade, guard);
+
+  boss.add(cape, body, bellyArmor, head, crown, eyeL, eyeR, armL, armR, legL, legR, sword);
+  boss.userData.head = head;
+  return boss;
+}
+
 export function BattleScene3D(props: BattleScene3DProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const refs = useRef(props);
@@ -793,6 +1076,42 @@ export function BattleScene3D(props: BattleScene3DProps) {
     addCaveCity(scene);
     const locationRoot = new THREE.Group();
     scene.add(locationRoot);
+    const recRoomLocation = new THREE.Group();
+    recRoomLocation.position.set(0, 0, -26);
+    scene.add(recRoomLocation);
+    const recRoomRunLocation = new THREE.Group();
+    recRoomRunLocation.position.set(34, 0, -18);
+    recRoomRunLocation.rotation.y = -0.38;
+    scene.add(recRoomRunLocation);
+    const locationLoader = new GLTFLoader();
+    locationLoader.load(
+      '/models/rec-room-monster/scene.gltf',
+      (gltf) => {
+        const model = gltf.scene;
+        model.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+          }
+        });
+        fitLocationModel(model);
+        recRoomLocation.add(model);
+      }
+    );
+    locationLoader.load(
+      '/models/rec-room-run-location/scene.gltf',
+      (gltf) => {
+        const model = gltf.scene;
+        model.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+          }
+        });
+        fitLocationModel(model);
+        recRoomRunLocation.add(model);
+      }
+    );
     let activeLocationKey = '';
     const disposeLocationObject = (object: THREE.Object3D) => {
       object.traverse((entry) => {
@@ -819,11 +1138,60 @@ export function BattleScene3D(props: BattleScene3DProps) {
 
     const hero = makeHero();
     const dragon = makeDragon(refs.current.dragonColor);
-    scene.add(hero, dragon);
+    const nightKingBoss = new THREE.Group();
+    const nightKingFallback = makeNightKingFallback();
+    nightKingBoss.add(nightKingFallback);
+    nightKingBoss.position.set(0, 0, -18);
+    nightKingBoss.scale.setScalar(3.8);
+    scene.add(hero, dragon, nightKingBoss);
+
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load(
+      '/models/night-king/scene.gltf',
+      (gltf) => {
+        nightKingFallback.visible = false;
+        const model = gltf.scene;
+        model.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+            const objectMaterial = object.material;
+            const tuneMaterial = (item: THREE.Material) => {
+              if (item instanceof THREE.MeshStandardMaterial) {
+                item.roughness = Math.min(0.72, item.roughness + 0.12);
+                item.metalness = Math.max(item.metalness, 0.05);
+              }
+            };
+            if (Array.isArray(objectMaterial)) objectMaterial.forEach(tuneMaterial);
+            else tuneMaterial(objectMaterial);
+          }
+        });
+        model.rotation.y = Math.PI;
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        model.position.sub(center);
+        model.position.y += size.y / 2;
+        model.scale.setScalar(size.y > 0 ? 14 / size.y : 4.2);
+        nightKingBoss.add(model);
+        nightKingBoss.userData.loadedModel = model;
+      },
+      undefined,
+      () => {
+        nightKingFallback.visible = true;
+      }
+    );
 
     const monsters = new THREE.Group();
     for (let i = 0; i < 36; i += 1) {
       const monster = makeMonster(refs.current.monsterKind, i);
+      monster.children.forEach((child) => {
+        child.visible = false;
+      });
+      const replacementFallback = makeReplacementMonsterFallback();
+      replacementFallback.name = 'replacement-monster-fallback';
+      monster.add(replacementFallback);
+      monster.userData.replacementFallback = replacementFallback;
       const ring = 8 + (i % 6) * 3.7;
       const angle = (i / 36) * Math.PI * 2;
       const homeX = Math.cos(angle) * ring + Math.sin(i * 1.7) * 4;
@@ -839,6 +1207,38 @@ export function BattleScene3D(props: BattleScene3DProps) {
     }
     scene.add(monsters);
 
+    const monsterLoader = new GLTFLoader();
+    monsterLoader.load(
+      '/models/latest-monster/scene.gltf',
+      (gltf) => {
+        const template = gltf.scene;
+        template.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+          }
+        });
+        monsters.children.forEach((monster, index) => {
+          const current = monster as THREE.Group;
+          const fallback = current.userData.replacementFallback;
+          if (fallback instanceof THREE.Object3D) fallback.visible = false;
+          const model = template.clone(true);
+          fitMonsterModel(model);
+          model.rotation.y += (index % 2 ? 0.08 : -0.08);
+          model.name = 'replacement-monster-model';
+          current.add(model);
+          current.userData.replacementModel = model;
+        });
+      },
+      undefined,
+      () => {
+        monsters.children.forEach((monster) => {
+          const fallback = (monster as THREE.Group).userData.replacementFallback;
+          if (fallback instanceof THREE.Object3D) fallback.visible = true;
+        });
+      }
+    );
+
     const ashMat = new THREE.MeshBasicMaterial({ color: '#aee9e3', transparent: true, opacity: 0.58 });
     const motes = new THREE.Group();
     for (let i = 0; i < 110; i += 1) {
@@ -852,6 +1252,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
     const clock = new THREE.Clock();
     let frame = 0;
     let lastPulse = refs.current.battlePulse;
+    let lastHeroAnimation = refs.current.heroAnimation;
     let pulse = 0;
     let lastHeroX = refs.current.heroPosition.x / 1000;
     let lastHeroZ = refs.current.heroPosition.z / 1000;
@@ -875,7 +1276,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const data = refs.current;
       const delta = clock.getDelta();
       rebuildLocation();
-      if (lastPulse !== data.battlePulse) {
+      const startedStrike = lastHeroAnimation !== data.heroAnimation && data.heroAnimation === 'strike';
+      lastHeroAnimation = data.heroAnimation;
+      if (lastPulse !== data.battlePulse || startedStrike) {
         lastPulse = data.battlePulse;
         pulse = 0.38;
         attackSwing = 1;
@@ -930,7 +1333,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       hero.userData.leftArm.rotation.z = -0.55 + Math.sin(time * 5) * 0.08 + stepLift * (data.isHeroMoving ? 0.12 : 0);
       hero.userData.rightArm.rotation.z = -1.18 - Math.sin(time * 5) * 0.05 - stepLift * (data.isHeroMoving ? 0.08 : 0);
       hero.userData.sword.rotation.set(0.12, 0, -1.34);
-      if (data.heroAnimation === 'strike') {
+      if (data.heroAnimation === 'strike' || attackSwing > 0) {
         const attackPhase = THREE.MathUtils.clamp(1 - attackSwing, 0, 1);
         const windup = THREE.MathUtils.smoothstep(attackPhase, 0, 0.24);
         const slash = Math.sin(THREE.MathUtils.clamp((attackPhase - 0.16) / 0.34, 0, 1) * Math.PI);
@@ -1046,9 +1449,28 @@ export function BattleScene3D(props: BattleScene3DProps) {
           current.userData.head.rotation.x = monsterSwing * 0.22 + Math.sin(walk * 0.6) * 0.04;
           current.userData.club.rotation.z = attack ? -0.35 - monsterWindup * 0.9 - monsterHit * 1.1 + monsterRecover * 0.8 : Math.sin(walk) * 0.18;
         }
+        if (current.userData.lizardTail instanceof THREE.Group) {
+          current.userData.lizardTail.rotation.y = Math.sin(walk * 0.6 + index) * 0.22;
+          current.userData.lizardTail.rotation.z = Math.sin(walk * 0.4 + index) * 0.08;
+        }
+        if (current.userData.backSpikes instanceof THREE.Group) {
+          current.userData.backSpikes.rotation.x = Math.sin(walk * 0.35 + index) * 0.06;
+        }
       });
 
       dragon.visible = !data.isFinalReveal && data.monstersLeft <= 0;
+      nightKingBoss.visible = !data.isFinalReveal && data.monstersLeft <= 0;
+      if (nightKingBoss.visible) {
+        const bossTargetAngle = Math.atan2(heroWorldX - nightKingBoss.position.x, heroWorldZ - nightKingBoss.position.z);
+        nightKingBoss.rotation.y = THREE.MathUtils.lerp(nightKingBoss.rotation.y, bossTargetAngle, Math.min(1, delta * 2.8));
+        nightKingBoss.position.y = Math.sin(time * 1.2) * 0.08;
+        nightKingBoss.position.x = shake * 0.85;
+        const bossHead = nightKingFallback.userData.head;
+        if (bossHead instanceof THREE.Object3D) {
+          bossHead.rotation.x = -0.08 + Math.sin(time * 1.8) * 0.025;
+          bossHead.rotation.y = Math.sin(time * 1.4) * 0.045;
+        }
+      }
       const dragonData = dragon.userData as { bodyMat: THREE.MeshStandardMaterial; body: THREE.Mesh; head: THREE.Mesh; neck: THREE.Mesh; wingL: THREE.Group; wingR: THREE.Group; fire: THREE.Mesh; jaw: THREE.Mesh; tail: THREE.Group; spines: THREE.Group };
       dragonData.bodyMat.color.set(data.dragonColor);
       dragon.position.y = Math.sin(time * 2) * 0.16;
@@ -1074,40 +1496,27 @@ export function BattleScene3D(props: BattleScene3DProps) {
         if (mote.position.y > 9.6) mote.position.y = 0.5;
       });
 
-      if (data.cameraMode === 'second') {
-        camera.position.set(
-          hero.position.x - Math.sin(renderFacing) * 2.2 + Math.cos(renderFacing) * 0.45 + shake,
-          hero.position.y + 2.2,
-          hero.position.z - Math.cos(renderFacing) * 2.2 - Math.sin(renderFacing) * 0.45
-        );
-        camera.lookAt(
-          hero.position.x + Math.sin(renderFacing) * 4,
-          hero.position.y + 1.45,
-          hero.position.z + Math.cos(renderFacing) * 4
-        );
+      const backDistance = 5.4;
+      const sideOffset = 0.35;
+      cameraTarget.set(
+        hero.position.x - Math.sin(renderFacing) * backDistance + Math.cos(renderFacing) * sideOffset + shake * 0.45,
+        hero.position.y + 2.75 + Math.sin(time * 0.6) * 0.06,
+        hero.position.z - Math.cos(renderFacing) * backDistance - Math.sin(renderFacing) * sideOffset
+      );
+      lookTarget.set(
+        hero.position.x + Math.sin(renderFacing) * 0.45,
+        hero.position.y + 1.42,
+        hero.position.z + Math.cos(renderFacing) * 0.45
+      );
+      const followSpeed = data.isHeroMoving ? 46 : 30;
+      if (camera.position.distanceTo(cameraTarget) > 1.15) {
+        camera.position.copy(cameraTarget);
+        smoothLookTarget.copy(lookTarget);
       } else {
-        const backDistance = 6.2;
-        const sideOffset = 0.85;
-        cameraTarget.set(
-          hero.position.x - Math.sin(renderFacing) * backDistance + Math.cos(renderFacing) * sideOffset + shake * 0.45,
-          hero.position.y + 3.15 + Math.sin(time * 0.6) * 0.08,
-          hero.position.z - Math.cos(renderFacing) * backDistance - Math.sin(renderFacing) * sideOffset
-        );
-        lookTarget.set(
-          hero.position.x,
-          hero.position.y + 1.45,
-          hero.position.z
-        );
-        const followSpeed = data.isHeroMoving ? 42 : 26;
-        if (camera.position.distanceTo(cameraTarget) > 1.15) {
-          camera.position.copy(cameraTarget);
-          smoothLookTarget.copy(lookTarget);
-        } else {
-          camera.position.lerp(cameraTarget, Math.min(1, delta * followSpeed));
-          smoothLookTarget.lerp(lookTarget, Math.min(1, delta * followSpeed));
-        }
-        camera.lookAt(smoothLookTarget);
+        camera.position.lerp(cameraTarget, Math.min(1, delta * followSpeed));
+        smoothLookTarget.lerp(lookTarget, Math.min(1, delta * followSpeed));
       }
+      camera.lookAt(smoothLookTarget);
 
       renderer.render(scene, camera);
       frame = window.requestAnimationFrame(animate);

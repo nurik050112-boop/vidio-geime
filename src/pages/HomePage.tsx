@@ -1167,6 +1167,7 @@ export function HomePage() {
   const [heroMoving, setHeroMoving] = useState(false);
   const [heroDirection, setHeroDirection] = useState({ x: 0, z: -1 });
   const verticalVelocity = useRef(0);
+  const heroAnimationTimer = useRef<number | null>(null);
   const pressedKeys = useRef<Set<string>>(new Set());
   const [cityMonsters, setCityMonsters] = useState(() => dragonSons.map(() => monstersPerCity));
   const [, setMonsterAttackCount] = useState(0);
@@ -2043,8 +2044,14 @@ export function HomePage() {
   }
 
   function playHeroAnimation(animation: HeroAnimation, duration = 520) {
+    if (heroAnimationTimer.current !== null) {
+      window.clearTimeout(heroAnimationTimer.current);
+    }
     setHeroAnimation(animation);
-    window.setTimeout(() => setHeroAnimation('idle'), duration);
+    heroAnimationTimer.current = window.setTimeout(() => {
+      setHeroAnimation('idle');
+      heroAnimationTimer.current = null;
+    }, duration);
   }
 
   function equipArtifact(artifact: Artifact) {
