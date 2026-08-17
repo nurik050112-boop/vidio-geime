@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+.github
+
+public/models/**/raw/**
+public/models/**/downloads/**
+public/models/**/*.zip
+
+public/models/night-king/scene.bin
