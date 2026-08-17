@@ -370,14 +370,14 @@ const anuarBombEnemiesTotal = 100_000;
 const mansurDungeonEnemiesTotal = 100_000;
 const arailmEnemiesTotal = 100_000;
 const aisultanMonsterTotal = 1_000_000_000;
-const aisultanMonsterHp = 10_000_000_000;
+const aisultanMonsterHp = 1_000;
 const aisultanSharkHp = aisultanMonsterHp * 10;
 const aisultanSeaGodHp = aisultanSharkHp * 10;
 const adminWorldMonsterTotal = 1_000_000_000;
-const adminWorldMonsterHp = 1e25;
+const adminWorldMonsterHp = 1_000;
 const adminWorldBossesHp = Number.MAX_SAFE_INTEGER;
 const adminFinalBossHp = Number.MAX_SAFE_INTEGER;
-const baseMonsterHp = 10_000;
+const baseMonsterHp = 1_000;
 const baseDragonHp = 100_000_000;
 const adminNukeHiddenDamageText = '9'.repeat(999);
 const adminNukeDamageText = '∞';
@@ -387,23 +387,26 @@ const mansurBladeDamageText = '9999999999999999999999999999999999999999999999999
 const programSwordDamageText = '1000000000000000000000000';
 const arailmBossPowerText = '9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999';
 const bbiMonsterTotal = 100;
-const bbiMonsterHp = 10_000_000_000_000_000;
+const bbiMonsterHp = 1_000;
 const bbiManagerHp = 10_000_000_000_000_000;
 const bbiDirectorHp = bbiManagerHp * 3;
 const bbiFinalBossHp = bbiDirectorHp * 5;
 const nuraliMonsterTotal = 100;
-const nuraliMonsterHp = 1e42;
+const nuraliMonsterHp = 1_000;
 const nuraliBossHp = 1e27;
 const monsterAvalancheTotal = 10_000_000_000;
-const monsterAvalancheHp = 1_000_000_000;
+const monsterAvalancheHp = 1_000;
 const monsterAvalancheDamage = 100_000;
 const monsterAvalancheStartChapter = 7;
 const finalSpiritMonsterTotal = 1_000_000;
-const finalSpiritMonsterHp = 2_500_000_000;
+const finalSpiritMonsterHp = 1_000;
 const deathSwordDamageText = '999999999999999999999999999999999999999999999';
 const citySizeMeters = 200;
 const cityHalfSize = (citySizeMeters / 2) * 1_000;
-const monsterAttackRange = 5_000;
+const heroMoveSpeedPerSecond = (16 / 3.6) * 1_000;
+const monsterBotAttackDamage = 10;
+const monsterBotAttackCooldownMs = 900;
+const monsterChaseCatchTimeMs = 4_500;
 
 type CollisionBox = {
   x: number;
@@ -491,6 +494,7 @@ function getWorldCollisionBoxes(chapter: number, locationIndex: number) {
 }
 
 function isHeroBlockedAt(position: { x: number; z: number }, chapter: number, locationIndex: number) {
+  return false;
   const heroWorldX = -3.4 + position.x / 1000;
   const heroWorldZ = 1.2 + position.z / 1000;
   return getWorldCollisionBoxes(chapter, locationIndex).some((box) => collidesWithBox(heroWorldX, heroWorldZ, box));
@@ -1006,11 +1010,6 @@ function normalizeCode(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, '');
 }
 
-function scaledPower(base: number, chapter: number) {
-  const value = base * 100 ** chapter;
-  return Number.isFinite(value) ? Math.min(value, Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER;
-}
-
 function scaledDragonPower(base: number, chapter: number) {
   const value = base * 10 ** chapter;
   return Number.isFinite(value) ? Math.min(value, Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER;
@@ -1282,18 +1281,34 @@ export function HomePage() {
   const [heroHeight, setHeroHeight] = useState(0);
   const [heroMoving, setHeroMoving] = useState(false);
   const [heroDirection, setHeroDirection] = useState({ x: 0, z: -1 });
+  const [mapLocationIndex, setMapLocationIndex] = useState(0);
   const [joystickThumb, setJoystickThumb] = useState({ x: 0, y: 0 });
   const verticalVelocity = useRef(0);
   const heroAnimationTimer = useRef<number | null>(null);
   const pressedKeys = useRef<Set<string>>(new Set());
   const joystickVector = useRef({ x: 0, z: 0 });
   const joystickPointerId = useRef<number | null>(null);
+  const lastMoveAt = useRef<number | null>(null);
+  const clickTimesRef = useRef<number[]>([]);
+  const monsterChaseStartedAt = useRef(Date.now());
+  const monsterBotRef = useRef({
+    chapter: 0,
+    currentMonsters: 0,
+    currentMonsterTotal: monstersPerCity,
+    defenseBonus: 0,
+    hasAdminHelmet: false,
+    heroHp: heroMaxHp,
+    heroPosition: { x: -18_000, z: 0 },
+    isFinalReveal: false,
+  });
   const [cityMonsters, setCityMonsters] = useState(() => dragonSons.map(() => monstersPerCity));
   const [, setMonsterAttackCount] = useState(0);
   const [battlePulse, setBattlePulse] = useState(0);
   const [fireWavePulse, setFireWavePulse] = useState(0);
   const [waterWavePulse, setWaterWavePulse] = useState(0);
   const [soulFirePulse, setSoulFirePulse] = useState(0);
+  const [clickDuelPower, setClickDuelPower] = useState(50);
+  const [clicksPerSecond, setClicksPerSecond] = useState(0);
   const [enemyBurning, setEnemyBurning] = useState(false);
   const [duelStatus, setDuelStatus] = useState<DuelStatus>('idle');
   const [duelOpponent, setDuelOpponent] = useState<DuelPlayer | null>(null);
@@ -1337,6 +1352,8 @@ export function HomePage() {
   const [achievementCode, setAchievementCode] = useState('');
   const [achievementCheatActive, setAchievementCheatActive] = useState(false);
   const [achievementMessage, setAchievementMessage] = useState('');
+  const [gameLoadingProgress, setGameLoadingProgress] = useState(0);
+  const [gameLoadingDone, setGameLoadingDone] = useState(false);
   const [introSkipped, setIntroSkipped] = useState(false);
   const [creatorCreditsOpen, setCreatorCreditsOpen] = useState(false);
   const paidQuestIds = useRef<Set<number>>(new Set());
@@ -1465,7 +1482,7 @@ export function HomePage() {
     : isDungeon
       ? 'dungeon'
       : 'world';
-  const currentMonsterHp = isFinalSpiritWorld ? finalSpiritMonsterHp : isMonsterAvalancheWorld ? monsterAvalancheHp : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : isArailmWorld ? scaledPower(baseMonsterHp, chapter + 8) : isMansurDungeon ? scaledPower(baseMonsterHp, chapter + 7) : isAnuarWorld ? scaledPower(baseMonsterHp, chapter + 6) : isFuryDungeon ? scaledPower(baseMonsterHp, chapter + 5) : isDungeon ? scaledPower(baseMonsterHp, chapter + 2) : scaledPower(baseMonsterHp, chapter);
+  const currentMonsterHp = isFinalSpiritWorld ? finalSpiritMonsterHp : isMonsterAvalancheWorld ? monsterAvalancheHp : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : baseMonsterHp;
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const finalSpiritDragonHp = Math.max(1, Math.floor((kingDragonHp * 2) / 100));
   const deathGodHp = kingDragonHp * 100;
@@ -1474,6 +1491,9 @@ export function HomePage() {
   const deathSwordMultiplier = equippedArtifactId === 'godHead' && equippedWeapon?.id.startsWith('death-sword-') ? 7.66 : 1;
   const weaponBonus = Math.floor((isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0) * deathSwordMultiplier);
   const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + Math.floor(weaponBonus * waterSwordArtifactMultiplier);
+  const isClickDuelActive = !isFinalReveal && currentMonsters === 0 && enemyHp > 0 && heroHp > 0;
+  const clickDuelHeroPower = Math.max(1, Math.floor((18 + chapter * 5 + attackBonus) * artifactDamageMultiplier * artifactAttackSpeedMultiplier));
+  const clickDuelDragonPower = Math.max(1, Math.floor((enemy?.power ?? currentDragonHp) * (enemy?.attackSpeed ?? 1)));
   const playerName = nickname.trim() || 'BBI герой';
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const currentMonsterTotal = isFinalSpiritWorld ? finalSpiritMonsterTotal : isMonsterAvalancheWorld ? monsterAvalancheTotal : isAdminWorld ? adminWorldMonsterTotal : isAisWorld ? aisultanMonsterTotal : isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
@@ -1513,13 +1533,7 @@ export function HomePage() {
         : 'Плохая концовка. Пустое небо. Герой сразился с семьей драконов.'
       : '';
   const cityScene = `scene-city-${chapter % 20}`;
-  const mapLocationIndex = isFinalReveal || secretEnding || impossibleEnding || bbiBadEnding || isDeathGodBoss || isFinalSpiritBoss || isFinalBoss || isFamilyBoss
-    ? 1
-    : heroPosition.x < -17_000
-      ? 0
-      : heroPosition.x > 17_000
-        ? 2
-        : 1;
+  const forcedCenterLocation = isFinalReveal || secretEnding || impossibleEnding || bbiBadEnding || isDeathGodBoss || isFinalSpiritBoss || isFinalBoss || isFamilyBoss;
   const mapSceneKey = isFinalReveal
     ? `ending-${endingChoice ?? 'choice'}`
     : secretEnding
@@ -1544,6 +1558,20 @@ export function HomePage() {
   useEffect(() => {
     collisionContextRef.current = { chapter, mapLocationIndex };
   }, [chapter, mapLocationIndex]);
+
+  useEffect(() => {
+    if (forcedCenterLocation) {
+      setMapLocationIndex(1);
+      return;
+    }
+
+    setMapLocationIndex((currentIndex) => {
+      if (currentIndex !== 0 && heroPosition.x < -22_000) return 0;
+      if (currentIndex !== 2 && heroPosition.x > 22_000) return 2;
+      if (currentIndex !== 1 && heroPosition.x > -11_000 && heroPosition.x < 11_000) return 1;
+      return currentIndex;
+    });
+  }, [forcedCenterLocation, heroPosition.x]);
   const battleScene = isDeathGodBoss
     ? 'scene-death-god'
     : isFinalSpiritBoss || finalSpiritWorldOpen
@@ -2228,6 +2256,7 @@ export function HomePage() {
   }
 
   function playHeroAnimation(animation: HeroAnimation, duration = 520) {
+    if (animation === 'step' && (heroAnimation === 'step' || heroAnimation === 'strike' || heroAnimation === 'heal')) return;
     if (heroAnimationTimer.current !== null) {
       window.clearTimeout(heroAnimationTimer.current);
     }
@@ -2252,7 +2281,6 @@ export function HomePage() {
   }
 
   function moveHero(dx: number, dz: number) {
-    playHeroAnimation('step', 360);
     setHeroPosition((position) => {
       const clampPosition = (nextPosition: { x: number; z: number }) => ({
         x: Math.max(-cityHalfSize, Math.min(cityHalfSize, nextPosition.x)),
@@ -2314,8 +2342,19 @@ export function HomePage() {
     setHeroMoving(false);
   }
 
+  function startTouchMove(key: string) {
+    pressedKeys.current.add(key);
+  }
+
+  function stopTouchMove(key: string) {
+    pressedKeys.current.delete(key);
+  }
+
   useEffect(() => {
     const moveTimer = window.setInterval(() => {
+      const now = performance.now();
+      const deltaSeconds = lastMoveAt.current === null ? 0.016 : Math.min(0.05, (now - lastMoveAt.current) / 1000);
+      lastMoveAt.current = now;
       const keys = pressedKeys.current;
       let dx = 0;
       let dz = 0;
@@ -2331,12 +2370,13 @@ export function HomePage() {
         const length = Math.max(1, Math.hypot(dx, dz));
         const direction = { x: dx / length, z: dz / length };
         setHeroDirection(direction);
-        moveHero(direction.x * 280, direction.z * 280);
+        moveHero(direction.x * heroMoveSpeedPerSecond * deltaSeconds, direction.z * heroMoveSpeedPerSecond * deltaSeconds);
       }
-    }, 80);
+    }, 24);
 
     return () => {
       window.clearInterval(moveTimer);
+      lastMoveAt.current = null;
       setHeroMoving(false);
     };
   }, []);
@@ -2363,13 +2403,6 @@ export function HomePage() {
       setMessage(currentMonsters <= 0 ? `В этом городе все ${formatPower(monstersPerCity)} монстров уже побеждены.` : 'Сначала восстанови героя.');
       return;
     }
-    const distanceToMonsters = Math.hypot(heroPosition.x, heroPosition.z);
-    if (distanceToMonsters > monsterAttackRange) {
-      setMessage(`Подойди ближе к монстрам. Бить можно только в радиусе ${monsterAttackRange / 1000} метров.`);
-      playHeroAnimation('step', 260);
-      return;
-    }
-
     playHeroAnimation('strike', 420);
     setBattlePulse((pulse) => pulse + 1);
     if (isAisultanSword(equippedWeapon)) {
@@ -2896,6 +2929,13 @@ export function HomePage() {
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      const target = event.target;
+      const isTyping =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && target.isContentEditable);
+      if (isTyping) return;
       const key = event.key.toLowerCase();
       const code = event.code.toLowerCase();
       if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key) || ['keyw', 'keya', 'keys', 'keyd'].includes(code)) {
@@ -2924,8 +2964,13 @@ export function HomePage() {
 
   useEffect(() => {
     function onAttackKey(event: KeyboardEvent) {
-      const key = event.key.toLowerCase();
-      if (event.repeat || (key !== 'e' && key !== 'f')) return;
+      const target = event.target;
+      const isTyping =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && target.isContentEditable);
+      if (event.repeat || isTyping || event.code !== 'KeyF') return;
       event.preventDefault();
       if (currentMonsters > 0) fightMonster();
       else strike();
@@ -2937,7 +2982,44 @@ export function HomePage() {
 
   useEffect(() => {
     setMonsterAttackCount(0);
+    monsterChaseStartedAt.current = Date.now();
   }, [chapter, currentMonsters]);
+
+  useEffect(() => {
+    monsterBotRef.current = {
+      chapter,
+      currentMonsters,
+      currentMonsterTotal,
+      defenseBonus,
+      hasAdminHelmet,
+      heroHp,
+      heroPosition,
+      isFinalReveal,
+    };
+  }, [chapter, currentMonsters, currentMonsterTotal, defenseBonus, hasAdminHelmet, heroHp, heroPosition, isFinalReveal]);
+
+  useEffect(() => {
+    const attackTimer = window.setInterval(() => {
+      const state = monsterBotRef.current;
+      if (state.isFinalReveal || state.currentMonsters <= 0 || state.heroHp <= 0 || state.hasAdminHelmet) return;
+      if (Date.now() - monsterChaseStartedAt.current < monsterChaseCatchTimeMs) return;
+
+      const crowdPressure = Math.max(1, Math.ceil(Math.min(state.currentMonsters, state.currentMonsterTotal) / Math.max(1, state.currentMonsterTotal / 6)));
+      const rawDamage = monsterBotAttackDamage + state.chapter * 4 + crowdPressure * 2;
+      const damage = Math.max(1, rawDamage - Math.floor(state.defenseBonus * 0.08));
+      setBattlePulse((pulse) => pulse + 1);
+      setMonsterAttackCount((count) => count + 1);
+      setHeroHp((hp) => {
+        const nextHp = Math.max(0, hp - damage);
+        if (nextHp === 0) {
+          setMessage(`Монстры добрались до героя и нанесли ${formatPower(damage)} урона. Герой упал, восстанови HP.`);
+        }
+        return nextHp;
+      });
+    }, monsterBotAttackCooldownMs);
+
+    return () => window.clearInterval(attackTimer);
+  }, []);
 
   useEffect(() => {
     if (!enemyBurning || isFinalReveal || currentMonsters > 0 || enemyHp <= 0) return;
@@ -2958,6 +3040,24 @@ export function HomePage() {
     return () => window.clearInterval(burnTimer);
   }, [enemyBurning, isFinalReveal, currentMonsters, enemyHp, currentDragonHp]);
 
+  useEffect(() => {
+    if (!isClickDuelActive) {
+      setClickDuelPower(50);
+      setClicksPerSecond(0);
+      clickTimesRef.current = [];
+      return;
+    }
+
+    const duelTimer = window.setInterval(() => {
+      const now = Date.now();
+      clickTimesRef.current = clickTimesRef.current.filter((time) => now - time < 1000);
+      setClicksPerSecond(clickTimesRef.current.length);
+      setClickDuelPower((power) => Math.max(0, power - Math.max(0.18, (enemy?.attackSpeed ?? 1) * 0.42)));
+    }, 180);
+
+    return () => window.clearInterval(duelTimer);
+  }, [isClickDuelActive, enemy?.attackSpeed]);
+
   function strike() {
     if (isFinalReveal || !enemy) return;
     if (currentMonsters > 0) {
@@ -2966,6 +3066,13 @@ export function HomePage() {
     }
     playHeroAnimation('strike', 420);
     setBattlePulse((pulse) => pulse + 1);
+    const clickNow = Date.now();
+    clickTimesRef.current = [...clickTimesRef.current.filter((time) => clickNow - time < 1000), clickNow];
+    setClicksPerSecond(clickTimesRef.current.length);
+    setClickDuelPower((power) => {
+      const powerRatio = Math.log10(clickDuelHeroPower + 10) / Math.max(1, Math.log10(clickDuelDragonPower + 10));
+      return Math.min(100, power + 4.5 + powerRatio * 9);
+    });
     if (isBbiLegendaryWeapon(equippedWeapon)) {
       setFireWavePulse((pulse) => pulse + 1);
       setEnemyBurning(true);
@@ -3726,6 +3833,25 @@ export function HomePage() {
     setMessage('Ты вошел как гость. Можно играть без аккаунта.');
   }
 
+  useEffect(() => {
+    if (!authUser && !guestMode) return;
+    if (gameLoadingDone) return;
+
+    const loadingTimer = window.setInterval(() => {
+      setGameLoadingProgress((progress) => {
+        if (progress >= 100) {
+          window.clearInterval(loadingTimer);
+          window.setTimeout(() => setGameLoadingDone(true), 360);
+          return 100;
+        }
+        const step = progress < 72 ? 7 : progress < 92 ? 3 : 1;
+        return Math.min(100, progress + step);
+      });
+    }, 140);
+
+    return () => window.clearInterval(loadingTimer);
+  }, [authUser, guestMode, gameLoadingDone]);
+
   if (!authUser && !guestMode) {
     return (
       <main className="landing-page">
@@ -3778,6 +3904,34 @@ export function HomePage() {
               </button>
               {authMessage && <p>{authMessage}</p>}
             </form>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (!gameLoadingDone) {
+    return (
+      <main className="game-loading-page" aria-label="Загрузка игры">
+        <section className="game-loading-screen" role="status" aria-live="polite">
+          <div className="game-loading-topbar" aria-hidden="true">
+            <span className="loading-roblox-icon" />
+            <span className="loading-menu-icon" />
+            <span className="loading-chat-icon"><b>13</b></span>
+            <span className="loading-mic-icon" />
+          </div>
+          <div className="loading-muscle" aria-hidden="true">
+            <span />
+            <i />
+          </div>
+          <h1>Готовлю тебя.</h1>
+          <p>Присоединяйтесь к серверу сообщества, чтобы торговать!</p>
+          <div className="game-loading-progress">
+            <div className="game-loading-bar">
+              <span style={{ width: `${gameLoadingProgress}%` }} />
+              <b>Вы находитесь на обновлении #74</b>
+            </div>
+            <strong>{gameLoadingProgress}%</strong>
           </div>
         </section>
       </main>
@@ -4501,9 +4655,45 @@ export function HomePage() {
         <div className="tutorial-overlay" role="dialog" aria-label="Обучение игре">
           <div className="tutorial-card tutorial-main">
             <p className="eyebrow">Обучение</p>
-            <h2>Что делать в игре</h2>
-            <p>В каждом городе 1000 монстров. Всего 10 городов и 10 драконов. Победи драконов и одолей короля дракона.</p>
-            <button onClick={closeTutorial} type="button">Понял, играть</button>
+            <h2>Гайд и версии</h2>
+            <div className="guide-scroll">
+              <p>В каждом городе 1000 монстров. Сначала выбей всех монстров, потом бей босса города. После 10 драконов откроется финальный бой.</p>
+              <div className="guide-columns">
+                <div>
+                  <strong>Управление</strong>
+                  <span>WASD: ходить от третьего лица</span>
+                  <span>Стрелки: тоже ходить</span>
+                  <span>Пробел: прыгнуть</span>
+                  <span>F: ударить рядом</span>
+                  <span>Клик по бою: ударить монстра или босса</span>
+                </div>
+                <div>
+                  <strong>Бой</strong>
+                  <span>Монстры бегут к тебе 10 км/ч</span>
+                  <span>На радиусе 5 метров монстры бьют героя</span>
+                  <span>У монстров 1000 HP</span>
+                  <span>После всех монстров появляется дракон</span>
+                  <span>Магазин качает меч, броню, HP и питомца</span>
+                </div>
+                <div>
+                  <strong>Миры</strong>
+                  <span>Пылающий мир: карта городов</span>
+                  <span>Каждый город меняет локацию</span>
+                  <span>В игре 40 карт для битв</span>
+                  <span>Есть пещеры, особые миры и секретные боссы</span>
+                  <span>Достижения дают коды и бонусы</span>
+                </div>
+                <div>
+                  <strong>Версии</strong>
+                  <span>v3D: новый рыцарь KayKit</span>
+                  <span>v3D: новая 3D модель гоблина</span>
+                  <span>v3D: камера от третьего лица</span>
+                  <span>v3D: боты монстров бегут, атакуют и отходят</span>
+                  <span>v3D: экран загрузки ждёт модели</span>
+                </div>
+              </div>
+            </div>
+            <button className="guide-primary-button" onClick={closeTutorial} type="button">Понял, играть</button>
           </div>
           <div className="tutorial-tip tutorial-goblin">
             <span className="tutorial-arrow tutorial-arrow-down" />
@@ -4565,6 +4755,41 @@ export function HomePage() {
               equippedArtifactIcon={equippedArtifact?.icon ?? null}
             />
           </div>
+          {isClickDuelActive && (
+            <div className={`click-duel ${battlePulse % 2 ? 'hero-hit' : 'dragon-hit'}`} aria-label="Клик битва">
+              <div className="click-duel-side hero-side">
+                <span className="duel-avatar">Я</span>
+                <strong>{formatPower(clickDuelHeroPower)}</strong>
+              </div>
+              <div className="click-duel-core">
+                <div className="click-duel-tip">
+                  <span>{clicksPerSecond > 0 ? `${clicksPerSecond}.0/с` : 'Начни кликать'}</span>
+                  <b>{clickDuelPower >= 50 ? 'Ты давишь' : 'Дракон давит'}</b>
+                </div>
+                <div className="click-duel-bar">
+                  <span className="hero-fill" style={{ width: `${clickDuelPower}%` }} />
+                  <i style={{ left: `${clickDuelPower}%` }} />
+                </div>
+                <button
+                  className="click-duel-button"
+                  disabled={heroHp === 0}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    strike();
+                  }}
+                  type="button"
+                >
+                  Нажимайте!
+                </button>
+              </div>
+              <div className="click-duel-side dragon-side">
+                <span className="duel-avatar">Д</span>
+                <strong>{formatPower(clickDuelDragonPower)}</strong>
+              </div>
+              <span className="click-slash" />
+              <span className="dragon-fire-burst" />
+            </div>
+          )}
           <div className="sun" />
           <div className="dragon-shadow" />
           <div className="city-line">
@@ -4807,6 +5032,39 @@ export function HomePage() {
             aria-label="Джойстик движения"
           >
             <span style={{ transform: `translate(${joystickThumb.x}px, ${joystickThumb.y}px)` }} />
+          </div>
+          <div className="move-pad" aria-label="Кнопки движения">
+            {[
+              ['w', '↑'],
+              ['a', '←'],
+              ['s', '↓'],
+              ['d', '→'],
+            ].map(([key, label]) => (
+              <button
+                aria-label={`Идти ${label}`}
+                className={`move-pad-button ${key}`}
+                key={key}
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  startTouchMove(key);
+                }}
+                onPointerUp={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  stopTouchMove(key);
+                }}
+                onPointerCancel={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  stopTouchMove(key);
+                }}
+                onPointerLeave={() => stopTouchMove(key)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
           </div>
           <button
             className="mobile-attack"

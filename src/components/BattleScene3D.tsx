@@ -1,7 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 type BattleScene3DProps = {
   dragonColor: string;
@@ -22,6 +21,10 @@ type BattleScene3DProps = {
   locationIndex: number;
   equippedArtifactIcon: string | null;
 };
+
+const monsterRunSpeedMetersPerSecond = 10 / 3.6;
+const monsterHitRangeMeters = 5;
+const monsterRetreatRangeMeters = 6.2;
 
 function material(color: string, options: Partial<THREE.MeshStandardMaterialParameters> = {}) {
   return new THREE.MeshStandardMaterial({ color, roughness: 0.78, metalness: 0.02, ...options });
@@ -64,6 +67,14 @@ const cityThemes = [
   { sky: '#051f28', fog: '#051f28', ground: '#153d46', accent: '#06d6a0', glow: '#75e6da' },
 ];
 
+function hashSceneKey(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) % 997;
+  }
+  return hash;
+}
+
 function addPillar(scene: THREE.Object3D, x: number, z: number, color: string, glow: string) {
   const pillar = new THREE.Group();
   const base = mesh(new THREE.CylinderGeometry(0.62, 0.78, 2.4, 8), color, [x, 1.16, z], { roughness: 0.72 });
@@ -77,7 +88,7 @@ function addPillar(scene: THREE.Object3D, x: number, z: number, color: string, g
 
 function add3DLocation(scene: THREE.Scene, root: THREE.Object3D, sceneKey: string, chapter: number, locationIndex: number) {
   const isEnding = sceneKey.startsWith('ending') || sceneKey.includes('final') || sceneKey.includes('death') || sceneKey.includes('admin');
-  const locationStyle = Math.abs(chapter) % 10;
+  const locationStyle = Math.abs(chapter * 3 + locationIndex * 5 + hashSceneKey(sceneKey)) % 14;
   const theme = cityThemes[Math.abs(chapter + locationIndex) % cityThemes.length];
   const palette = isEnding
     ? { ...theme, sky: '#080509', fog: '#080509', ground: '#1d1418', accent: '#ff004c', glow: '#ff2a1f' }
@@ -187,6 +198,49 @@ function add3DLocation(scene: THREE.Scene, root: THREE.Object3D, sceneKey: strin
       const light = new THREE.PointLight(i % 2 ? '#75e6da' : '#8ecae6', 1.8, 9);
       light.position.set(x, 2.5, z);
       root.add(crystal, light);
+    }
+  } else if (locationStyle === 10) {
+    for (let i = 0; i < 32; i += 1) {
+      const x = -48 + (i % 8) * 13.6;
+      const z = -34 + Math.floor(i / 8) * 22;
+      const iceTree = new THREE.Group();
+      const trunk = mesh(new THREE.CylinderGeometry(0.13, 0.2, 2.1 + (i % 3) * 0.5, 7), '#3c4a4f', [x, 0.95, z]);
+      const crown = cone(i % 2 ? '#d9f7ff' : '#9ed8e8', 0.9 + (i % 3) * 0.18, 2.2, [x, 2.4, z]);
+      iceTree.add(trunk, crown);
+      root.add(iceTree);
+    }
+  } else if (locationStyle === 11) {
+    const water = mesh(new THREE.PlaneGeometry(96, 78), '#0c5f7a', [4, 0.004, -7], { transparent: true, opacity: 0.66, metalness: 0.2, roughness: 0.18 });
+    water.rotation.x = -Math.PI / 2;
+    root.add(water);
+    for (let i = 0; i < 22; i += 1) {
+      const x = -42 + (i % 7) * 14;
+      const z = -30 + Math.floor(i / 7) * 22;
+      const island = mesh(new THREE.CylinderGeometry(1.6 + (i % 3) * 0.4, 2.1 + (i % 3) * 0.5, 0.42, 9), '#335334', [x, 0.18, z]);
+      const palm = mesh(new THREE.CylinderGeometry(0.09, 0.14, 1.8, 7), '#5b3d28', [x + 0.5, 1.02, z - 0.2]);
+      palm.rotation.z = Math.sin(i) * 0.18;
+      const leaf = cone('#1f7a4d', 0.72, 0.85, [x + 0.62, 2.0, z - 0.28]);
+      leaf.rotation.z = Math.PI;
+      root.add(island, palm, leaf);
+    }
+  } else if (locationStyle === 12) {
+    for (let i = 0; i < 30; i += 1) {
+      const x = -48 + (i % 10) * 10.5;
+      const z = -34 + Math.floor(i / 10) * 26;
+      const tower = mesh(new THREE.BoxGeometry(1.2 + (i % 3) * 0.35, 3 + (i % 5) * 0.7, 1.2), i % 2 ? '#101923' : '#1f2933', [x, 1.5, z], { metalness: 0.38, roughness: 0.28 });
+      const screen = mesh(new THREE.BoxGeometry(0.08, 0.8, 0.8), palette.glow, [x, 2.2, z + 0.62], { emissive: palette.glow, emissiveIntensity: 1.4 });
+      root.add(tower, screen);
+    }
+  } else if (locationStyle === 13) {
+    for (let i = 0; i < 34; i += 1) {
+      const x = -50 + (i % 9) * 12.3;
+      const z = -34 + Math.floor(i / 9) * 23;
+      const basalt = mesh(new THREE.CylinderGeometry(0.65 + (i % 4) * 0.18, 0.9 + (i % 3) * 0.2, 2.4 + (i % 5), 6), '#181311', [x, 1.2, z]);
+      basalt.rotation.y = Math.PI / 6;
+      const magma = mesh(new THREE.PlaneGeometry(1.4 + (i % 3), 0.28), '#ff3b30', [x + 1.4, 0.02, z - 0.6], { emissive: '#ff3b30', emissiveIntensity: 1.5 });
+      magma.rotation.x = -Math.PI / 2;
+      magma.rotation.z = Math.sin(i);
+      root.add(basalt, magma);
     }
   } else {
     for (let i = 0; i < 24; i += 1) {
@@ -544,9 +598,9 @@ function makeMonster(kind: string, index: number) {
   const usesReferenceBody = true;
   const isOrc = kind === 'orc' || kind === 'magma' || kind === 'avalanche';
   const isCrawler = kind === 'lizard' || kind === 'frost' || isLizardBrute;
-  const skinColor = isGoblin ? ['#a9aaa5', '#949893', '#b8b9b2', '#858b86'][goblinVariant] : isSpider ? '#d9c882' : isLizardBrute ? '#2f7f3f' : isStone ? '#888883' : isWire ? '#c8b29e' : isPale ? '#b8c5c9' : isGiant ? '#8d8f8c' : isOrc ? '#6f7d35' : isCrawler ? '#8a8f82' : kind === 'shadow' ? '#5c5364' : '#8f958a';
+  const skinColor = isGoblin ? ['#6f8f3a', '#789f42', '#587a32', '#8aa34e'][goblinVariant] : isSpider ? '#d9c882' : isLizardBrute ? '#2f7f3f' : isStone ? '#888883' : isWire ? '#c8b29e' : isPale ? '#b8c5c9' : isGiant ? '#8d8f8c' : isOrc ? '#6f7d35' : isCrawler ? '#8a8f82' : kind === 'shadow' ? '#5c5364' : '#8f958a';
   const dark = kind === 'shadow' ? '#120916' : '#34261d';
-  const scale = isGoblin ? 0.9 : isStone ? 1.32 : isGiant ? 1.42 : isOrc || isLizardBrute ? 1.2 : isCrawler ? 1.08 : kind === 'shadow' ? 0.98 : 0.94;
+  const scale = isGoblin ? 1.02 : isStone ? 1.32 : isGiant ? 1.42 : isOrc || isLizardBrute ? 1.2 : isCrawler ? 1.08 : kind === 'shadow' ? 0.98 : 0.94;
 
   const body = capsule(skinColor, usesReferenceBody ? 0.22 * scale : 0.34 * scale, isOrc ? 1.08 : 0.8, [0, 0.86 * scale, 0]);
   body.scale.set(isGoblin ? (goblinVariant === 0 ? 0.56 : goblinVariant === 1 ? 0.68 : 0.6) : isSpider ? 1.15 : usesReferenceBody ? 0.72 : isCrawler ? 1.25 : 0.95, isGoblin ? (goblinVariant === 3 ? 0.88 : 1.08) : isStone ? 1.32 : usesReferenceBody ? 1.05 : isOrc ? 1.18 : 0.98, isGoblin ? (goblinVariant === 1 ? 0.82 : 0.62) : isSpider ? 1.45 : isCrawler ? 0.82 : 1);
@@ -626,8 +680,8 @@ function makeMonster(kind: string, index: number) {
   legR.rotation.z = -0.1;
   legL.scale.set(isGoblin ? 0.76 : 1, isGoblin ? (goblinVariant === 3 ? 0.88 : 1.04) : 1, isGoblin ? 0.76 : 1);
   legR.scale.copy(legL.scale);
-  const footL = mesh(new THREE.BoxGeometry(0.24 * scale, 0.09 * scale, 0.34 * scale), skinColor, [-0.21 * scale, -0.08 * scale, 0.14]);
-  const footR = mesh(new THREE.BoxGeometry(0.24 * scale, 0.09 * scale, 0.34 * scale), skinColor, [0.2 * scale, -0.08 * scale, 0.18]);
+  const footL = mesh(new THREE.BoxGeometry(0.24 * scale, 0.09 * scale, 0.34 * scale), skinColor, [-0.21 * scale, 0.035 * scale, 0.14]);
+  const footR = mesh(new THREE.BoxGeometry(0.24 * scale, 0.09 * scale, 0.34 * scale), skinColor, [0.2 * scale, 0.035 * scale, 0.18]);
   footL.scale.set(isGoblin ? 1.35 : 1, isGoblin ? 0.8 : 1, isGoblin ? 1.45 : 1);
   footR.scale.copy(footL.scale);
   footL.visible = usesReferenceBody;
@@ -713,7 +767,17 @@ function makeMonster(kind: string, index: number) {
   const goblinShield = mesh(new THREE.CylinderGeometry(0.25 * scale, 0.29 * scale, 0.08 * scale, 7), '#5c554b', [-0.6 * scale, 0.95 * scale, 0.28], { metalness: 0.12, roughness: 0.7 });
   goblinShield.rotation.set(Math.PI / 2, 0, 0.2);
   goblinShield.visible = isGoblin && goblinVariant === 2;
-  goblinDetails.add(loincloth, backCloth, pecL, pecR, shoulderMuscleL, shoulderMuscleR, bicepL, bicepR, calfL, calfR, kneeL, kneeR, collar, clothTears, ribsMark, goblinClub, goblinShield);
+  const mohawk = new THREE.Group();
+  for (let i = 0; i < 5; i += 1) {
+    const spike = cone('#293017', 0.035 * scale, 0.22 * scale, [0, (1.88 + i * 0.02) * scale, (-0.2 + i * 0.08) * scale]);
+    spike.rotation.x = -0.45;
+    mohawk.add(spike);
+  }
+  const bootL = mesh(new THREE.BoxGeometry(0.3 * scale, 0.1 * scale, 0.38 * scale), '#2f2519', [-0.21 * scale, 0.07 * scale, 0.15]);
+  const bootR = bootL.clone();
+  bootR.position.x = 0.2 * scale;
+  bootR.position.z = 0.19;
+  goblinDetails.add(loincloth, backCloth, pecL, pecR, shoulderMuscleL, shoulderMuscleR, bicepL, bicepR, calfL, calfR, kneeL, kneeR, collar, clothTears, ribsMark, goblinClub, goblinShield, mohawk, bootL, bootR);
   goblinDetails.visible = isGoblin;
 
   const armor = new THREE.Group();
@@ -839,44 +903,36 @@ function makeMonster(kind: string, index: number) {
     armL.rotation.z = -1.28;
     armR.rotation.z = 1.28;
   }
-  group.userData = { body, head, jaw, earL, earR, armL, armR, club, knife, goblinClub, legL, legR, footL, footR, lizardTail, backSpikes, baseY: 0, seed: index * 0.7, isGoblin, goblinVariant };
+  group.userData = { body, head, jaw, earL, earR, armL, armR, club, knife, goblinClub, legL, legR, footL, footR, lizardTail, backSpikes, baseY: isGoblin ? 0.18 : 0.08, seed: index * 0.7, isGoblin, goblinVariant };
   return group;
 }
 
-function makeReplacementMonsterFallback() {
-  const group = new THREE.Group();
-  const skin = material('#3f4f38', { roughness: 0.66, metalness: 0.05 });
-  const body = capsule('#3f4f38', 0.18, 0.62, [0, 0.58, 0]);
-  body.material = skin;
-  body.scale.set(0.75, 1.08, 0.62);
-  const head = mesh(new THREE.SphereGeometry(0.22, 16, 10), '#465d40', [0, 1.13, 0.04]);
-  head.scale.set(1.05, 0.86, 0.9);
-  const eyeMat = new THREE.MeshBasicMaterial({ color: '#ff5a1f' });
-  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), eyeMat);
-  eyeL.position.set(-0.07, 1.17, 0.22);
-  const eyeR = eyeL.clone();
-  eyeR.position.x *= -1;
-  const armL = capsule('#3f4f38', 0.045, 0.5, [-0.28, 0.65, 0.02]);
-  armL.material = skin;
-  armL.rotation.z = -0.95;
-  const armR = armL.clone();
-  armR.position.x *= -1;
-  armR.rotation.z = 0.95;
-  const legL = capsule('#354631', 0.055, 0.46, [-0.1, 0.2, 0]);
-  const legR = legL.clone();
-  legR.position.x *= -1;
-  group.add(body, head, eyeL, eyeR, armL, armR, legL, legR);
-  return group;
-}
-
-function fitMonsterModel(model: THREE.Object3D) {
+function fitHeroModel(model: THREE.Object3D) {
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
   model.position.sub(center);
   model.position.y += size.y / 2;
-  model.scale.setScalar(size.y > 0 ? 1.65 / size.y : 1);
+  model.scale.setScalar(size.y > 0 ? 2.35 / size.y : 1);
   model.rotation.y = Math.PI;
+}
+
+function fitGoblinModel(model: THREE.Object3D) {
+  model.position.set(0, 0, 0);
+  model.rotation.set(0, Math.PI, 0);
+  model.scale.setScalar(1);
+  model.updateMatrixWorld(true);
+
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const scale = size.y > 0 ? 1.45 / size.y : 1;
+  model.scale.setScalar(scale);
+  model.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+  model.updateMatrixWorld(true);
+
+  const groundedBox = new THREE.Box3().setFromObject(model);
+  model.position.y -= groundedBox.min.y;
 }
 
 function fitLocationModel(model: THREE.Object3D) {
@@ -888,6 +944,20 @@ function fitLocationModel(model: THREE.Object3D) {
   const widestSide = Math.max(size.x, size.z, 1);
   model.scale.setScalar(58 / widestSide);
   model.rotation.y = Math.PI;
+}
+
+function fitMapPropModel(model: THREE.Object3D, targetSize = 2.4) {
+  model.position.set(0, 0, 0);
+  model.rotation.set(0, 0, 0);
+  model.scale.setScalar(1);
+  model.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const largestSide = Math.max(size.x, size.y, size.z, 0.001);
+  const scale = targetSize / largestSide;
+  model.scale.setScalar(scale);
+  model.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
 }
 
 function makeDragon(color: string) {
@@ -1152,6 +1222,7 @@ function makeNightKingFallback() {
 export function BattleScene3D(props: BattleScene3DProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const refs = useRef(props);
+  const [modelsReady, setModelsReady] = useState(false);
 
   useEffect(() => {
     refs.current = props;
@@ -1160,6 +1231,13 @@ export function BattleScene3D(props: BattleScene3DProps) {
   useEffect(() => {
     const container = mountRef.current;
     if (!container) return;
+    setModelsReady(false);
+    const requiredModels = new Set(['hero', 'goblin', 'nightKing', 'recRoomMonster', 'recRoomRun']);
+    let disposed = false;
+    const markModelReady = (key: string) => {
+      requiredModels.delete(key);
+      if (!disposed && requiredModels.size === 0) setModelsReady(true);
+    };
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#081111');
@@ -1185,6 +1263,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
     addCaveCity(scene);
     const locationRoot = new THREE.Group();
     scene.add(locationRoot);
+    const downloadedMapRoot = new THREE.Group();
+    scene.add(downloadedMapRoot);
     const recRoomLocation = new THREE.Group();
     recRoomLocation.position.set(0, 0, -26);
     scene.add(recRoomLocation);
@@ -1193,6 +1273,104 @@ export function BattleScene3D(props: BattleScene3DProps) {
     recRoomRunLocation.rotation.y = -0.38;
     scene.add(recRoomRunLocation);
     const locationLoader = new GLTFLoader();
+    const mapPropTemplates = new Map<string, THREE.Object3D>();
+    const loadMapProp = (path: string, locationKey: string, position: [number, number, number], scale: number, rotationY = 0) => {
+      const placeModel = (template: THREE.Object3D) => {
+        if (locationKey !== activeLocationKey) return;
+        const model = template.clone(true);
+        model.position.set(...position);
+        model.rotation.y = rotationY;
+        model.scale.setScalar(scale);
+        downloadedMapRoot.add(model);
+      };
+
+      const template = mapPropTemplates.get(path);
+      if (template) {
+        placeModel(template);
+        return;
+      }
+
+      locationLoader.load(path, (gltf) => {
+        const model = gltf.scene;
+        model.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+          }
+        });
+        fitMapPropModel(model);
+        mapPropTemplates.set(path, model);
+        placeModel(model);
+      });
+    };
+    const addDownloadedMapDecor = (locationKey: string, data: BattleScene3DProps) => {
+      const natureBase = '/models/map-packs/nature-kit/Models/GLTF%20format';
+      const townBase = '/models/map-packs/fantasy-town-kit/Models/GLB%20format';
+      const caveBase = '/models/map-packs/modular-cave-kit/Models/GLB%20format';
+      const dungeonBase = '/models/map-packs/modular-dungeon-kit/Models/GLB%20format';
+      const mapPresets = [
+        [`${natureBase}/tree_oak.glb`, `${natureBase}/tree_cone.glb`, `${natureBase}/rock_largeA.glb`, `${natureBase}/plant_bushLarge.glb`, `${natureBase}/bridge_wood.glb`],
+        [`${natureBase}/tree_default.glb`, `${natureBase}/tree_fat.glb`, `${natureBase}/rock_smallA.glb`, `${natureBase}/grass_large.glb`, `${natureBase}/campfire_stones.glb`],
+        [`${natureBase}/tree_blocks.glb`, `${natureBase}/tree_detailed.glb`, `${natureBase}/rock_tallA.glb`, `${natureBase}/plant_flatTall.glb`, `${natureBase}/bridge_stone.glb`],
+        [`${natureBase}/tree_oak_dark.glb`, `${natureBase}/tree_cone_dark.glb`, `${natureBase}/rock_largeB.glb`, `${natureBase}/plant_bushTriangle.glb`, `${natureBase}/bridge_woodRound.glb`],
+        [`${natureBase}/tree_default_fall.glb`, `${natureBase}/tree_fat_fall.glb`, `${natureBase}/rock_largeC.glb`, `${natureBase}/plant_bushSmall.glb`, `${natureBase}/campfire_logs.glb`],
+        [`${natureBase}/tree_blocks_dark.glb`, `${natureBase}/tree_detailed_dark.glb`, `${natureBase}/rock_tallB.glb`, `${natureBase}/grass_leafsLarge.glb`, `${natureBase}/bridge_stoneRound.glb`],
+        [`${natureBase}/tree_oak_fall.glb`, `${natureBase}/tree_cone_fall.glb`, `${natureBase}/rock_smallFlatA.glb`, `${natureBase}/plant_bushDetailed.glb`, `${natureBase}/bridge_woodNarrow.glb`],
+        [`${natureBase}/tree_default_dark.glb`, `${natureBase}/tree_fat_darkh.glb`, `${natureBase}/rock_tallC.glb`, `${natureBase}/grass.glb`, `${natureBase}/bridge_stoneNarrow.glb`],
+        [`${natureBase}/tree_detailed_fall.glb`, `${natureBase}/tree_blocks_fall.glb`, `${natureBase}/rock_largeD.glb`, `${natureBase}/plant_flatShort.glb`, `${natureBase}/campfire_bricks.glb`],
+        [`${natureBase}/tree_cone.glb`, `${natureBase}/tree_oak.glb`, `${natureBase}/rock_tallD.glb`, `${natureBase}/plant_bushLargeTriangle.glb`, `${natureBase}/bridge_woodRoundNarrow.glb`],
+        [`${townBase}/wall-arch.glb`, `${townBase}/wall-window-stone.glb`, `${townBase}/road.glb`, `${townBase}/fountain-round.glb`, `${townBase}/stairs-stone.glb`],
+        [`${townBase}/wall-door.glb`, `${townBase}/wall-block.glb`, `${townBase}/road-corner.glb`, `${townBase}/rock-large.glb`, `${townBase}/stairs-full.glb`],
+        [`${townBase}/wall-broken.glb`, `${townBase}/wall-window-shutters.glb`, `${townBase}/road-bend.glb`, `${townBase}/fountain-square.glb`, `${townBase}/stairs-wide-stone.glb`],
+        [`${townBase}/wall-corner.glb`, `${townBase}/wall-doorway-round.glb`, `${townBase}/road-edge.glb`, `${townBase}/rock-wide.glb`, `${townBase}/stairs-wood.glb`],
+        [`${townBase}/wall-rounded.glb`, `${townBase}/wall-window-round.glb`, `${townBase}/road-curb.glb`, `${townBase}/fountain-center.glb`, `${townBase}/stairs-stone-round.glb`],
+        [`${townBase}/wall-wood-arch.glb`, `${townBase}/wall-wood-block.glb`, `${townBase}/road-slope.glb`, `${townBase}/rock-small.glb`, `${townBase}/stairs-wide-wood.glb`],
+        [`${townBase}/wall-detail-cross.glb`, `${townBase}/wall-doorway-square.glb`, `${townBase}/road-curb-end.glb`, `${townBase}/fountain-edge.glb`, `${townBase}/stairs-stone-handrail.glb`],
+        [`${townBase}/wall-half.glb`, `${townBase}/wall-window-glass.glb`, `${townBase}/road-corner-inner.glb`, `${townBase}/fountain-curved.glb`, `${townBase}/stairs-wood-handrail.glb`],
+        [`${townBase}/wall-diagonal.glb`, `${townBase}/wall-doorway-square-wide.glb`, `${townBase}/road-edge-slope.glb`, `${townBase}/fountain-round-detail.glb`, `${townBase}/stairs-full-corner-outer.glb`],
+        [`${townBase}/wall-wood-broken.glb`, `${townBase}/wall-wood-corner.glb`, `${townBase}/road.glb`, `${townBase}/fountain-square-detail.glb`, `${townBase}/stairs-full-corner-inner.glb`],
+        [`${caveBase}/room-small.glb`, `${caveBase}/gate-rock.glb`, `${caveBase}/corridor-wide.glb`, `${caveBase}/stairs.glb`],
+        [`${caveBase}/room-large.glb`, `${caveBase}/gate.glb`, `${caveBase}/corridor-corner.glb`, `${caveBase}/stairs-wide.glb`],
+        [`${caveBase}/room-wide.glb`, `${caveBase}/gate-metal-bars.glb`, `${caveBase}/corridor-junction.glb`, `${caveBase}/corridor-end.glb`],
+        [`${caveBase}/room-corner.glb`, `${caveBase}/gate-overhang.glb`, `${caveBase}/corridor-intersection.glb`, `${caveBase}/corridor-transition.glb`],
+        [`${caveBase}/room-small-variation.glb`, `${caveBase}/gate-rock.glb`, `${caveBase}/corridor-wide-corner.glb`, `${caveBase}/stairs.glb`],
+        [`${caveBase}/room-large-variation.glb`, `${caveBase}/gate.glb`, `${caveBase}/corridor-wide-junction.glb`, `${caveBase}/stairs-wide.glb`],
+        [`${caveBase}/room-wide-variation.glb`, `${caveBase}/gate-metal-bars.glb`, `${caveBase}/corridor-wide-end.glb`, `${caveBase}/corridor-wide-intersection.glb`],
+        [`${caveBase}/room-small.glb`, `${caveBase}/gate-overhang.glb`, `${caveBase}/corridor.glb`, `${caveBase}/template-wall-stairs.glb`],
+        [`${caveBase}/room-large.glb`, `${caveBase}/gate-rock.glb`, `${caveBase}/corridor-wide.glb`, `${caveBase}/corridor-transition.glb`],
+        [`${caveBase}/room-wide.glb`, `${caveBase}/gate.glb`, `${caveBase}/corridor-corner.glb`, `${caveBase}/stairs-wide.glb`],
+        [`${dungeonBase}/room-small.glb`, `${dungeonBase}/gate.glb`, `${dungeonBase}/corridor.glb`, `${dungeonBase}/stairs-wide.glb`],
+        [`${dungeonBase}/room-large.glb`, `${dungeonBase}/gate-metal-bars.glb`, `${dungeonBase}/corridor-corner.glb`, `${dungeonBase}/stairs.glb`],
+        [`${dungeonBase}/room-wide.glb`, `${dungeonBase}/gate-door.glb`, `${dungeonBase}/corridor-junction.glb`, `${dungeonBase}/corridor-end.glb`],
+        [`${dungeonBase}/room-corner.glb`, `${dungeonBase}/gate.glb`, `${dungeonBase}/corridor-intersection.glb`, `${dungeonBase}/stairs-wide.glb`],
+        [`${dungeonBase}/room-small-variation.glb`, `${dungeonBase}/gate-metal-bars.glb`, `${dungeonBase}/corridor-wide.glb`, `${dungeonBase}/stairs.glb`],
+        [`${dungeonBase}/room-large-variation.glb`, `${dungeonBase}/gate.glb`, `${dungeonBase}/corridor-wide-corner.glb`, `${dungeonBase}/corridor-transition.glb`],
+        [`${dungeonBase}/room-wide-variation.glb`, `${dungeonBase}/gate-door.glb`, `${dungeonBase}/corridor-wide-junction.glb`, `${dungeonBase}/stairs-wide.glb`],
+        [`${dungeonBase}/room-small.glb`, `${dungeonBase}/gate-metal-bars.glb`, `${dungeonBase}/corridor-wide-end.glb`, `${dungeonBase}/corridor-wide-intersection.glb`],
+        [`${dungeonBase}/room-large.glb`, `${dungeonBase}/gate.glb`, `${dungeonBase}/corridor.glb`, `${dungeonBase}/template-wall-stairs.glb`],
+        [`${dungeonBase}/room-wide.glb`, `${dungeonBase}/gate-door.glb`, `${dungeonBase}/corridor-corner.glb`, `${dungeonBase}/stairs.glb`],
+      ];
+      const presetIndex = Math.abs(data.chapter * 7 + data.locationIndex * 13 + hashSceneKey(data.sceneKey)) % mapPresets.length;
+      const positions: Array<[number, number, number]> = [
+        [-18, 0, -24],
+        [17, 0, -25],
+        [-28, 0, -6],
+        [27, 0, -5],
+        [-14, 0, 16],
+        [16, 0, 17],
+        [0, 0, -30],
+        [0, 0, 24],
+        [-34, 0, 22],
+        [34, 0, 22],
+      ];
+      const selectedPack = mapPresets[presetIndex];
+      positions.forEach((position, index) => {
+        const path = selectedPack[index % selectedPack.length];
+        const family = Math.floor(presetIndex / 10);
+        const size = family === 0 ? 2.1 + (index % 3) * 0.55 : family === 1 ? 3.1 : 4.25;
+        loadMapProp(path, locationKey, position, size, Math.sin(index + data.chapter) * 0.9);
+      });
+    };
     locationLoader.load(
       '/models/rec-room-monster/scene.gltf',
       (gltf) => {
@@ -1205,7 +1383,11 @@ export function BattleScene3D(props: BattleScene3DProps) {
         });
         fitLocationModel(model);
         recRoomLocation.add(model);
+        markModelReady('recRoomMonster');
       }
+      ,
+      undefined,
+      () => markModelReady('recRoomMonster')
     );
     locationLoader.load(
       '/models/rec-room-run-location/scene.gltf',
@@ -1219,7 +1401,10 @@ export function BattleScene3D(props: BattleScene3DProps) {
         });
         fitLocationModel(model);
         recRoomRunLocation.add(model);
-      }
+        markModelReady('recRoomRun');
+      },
+      undefined,
+      () => markModelReady('recRoomRun')
     );
     let activeLocationKey = '';
     const disposeLocationObject = (object: THREE.Object3D) => {
@@ -1241,7 +1426,15 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const child = locationRoot.children.pop();
         if (child) disposeLocationObject(child);
       }
+      downloadedMapRoot.clear();
       add3DLocation(scene, locationRoot, data.sceneKey, data.chapter, data.locationIndex);
+      addDownloadedMapDecor(nextLocationKey, data);
+      const downloadedVariant = Math.abs(data.chapter + data.locationIndex + hashSceneKey(data.sceneKey)) % 3;
+      recRoomLocation.visible = downloadedVariant === 1;
+      recRoomRunLocation.visible = downloadedVariant === 2;
+      recRoomLocation.position.set(-30 + (data.locationIndex % 3) * 10, 0, -28);
+      recRoomRunLocation.position.set(28 - (data.locationIndex % 4) * 5, 0, -20);
+      recRoomRunLocation.rotation.y = -0.38 + (data.chapter % 5) * 0.12;
     };
     rebuildLocation();
 
@@ -1256,6 +1449,72 @@ export function BattleScene3D(props: BattleScene3DProps) {
     scene.add(hero, heroArtifact, dragon, nightKingBoss);
 
     const gltfLoader = new GLTFLoader();
+    const heroMixers: THREE.AnimationMixer[] = [];
+    const heroClipActions: Record<string, THREE.AnimationAction> = {};
+    let activeHeroClip = '';
+    let hasDownloadedHeroAnimations = false;
+    const findHeroClip = (...names: string[]) => {
+      const availableNames = Object.keys(heroClipActions);
+      for (const name of names) {
+        if (heroClipActions[name]) return name;
+        const lowerName = name.toLowerCase();
+        const match = availableNames.find((entry) => entry.toLowerCase().includes(lowerName));
+        if (match) return match;
+      }
+      return '';
+    };
+    const playHeroClip = (clipName: string, fade = 0.14, once = false, timeScale = 1) => {
+      const nextAction = heroClipActions[clipName];
+      if (!nextAction) return false;
+      nextAction.timeScale = timeScale;
+      if (activeHeroClip === clipName && !once) return true;
+      const previousAction = heroClipActions[activeHeroClip];
+      if (previousAction && previousAction !== nextAction) previousAction.fadeOut(fade);
+      nextAction.enabled = true;
+      nextAction.reset();
+      nextAction.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat, once ? 1 : Infinity);
+      nextAction.clampWhenFinished = once;
+      nextAction.fadeIn(fade).play();
+      activeHeroClip = clipName;
+      return true;
+    };
+    gltfLoader.load(
+      '/models/kaykit-knight/Knight.glb',
+      (gltf) => {
+        hero.children.forEach((child) => {
+          child.visible = false;
+        });
+        const model = gltf.scene;
+        model.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+          }
+        });
+        fitHeroModel(model);
+        model.name = 'downloaded-hero-model';
+        hero.add(model);
+        hero.userData.downloadedModel = model;
+        if (gltf.animations.length > 0) {
+          const mixer = new THREE.AnimationMixer(model);
+          gltf.animations.forEach((clip) => {
+            heroClipActions[clip.name] = mixer.clipAction(clip);
+          });
+          hasDownloadedHeroAnimations = true;
+          playHeroClip(findHeroClip('Idle'), 0);
+          heroMixers.push(mixer);
+          hero.userData.downloadedMixer = mixer;
+        }
+        markModelReady('hero');
+      },
+      undefined,
+      () => {
+        hero.children.forEach((child) => {
+          child.visible = true;
+        });
+        markModelReady('hero');
+      }
+    );
     gltfLoader.load(
       '/models/night-king/scene.gltf',
       (gltf) => {
@@ -1285,23 +1544,18 @@ export function BattleScene3D(props: BattleScene3DProps) {
         model.scale.setScalar(size.y > 0 ? 14 / size.y : 4.2);
         nightKingBoss.add(model);
         nightKingBoss.userData.loadedModel = model;
+        markModelReady('nightKing');
       },
       undefined,
       () => {
         nightKingFallback.visible = true;
+        markModelReady('nightKing');
       }
     );
 
     const monsters = new THREE.Group();
     for (let i = 0; i < 36; i += 1) {
       const monster = makeMonster(refs.current.monsterKind, i);
-      monster.children.forEach((child) => {
-        child.visible = false;
-      });
-      const replacementFallback = makeReplacementMonsterFallback();
-      replacementFallback.name = 'replacement-monster-fallback';
-      monster.add(replacementFallback);
-      monster.userData.replacementFallback = replacementFallback;
       const ring = 8 + (i % 6) * 3.7;
       const angle = (i / 36) * Math.PI * 2;
       const homeX = Math.cos(angle) * ring + Math.sin(i * 1.7) * 4;
@@ -1310,25 +1564,20 @@ export function BattleScene3D(props: BattleScene3DProps) {
       monster.rotation.y = Math.PI + Math.sin(i) * 0.35;
       monster.userData.homeX = homeX;
       monster.userData.homeZ = homeZ;
-      monster.userData.speed = (refs.current.monsterKind === 'goblin' ? 0.04 : 0.018) + (i % 5) * 0.004;
+      monster.userData.speed = monsterRunSpeedMetersPerSecond;
       monster.userData.attackFlash = 0;
       monster.userData.attackCycle = (i % 7) * 0.13;
+      monster.userData.botState = 'chase';
+      monster.userData.botAngle = angle + (i % 3 - 1) * 0.32;
+      monster.userData.botOrbit = 0.7 + (i % 5) * 0.18;
+      monster.userData.attackCooldown = (i % 6) * 0.18;
       monsters.add(monster);
     }
     scene.add(monsters);
 
-    const monsterMixers: THREE.AnimationMixer[] = [];
-    const monsterLoader = new GLTFLoader();
-    const monsterModelPaths = [
-      '/models/gobkit-minions/minion-a01.glb',
-      '/models/gobkit-minions/minion-b01.glb',
-      '/models/gobkit-minions/minion-c01.glb',
-      '/models/gobkit-minions/minion-d01.glb',
-    ];
-    monsterModelPaths.forEach((modelPath, modelIndex) => {
-      monsterLoader.load(
-        modelPath,
-        (gltf) => {
+    gltfLoader.load(
+      '/models/goblin-model/scene.gltf',
+      (gltf) => {
         const template = gltf.scene;
         template.traverse((object) => {
           if (object instanceof THREE.Mesh) {
@@ -1337,34 +1586,30 @@ export function BattleScene3D(props: BattleScene3DProps) {
           }
         });
         monsters.children.forEach((monster, index) => {
-          if (index % monsterModelPaths.length !== modelIndex) return;
           const current = monster as THREE.Group;
-          const fallback = current.userData.replacementFallback;
-          if (fallback instanceof THREE.Object3D) fallback.visible = false;
-          const model = cloneSkeleton(template);
-          fitMonsterModel(model);
+          current.children.forEach((child) => {
+            child.visible = false;
+          });
+          const model = template.clone(true);
+          fitGoblinModel(model);
+          model.name = 'loaded-goblin-model';
           model.rotation.y += (index % 2 ? 0.08 : -0.08);
-          model.name = 'replacement-monster-model';
           current.add(model);
-          current.userData.replacementModel = model;
-          if (gltf.animations.length > 0) {
-            const mixer = new THREE.AnimationMixer(model);
-            const idleClip = THREE.AnimationUtils.subclip(gltf.animations[0], 'idle', 0, 30, 24);
-            mixer.clipAction(idleClip).play();
-            monsterMixers.push(mixer);
-            current.userData.replacementMixer = mixer;
-          }
+          current.userData.loadedGoblinModel = model;
+          current.userData.baseY = 0.02;
         });
+        markModelReady('goblin');
       },
       undefined,
       () => {
         monsters.children.forEach((monster) => {
-          const fallback = (monster as THREE.Group).userData.replacementFallback;
-          if (fallback instanceof THREE.Object3D) fallback.visible = true;
+          (monster as THREE.Group).children.forEach((child) => {
+            child.visible = true;
+          });
         });
+        markModelReady('goblin');
       }
-      );
-    });
+    );
 
     const ashMat = new THREE.MeshBasicMaterial({ color: '#aee9e3', transparent: true, opacity: 0.58 });
     const motes = new THREE.Group();
@@ -1383,12 +1628,16 @@ export function BattleScene3D(props: BattleScene3DProps) {
     let pulse = 0;
     let lastHeroX = refs.current.heroPosition.x / 1000;
     let lastHeroZ = refs.current.heroPosition.z / 1000;
-    let heroFacing = 0.25;
-    let renderFacing = 0.25;
+    const initialFacing = Math.atan2(refs.current.heroDirection.x, refs.current.heroDirection.z);
+    let heroFacing = initialFacing;
+    let renderFacing = initialFacing;
+    const smoothHeroPosition = new THREE.Vector3(-3.4 + lastHeroX, 0, 1.2 + lastHeroZ);
+    const targetHeroPosition = new THREE.Vector3(-3.4 + lastHeroX, 0, 1.2 + lastHeroZ);
     const cameraTarget = new THREE.Vector3(0, 3, 10);
     const lookTarget = new THREE.Vector3(0, 1.5, 0);
     const smoothLookTarget = new THREE.Vector3(0, 1.5, 0);
     let attackSwing = 0;
+    let cameraReady = false;
 
     const resize = () => {
       const width = container.clientWidth || 640;
@@ -1402,7 +1651,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const time = clock.getElapsedTime();
       const data = refs.current;
       const delta = clock.getDelta();
-      monsterMixers.forEach((mixer) => mixer.update(delta));
+      heroMixers.forEach((mixer) => mixer.update(delta));
       rebuildLocation();
       const startedStrike = lastHeroAnimation !== data.heroAnimation && data.heroAnimation === 'strike';
       lastHeroAnimation = data.heroAnimation;
@@ -1410,6 +1659,13 @@ export function BattleScene3D(props: BattleScene3DProps) {
         lastPulse = data.battlePulse;
         pulse = 0.38;
         attackSwing = 1;
+        playHeroClip(findHeroClip('1H_Melee_Attack_Slice_Horizontal', 'Attack', 'Slice'), 0.08, true, 1.35);
+      }
+      if (!attackSwing) {
+        if (data.heroHeight > 0) playHeroClip(findHeroClip('Jump_Full_Short', 'Jump'), 0.1, false, 1.1);
+        else if (data.isHeroMoving) playHeroClip(findHeroClip('Walk', 'Walking', 'Running_A', 'Run'), 0.22, false, 0.78);
+        else if (data.heroAnimation === 'heal') playHeroClip(findHeroClip('Cheer'), 0.12, false, 1);
+        else playHeroClip(findHeroClip('Idle'), 0.24, false, 0.9);
       }
       pulse = Math.max(0, pulse - delta);
       attackSwing = Math.max(0, attackSwing - delta * 2.8);
@@ -1420,6 +1676,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const heroWorldX = -3.4 + heroX;
       const heroWorldZ = 1.2 + heroZ;
       const jumpHeight = data.heroHeight / 120;
+      targetHeroPosition.set(heroWorldX, 0, heroWorldZ);
+      smoothHeroPosition.lerp(targetHeroPosition, 1 - Math.exp(-delta * 18));
 
       scene.fog = new THREE.Fog('#081111', Math.max(9, data.viewDistance * 0.015), Math.max(34, data.viewDistance * 0.08));
       scene.traverse((object) => {
@@ -1427,8 +1685,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
         if (object.userData.flame instanceof THREE.Mesh) object.userData.flame.scale.y = 0.8 + burn * 0.5 + Math.sin(time * 9 + object.position.x) * 0.18;
       });
 
-      hero.position.x = heroWorldX;
-      hero.position.z = heroWorldZ;
+      hero.position.x = smoothHeroPosition.x;
+      hero.position.z = smoothHeroPosition.z;
       const moveDX = heroX - lastHeroX;
       const moveDZ = heroZ - lastHeroZ;
       if (Math.hypot(data.heroDirection.x, data.heroDirection.z) > 0.01) {
@@ -1438,7 +1696,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
       }
       let turnDelta = heroFacing - renderFacing;
       turnDelta = Math.atan2(Math.sin(turnDelta), Math.cos(turnDelta));
-      renderFacing += turnDelta * Math.min(1, delta * 9);
+      const turnBlend = 1 - Math.exp(-delta * (data.isHeroMoving ? 7.2 : 4.8));
+      renderFacing += turnDelta * turnBlend;
       lastHeroX = heroX;
       lastHeroZ = heroZ;
 
@@ -1447,20 +1706,26 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const stepLift = Math.abs(Math.sin(walkCycle));
       const runTilt = data.isHeroMoving ? Math.sin(walkCycle * 0.5) * 0.055 : 0;
       const walkPower = data.isHeroMoving ? 0.74 : 0.12;
+      const useFallbackHeroRig = !hasDownloadedHeroAnimations;
       hero.scale.setScalar(1);
-      hero.position.y = jumpHeight + Math.sin(time * 2.6) * 0.035 + (data.isHeroMoving ? stepLift * 0.095 : 0);
-      hero.rotation.y = renderFacing + Math.sin(time * 1.8) * 0.025;
-      hero.rotation.x = data.isHeroMoving ? -0.07 + runTilt : 0;
-      hero.rotation.z = data.isHeroMoving ? Math.sin(walkCycle) * 0.055 : 0;
-      hero.userData.cape.rotation.y = Math.sin(time * 2.2) * 0.04 - stride * (data.isHeroMoving ? 0.12 : 0);
-      hero.userData.cape.rotation.x = data.isHeroMoving ? -0.08 - stepLift * 0.08 : 0;
-      hero.userData.leftLeg.rotation.x = stride * walkPower - jumpHeight * 0.28;
-      hero.userData.rightLeg.rotation.x = -stride * walkPower - jumpHeight * 0.28;
-      hero.userData.leftArm.rotation.x = -stride * (data.isHeroMoving ? 0.5 : 0.08);
-      hero.userData.rightArm.rotation.x = -0.18 + stride * (data.isHeroMoving ? 0.34 : 0.05);
-      hero.userData.leftArm.rotation.z = -0.55 + Math.sin(time * 5) * 0.08 + stepLift * (data.isHeroMoving ? 0.12 : 0);
-      hero.userData.rightArm.rotation.z = -1.18 - Math.sin(time * 5) * 0.05 - stepLift * (data.isHeroMoving ? 0.08 : 0);
-      hero.userData.sword.rotation.set(0.12, 0, -1.34);
+      hero.position.y =
+        jumpHeight +
+        Math.sin(time * 2.6) * (useFallbackHeroRig ? 0.035 : 0.018) +
+        (useFallbackHeroRig && data.isHeroMoving ? stepLift * 0.095 : 0);
+      hero.rotation.y = renderFacing + Math.sin(time * 1.8) * 0.014;
+      hero.rotation.x = useFallbackHeroRig && data.isHeroMoving ? -0.07 + runTilt : 0;
+      hero.rotation.z = useFallbackHeroRig && data.isHeroMoving ? Math.sin(walkCycle) * 0.055 : 0;
+      if (useFallbackHeroRig) {
+        hero.userData.cape.rotation.y = Math.sin(time * 2.2) * 0.04 - stride * (data.isHeroMoving ? 0.12 : 0);
+        hero.userData.cape.rotation.x = data.isHeroMoving ? -0.08 - stepLift * 0.08 : 0;
+        hero.userData.leftLeg.rotation.x = stride * walkPower - jumpHeight * 0.28;
+        hero.userData.rightLeg.rotation.x = -stride * walkPower - jumpHeight * 0.28;
+        hero.userData.leftArm.rotation.x = -stride * (data.isHeroMoving ? 0.5 : 0.08);
+        hero.userData.rightArm.rotation.x = -0.18 + stride * (data.isHeroMoving ? 0.34 : 0.05);
+        hero.userData.leftArm.rotation.z = -0.55 + Math.sin(time * 5) * 0.08 + stepLift * (data.isHeroMoving ? 0.12 : 0);
+        hero.userData.rightArm.rotation.z = -1.18 - Math.sin(time * 5) * 0.05 - stepLift * (data.isHeroMoving ? 0.08 : 0);
+        hero.userData.sword.rotation.set(0.12, 0, -1.34);
+      }
       if (data.heroAnimation === 'strike' || attackSwing > 0) {
         const attackPhase = THREE.MathUtils.clamp(1 - attackSwing, 0, 1);
         const windup = THREE.MathUtils.smoothstep(attackPhase, 0, 0.24);
@@ -1471,19 +1736,23 @@ export function BattleScene3D(props: BattleScene3DProps) {
         hero.position.x += Math.sin(renderFacing) * (0.16 + lunge * 0.52);
         hero.position.z += Math.cos(renderFacing) * (0.16 + lunge * 0.52);
         hero.position.y += impact * 0.12;
-        hero.rotation.x = -0.12 - lunge * 0.24 + recover * 0.08;
-        hero.rotation.z = -windup * 0.18 + impact * 0.26;
-        hero.userData.rightArm.rotation.z = 0.62 + windup * 1.45 + slash * 0.82 - recover * 0.35;
-        hero.userData.rightArm.rotation.x = -0.2 - windup * 1.3 - slash * 2.05 + recover * 1.05;
-        hero.userData.leftArm.rotation.x = -0.22 + slash * 0.35;
-        hero.userData.leftArm.rotation.z = -0.56 - lunge * 0.48 + recover * 0.22;
-        hero.userData.sword.rotation.x = 0.12 - windup * 1.35 - slash * 2.15 + recover * 1.1;
-        hero.userData.sword.rotation.y = -impact * 0.28;
-        hero.userData.sword.rotation.z = -1.34 - slash * 1.2 + recover * 0.62;
+        hero.rotation.x = -0.07 - lunge * (useFallbackHeroRig ? 0.24 : 0.12) + recover * 0.06;
+        hero.rotation.z = -windup * 0.12 + impact * 0.18;
+        if (useFallbackHeroRig) {
+          hero.userData.rightArm.rotation.z = 0.62 + windup * 1.45 + slash * 0.82 - recover * 0.35;
+          hero.userData.rightArm.rotation.x = -0.2 - windup * 1.3 - slash * 2.05 + recover * 1.05;
+          hero.userData.leftArm.rotation.x = -0.22 + slash * 0.35;
+          hero.userData.leftArm.rotation.z = -0.56 - lunge * 0.48 + recover * 0.22;
+          hero.userData.sword.rotation.x = 0.12 - windup * 1.35 - slash * 2.15 + recover * 1.1;
+          hero.userData.sword.rotation.y = -impact * 0.28;
+          hero.userData.sword.rotation.z = -1.34 - slash * 1.2 + recover * 0.62;
+        }
       } else if (data.heroAnimation === 'step' || data.isHeroMoving) {
-        hero.position.x += Math.sin(renderFacing) * stride * 0.11;
-        hero.position.z += Math.cos(renderFacing) * stride * 0.11;
-        hero.rotation.x -= stepLift * 0.035;
+        if (useFallbackHeroRig) {
+          hero.position.x += Math.sin(renderFacing) * stride * 0.11;
+          hero.position.z += Math.cos(renderFacing) * stride * 0.11;
+          hero.rotation.x -= stepLift * 0.035;
+        }
       } else if (data.heroAnimation === 'heal') {
         hero.scale.setScalar(1 + Math.sin(time * 10) * 0.045);
         hero.rotation.y += Math.sin(time * 8) * 0.035;
@@ -1521,34 +1790,51 @@ export function BattleScene3D(props: BattleScene3DProps) {
           return;
         }
 
-        const toHeroX = heroWorldX - current.position.x;
-        const toHeroZ = heroWorldZ - current.position.z;
+        const toHeroX = hero.position.x - current.position.x;
+        const toHeroZ = hero.position.z - current.position.z;
         const distance = Math.max(0.001, Math.hypot(toHeroX, toHeroZ));
-        const attackRange = 5;
-        const targetX = heroWorldX;
-        const targetZ = heroWorldZ;
+        const attackRange = monsterHitRangeMeters;
+        current.userData.attackCooldown = Math.max(0, (current.userData.attackCooldown as number) - delta);
+        const botAngle = (current.userData.botAngle as number) + Math.sin(time * 0.5 + index) * 0.35;
+        const botOrbit = current.userData.botOrbit as number;
+        const targetRadius = distance > attackRange ? Math.max(0.2, attackRange - 0.7 + botOrbit * 0.35) : attackRange + botOrbit;
+        const targetX = hero.position.x - (toHeroX / distance) * targetRadius + Math.cos(botAngle) * botOrbit;
+        const targetZ = hero.position.z - (toHeroZ / distance) * targetRadius + Math.sin(botAngle) * botOrbit;
         const moveX = targetX - current.position.x;
         const moveZ = targetZ - current.position.z;
         const moveDistance = Math.max(0.001, Math.hypot(moveX, moveZ));
-        const speed = (current.userData.speed as number) * 2.65;
+        const botState = current.userData.botState as string;
+        const speed = (current.userData.speed as number) * (botState === 'retreat' ? 0.72 : distance > attackRange ? 1 : 0.45);
 
-        if (distance > attackRange) {
-          const stopDistance = attackRange * 0.82;
-          const stepDistance = Math.min(Math.max(0, distance - stopDistance), speed * delta * 60);
+        if (botState === 'retreat') {
+          const retreatStep = Math.min(1.1, speed * delta);
+          current.position.x -= (toHeroX / distance) * retreatStep;
+          current.position.z -= (toHeroZ / distance) * retreatStep;
+          if (distance > monsterRetreatRangeMeters) current.userData.botState = 'chase';
+          current.userData.attackFlash = Math.max(0, (current.userData.attackFlash as number) - delta * 1.4);
+        } else if (distance > attackRange) {
+          const stepDistance = Math.min(Math.max(0, distance - attackRange), speed * delta);
           current.position.x += (moveX / moveDistance) * stepDistance + shake * (index % 2 ? 0.012 : -0.012);
           current.position.z += (moveZ / moveDistance) * stepDistance;
           current.userData.attackFlash = Math.max(0, (current.userData.attackFlash as number) - delta * 1.8);
-          current.userData.attackCycle = 0;
+          current.userData.attackCycle = Math.max(0, (current.userData.attackCycle as number) - delta * 0.8);
+          current.userData.botState = 'chase';
         } else {
           current.userData.attackCycle = ((current.userData.attackCycle as number) + delta * 1.55) % 1;
           current.userData.attackFlash = Math.min(1, (current.userData.attackFlash as number) + delta * 5);
           current.position.x -= (toHeroX / distance) * 0.018 * Math.sin(time * 14 + index);
           current.position.z -= (toHeroZ / distance) * 0.018 * Math.sin(time * 14 + index);
+          current.userData.botState = 'attack';
+          if ((current.userData.attackCooldown as number) === 0 && (current.userData.attackCycle as number) > 0.58) {
+            current.userData.attackCooldown = 1.05 + (index % 4) * 0.12;
+            current.userData.botState = 'retreat';
+          }
         }
 
         const walk = time * (distance > attackRange ? 9.8 : 5.4) + index;
         const attack = current.userData.attackFlash as number;
-        current.position.y = Math.max(0, Math.sin(walk * 2) * 0.08) + (attack > 0.4 ? Math.sin(time * 22 + index) * 0.06 : 0);
+        const monsterBaseY = typeof current.userData.baseY === 'number' ? current.userData.baseY : 0.08;
+        current.position.y = monsterBaseY + Math.max(0, Math.sin(walk * 2) * 0.08) + (attack > 0.4 ? Math.sin(time * 22 + index) * 0.06 : 0);
         const faceHero = Math.atan2(toHeroX, toHeroZ) + Math.PI;
         let monsterTurnDelta = faceHero - current.rotation.y;
         monsterTurnDelta = Math.atan2(Math.sin(monsterTurnDelta), Math.cos(monsterTurnDelta));
@@ -1641,25 +1927,29 @@ export function BattleScene3D(props: BattleScene3DProps) {
         if (mote.position.y > 9.6) mote.position.y = 0.5;
       });
 
-      const backDistance = 5.4;
-      const sideOffset = 0.35;
+      const backDistance = 5.35;
+      const sideOffset = 0;
+      const cameraHeight = 2.45;
+      const lookAhead = 2.4;
+      const lookHeight = 1.55;
       cameraTarget.set(
         hero.position.x - Math.sin(renderFacing) * backDistance + Math.cos(renderFacing) * sideOffset + shake * 0.45,
-        hero.position.y + 2.75 + Math.sin(time * 0.6) * 0.06,
+        hero.position.y + cameraHeight + Math.sin(time * 0.6) * 0.04,
         hero.position.z - Math.cos(renderFacing) * backDistance - Math.sin(renderFacing) * sideOffset
       );
       lookTarget.set(
-        hero.position.x + Math.sin(renderFacing) * 0.45,
-        hero.position.y + 1.42,
-        hero.position.z + Math.cos(renderFacing) * 0.45
+        hero.position.x + Math.sin(renderFacing) * lookAhead,
+        hero.position.y + lookHeight,
+        hero.position.z + Math.cos(renderFacing) * lookAhead
       );
-      const followSpeed = data.isHeroMoving ? 46 : 30;
-      if (camera.position.distanceTo(cameraTarget) > 1.15) {
+      const followSpeed = data.isHeroMoving ? 18 : 12;
+      if (!cameraReady) {
         camera.position.copy(cameraTarget);
         smoothLookTarget.copy(lookTarget);
+        cameraReady = true;
       } else {
-        camera.position.lerp(cameraTarget, Math.min(1, delta * followSpeed));
-        smoothLookTarget.lerp(lookTarget, Math.min(1, delta * followSpeed));
+        camera.position.lerp(cameraTarget, 1 - Math.exp(-delta * followSpeed));
+        smoothLookTarget.lerp(lookTarget, 1 - Math.exp(-delta * followSpeed));
       }
       camera.lookAt(smoothLookTarget);
 
@@ -1672,6 +1962,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
     window.addEventListener('resize', resize);
 
     return () => {
+      disposed = true;
       window.cancelAnimationFrame(frame);
       window.removeEventListener('resize', resize);
       if (renderer.domElement.parentElement === container) container.removeChild(renderer.domElement);
@@ -1687,5 +1978,15 @@ export function BattleScene3D(props: BattleScene3DProps) {
     };
   }, []);
 
-  return <div className="battle-3d" ref={mountRef} />;
+  return (
+    <div className={`battle-3d ${modelsReady ? 'ready' : 'loading'}`} ref={mountRef}>
+      {!modelsReady && (
+        <div className="battle-3d-loading" role="status" aria-live="polite">
+          <span />
+          <strong>Загрузка моделей</strong>
+          <small>Герой, гоблины и карты готовятся</small>
+        </div>
+      )}
+    </div>
+  );
 }

@@ -216,6 +216,281 @@ button.secondary {
     linear-gradient(180deg, #1d1720 0%, #43203a 42%, #7a241d 100%);
 }
 
+.game-loading-page {
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 14% 22%, rgba(29, 65, 114, 0.2), transparent 22rem),
+    radial-gradient(circle at 82% 18%, rgba(44, 66, 105, 0.18), transparent 20rem),
+    linear-gradient(180deg, #030916 0%, #020715 56%, #01040d 100%);
+}
+
+.game-loading-page::before {
+  content: "";
+  position: fixed;
+  inset: -8%;
+  opacity: 0.22;
+  background:
+    radial-gradient(ellipse at 18% 18%, rgba(96, 132, 178, 0.32), transparent 18%),
+    radial-gradient(ellipse at 58% 34%, rgba(62, 92, 142, 0.26), transparent 21%),
+    radial-gradient(ellipse at 78% 72%, rgba(80, 105, 150, 0.2), transparent 18%),
+    repeating-linear-gradient(135deg, transparent 0 42px, rgba(255, 255, 255, 0.025) 43px 47px);
+  filter: blur(9px);
+  animation: loading-clouds 7s ease-in-out infinite alternate;
+}
+
+.game-loading-screen {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-height: 100vh;
+  padding: 28px;
+  color: #f8fbff;
+  text-align: center;
+}
+
+.game-loading-topbar {
+  position: fixed;
+  left: max(28px, env(safe-area-inset-left));
+  top: max(24px, env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading-roblox-icon,
+.loading-menu-icon,
+.loading-chat-icon,
+.loading-mic-icon {
+  position: relative;
+  display: block;
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: rgba(22, 22, 26, 0.92);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.36);
+}
+
+.loading-menu-icon,
+.loading-chat-icon,
+.loading-mic-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 28px;
+}
+
+.loading-roblox-icon::before {
+  content: "";
+  position: absolute;
+  inset: 23px;
+  background: #fff;
+  transform: rotate(14deg);
+}
+
+.loading-roblox-icon::after {
+  content: "";
+  position: absolute;
+  left: 35px;
+  top: 35px;
+  width: 13px;
+  height: 13px;
+  background: #16161a;
+  transform: rotate(14deg);
+}
+
+.loading-menu-icon::before,
+.loading-menu-icon::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  height: 4px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 14px 0 #fff;
+}
+
+.loading-menu-icon::before {
+  top: 20px;
+}
+
+.loading-menu-icon::after {
+  top: 48px;
+  box-shadow: none;
+}
+
+.loading-chat-icon::before {
+  content: "";
+  position: absolute;
+  left: 17px;
+  top: 22px;
+  width: 36px;
+  height: 25px;
+  border: 4px solid #fff;
+  border-radius: 6px;
+}
+
+.loading-chat-icon::after {
+  content: "";
+  position: absolute;
+  left: 29px;
+  top: 45px;
+  width: 12px;
+  height: 12px;
+  border-left: 4px solid #fff;
+  border-bottom: 4px solid #fff;
+  transform: skewX(-18deg);
+}
+
+.loading-chat-icon b {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: #17171c;
+  font-size: 20px;
+  font-weight: 1000;
+  background: #fff;
+}
+
+.loading-mic-icon::before {
+  content: "";
+  position: absolute;
+  left: 26px;
+  top: 14px;
+  width: 18px;
+  height: 38px;
+  border-radius: 999px;
+  background: #747474;
+}
+
+.loading-mic-icon::after {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: 39px;
+  width: 28px;
+  height: 22px;
+  border-bottom: 4px solid #747474;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-radius: 0 0 20px 20px;
+}
+
+.loading-muscle {
+  position: relative;
+  width: 210px;
+  height: 190px;
+  margin-bottom: 36px;
+  transform: rotate(-18deg);
+  filter: drop-shadow(0 10px 22px rgba(255, 255, 255, 0.14));
+  animation: loading-muscle-pulse 1.2s ease-in-out infinite;
+}
+
+.loading-muscle::before {
+  content: "";
+  position: absolute;
+  left: 78px;
+  top: 48px;
+  width: 84px;
+  height: 110px;
+  border-radius: 54% 46% 62% 38%;
+  background: #fff;
+}
+
+.loading-muscle::after {
+  content: "";
+  position: absolute;
+  left: 28px;
+  top: 72px;
+  width: 88px;
+  height: 94px;
+  border-radius: 52px 24px 54px 44px;
+  background: #fff;
+}
+
+.loading-muscle span {
+  position: absolute;
+  left: 24px;
+  top: 32px;
+  width: 64px;
+  height: 82px;
+  border-radius: 38px 34px 20px 28px;
+  background: #fff;
+}
+
+.loading-muscle i {
+  position: absolute;
+  left: 48px;
+  top: 20px;
+  width: 58px;
+  height: 52px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.game-loading-screen h1 {
+  margin: 0 0 22px;
+  font-size: clamp(36px, 5vw, 58px);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.game-loading-screen p {
+  margin: 0 0 18px;
+  color: rgba(248, 251, 255, 0.72);
+  font-size: clamp(16px, 2.1vw, 25px);
+  font-weight: 700;
+}
+
+.game-loading-progress {
+  display: grid;
+  grid-template-columns: minmax(220px, 980px) 88px;
+  align-items: center;
+  gap: 28px;
+  width: min(1160px, calc(100% - 34px));
+}
+
+.game-loading-bar {
+  position: relative;
+  height: 86px;
+  overflow: hidden;
+  border: 4px solid rgba(26, 36, 62, 0.96);
+  border-radius: 26px;
+  background: rgba(28, 37, 60, 0.92);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.08), 0 12px 26px rgba(0, 0, 0, 0.36);
+}
+
+.game-loading-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #98d4ed, #5d9db7);
+  transition: width 130ms ease-out;
+}
+
+.game-loading-bar b {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(248, 251, 255, 0.76);
+  font-size: clamp(16px, 2vw, 24px);
+  font-weight: 850;
+}
+
+.game-loading-progress strong {
+  color: #f8fbff;
+  font-size: clamp(24px, 3vw, 38px);
+  font-weight: 1000;
+}
+
 .intro-story {
   width: min(860px, 100%);
   padding: 38px;
@@ -552,7 +827,8 @@ button.secondary {
 }
 
 .mobile-joystick,
-.mobile-attack {
+.mobile-attack,
+.move-pad {
   display: none;
 }
 
@@ -561,14 +837,19 @@ button.secondary {
   left: max(18px, env(safe-area-inset-left));
   bottom: max(22px, env(safe-area-inset-bottom));
   z-index: 55;
-  width: 132px;
-  height: 132px;
-  border: 3px solid rgba(255, 248, 232, 0.72);
+  width: 156px;
+  height: 156px;
+  border: 4px solid rgba(255, 248, 232, 0.82);
   border-radius: 50%;
-  background: rgba(37, 17, 5, 0.42);
-  box-shadow: inset 0 0 28px rgba(255, 230, 109, 0.16), 0 16px 34px rgba(0, 0, 0, 0.32);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 0 28px, transparent 29px),
+    linear-gradient(135deg, transparent 46%, rgba(255, 248, 232, 0.26) 47% 53%, transparent 54%),
+    linear-gradient(45deg, transparent 46%, rgba(255, 248, 232, 0.2) 47% 53%, transparent 54%),
+    rgba(8, 12, 23, 0.58);
+  box-shadow: inset 0 0 34px rgba(142, 202, 230, 0.2), 0 18px 38px rgba(0, 0, 0, 0.38);
   touch-action: none;
   user-select: none;
+  backdrop-filter: blur(4px);
 }
 
 .mobile-joystick::before,
@@ -582,19 +863,20 @@ button.secondary {
 }
 
 .mobile-joystick::before {
-  width: 52px;
-  height: 52px;
-  border: 2px solid rgba(255, 248, 232, 0.38);
+  width: 78px;
+  height: 78px;
+  border: 2px solid rgba(255, 248, 232, 0.46);
+  box-shadow: 0 -42px 0 -34px #fff8e8, 42px 0 0 -34px #fff8e8, 0 42px 0 -34px #fff8e8, -42px 0 0 -34px #fff8e8;
 }
 
 .mobile-joystick span {
-  width: 54px;
-  height: 54px;
-  margin-left: -27px;
-  margin-top: -27px;
-  border: 3px solid #251105;
-  background: linear-gradient(180deg, #ffe66d, #ff9f1c);
-  box-shadow: 0 8px 0 #9b3d16, 0 18px 28px rgba(20, 8, 4, 0.32);
+  width: 64px;
+  height: 64px;
+  margin-left: -32px;
+  margin-top: -32px;
+  border: 4px solid #101014;
+  background: linear-gradient(180deg, #f7fbff, #9ad8ff);
+  box-shadow: inset 0 -10px 0 rgba(24, 76, 122, 0.22), 0 10px 0 rgba(16, 16, 20, 0.72), 0 20px 30px rgba(20, 8, 4, 0.34);
 }
 
 .mobile-attack {
@@ -607,6 +889,233 @@ button.secondary {
   border-radius: 50%;
   font-size: 18px;
   touch-action: manipulation;
+}
+
+.game.play-page .mobile-joystick,
+.game.play-page .move-pad {
+  display: block;
+}
+
+.move-pad {
+  position: absolute;
+  left: max(194px, calc(env(safe-area-inset-left) + 194px));
+  bottom: max(30px, env(safe-area-inset-bottom));
+  z-index: 56;
+  width: 132px;
+  height: 132px;
+  pointer-events: auto;
+}
+
+.move-pad-button {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
+  border: 3px solid rgba(255, 248, 232, 0.88);
+  border-radius: 8px;
+  color: #101014;
+  font-size: 22px;
+  font-weight: 1000;
+  line-height: 1;
+  background: linear-gradient(180deg, #f7fbff, #9ad8ff);
+  box-shadow: 0 6px 0 rgba(16, 16, 20, 0.74), 0 14px 22px rgba(0, 0, 0, 0.28);
+  touch-action: none;
+  user-select: none;
+}
+
+.move-pad-button:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(16, 16, 20, 0.74), 0 8px 16px rgba(0, 0, 0, 0.24);
+}
+
+.move-pad-button.w {
+  left: 45px;
+  top: 0;
+}
+
+.move-pad-button.a {
+  left: 0;
+  top: 45px;
+}
+
+.move-pad-button.s {
+  left: 45px;
+  top: 90px;
+}
+
+.move-pad-button.d {
+  left: 90px;
+  top: 45px;
+}
+
+.click-duel {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  z-index: 58;
+  display: grid;
+  grid-template-columns: 82px minmax(220px, 440px) 82px;
+  align-items: end;
+  gap: 8px;
+  width: min(680px, calc(100% - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.click-duel-side,
+.click-duel-core {
+  border: 2px solid rgba(255, 255, 255, 0.86);
+  border-radius: 8px;
+  color: #fff;
+  text-shadow: 0 2px 0 #000, 0 0 8px rgba(0, 0, 0, 0.55);
+  background: rgba(15, 12, 18, 0.74);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.click-duel-side {
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  padding: 7px;
+  font-weight: 950;
+}
+
+.click-duel-side strong {
+  font-size: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.duel-avatar {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 3px solid #101014;
+  border-radius: 50%;
+  background: #f7f7f7;
+  color: #111;
+  text-shadow: none;
+  box-shadow: inset 0 -7px 0 rgba(0, 0, 0, 0.18);
+}
+
+.dragon-side .duel-avatar {
+  background: linear-gradient(180deg, #ffe66d, #ff3b30);
+}
+
+.click-duel-core {
+  position: relative;
+  padding: 12px 12px 10px;
+  pointer-events: auto;
+}
+
+.click-duel-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  display: grid;
+  place-items: center;
+  min-width: 118px;
+  padding: 8px 10px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #e9fdff, #2fb7ff 54%, #0066ff);
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 4px rgba(32, 206, 255, 0.38), 0 10px 24px rgba(0, 0, 0, 0.34);
+}
+
+.click-duel-tip span {
+  font-size: 20px;
+  font-weight: 1000;
+}
+
+.click-duel-tip b {
+  font-size: 12px;
+}
+
+.click-duel-bar {
+  position: relative;
+  height: 38px;
+  overflow: hidden;
+  border: 3px solid #16100f;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #6cff00 0 50%, #ff315f 50% 100%);
+}
+
+.click-duel-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 48%, rgba(0, 0, 0, 0.16));
+}
+
+.click-duel-bar .hero-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, #a6ff00, #35f000);
+  transition: width 110ms ease-out;
+}
+
+.click-duel-bar i {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  width: 5px;
+  border-radius: 999px;
+  background: #fff;
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 2px #151515, 0 0 18px #fff;
+  transition: left 110ms ease-out;
+  z-index: 2;
+}
+
+.click-duel-button {
+  position: absolute;
+  left: 50%;
+  bottom: -18px;
+  min-height: 34px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  transform: translateX(-50%);
+}
+
+.click-slash,
+.dragon-fire-burst {
+  position: absolute;
+  top: -82px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.click-slash {
+  left: 18%;
+  width: 190px;
+  height: 30px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #fff, #ffe66d, transparent);
+  transform: rotate(-18deg);
+}
+
+.dragon-fire-burst {
+  right: 13%;
+  width: 230px;
+  height: 64px;
+  border-radius: 80% 20% 20% 80%;
+  background: radial-gradient(circle at 20% 50%, #fff, #ffe66d 22%, #ff8a00 48%, #ff2a1f 68%, transparent 72%);
+  filter: drop-shadow(0 0 18px #ff4d00);
+}
+
+.click-duel.hero-hit .click-slash {
+  animation: click-slash 420ms ease-out both;
+}
+
+.click-duel.dragon-hit .dragon-fire-burst {
+  animation: dragon-fire-burst 520ms ease-out both;
 }
 
 .play-link {
@@ -679,7 +1188,8 @@ button.secondary {
 .tutorial-main {
   left: 50%;
   top: 82px;
-  width: min(520px, calc(100vw - 28px));
+  width: min(680px, calc(100vw - 28px));
+  max-height: min(78vh, 620px);
   padding: 16px;
   transform: translateX(-50%);
 }
@@ -698,6 +1208,43 @@ button.secondary {
 
 .tutorial-main button {
   margin-top: 12px;
+}
+
+.guide-primary-button {
+  width: 100%;
+}
+
+.guide-scroll {
+  display: grid;
+  gap: 12px;
+  max-height: 420px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.guide-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.guide-columns div {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 2px solid rgba(255, 248, 232, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 230, 109, 0.08);
+}
+
+.guide-columns strong {
+  color: #ffe66d;
+  font-size: 15px;
+}
+
+.guide-columns span {
+  font-size: 13px;
+  line-height: 1.25;
 }
 
 .tutorial-tip {
@@ -1427,9 +1974,51 @@ button.secondary {
 }
 
 .battle-3d {
+  position: relative;
   width: 100%;
   height: 100%;
   min-height: 560px;
+}
+
+.battle-3d.loading .battle-canvas {
+  visibility: hidden;
+}
+
+.battle-3d-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  text-align: center;
+  color: #fff8e8;
+  background: #102019;
+}
+
+.battle-3d-loading span {
+  justify-self: center;
+  width: 44px;
+  height: 44px;
+  border: 5px solid rgba(255, 248, 232, 0.25);
+  border-top-color: #ffe66d;
+  border-radius: 50%;
+  animation: loading-spin 900ms linear infinite;
+}
+
+.battle-3d-loading strong {
+  font-size: 22px;
+}
+
+.battle-3d-loading small {
+  font-weight: 800;
+  opacity: 0.82;
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .battle-3d-layer {
@@ -7209,6 +7798,62 @@ button.selected {
     padding: 16px;
   }
 
+  .game-loading-screen {
+    padding: 18px 10px;
+  }
+
+  .game-loading-topbar {
+    left: 12px;
+    top: 12px;
+    gap: 7px;
+    transform: scale(0.68);
+    transform-origin: left top;
+  }
+
+  .loading-muscle {
+    width: 160px;
+    height: 145px;
+    margin-bottom: 24px;
+  }
+
+  .loading-muscle::before {
+    left: 60px;
+    top: 38px;
+    width: 64px;
+    height: 84px;
+  }
+
+  .loading-muscle::after {
+    left: 22px;
+    top: 56px;
+    width: 66px;
+    height: 70px;
+  }
+
+  .loading-muscle span {
+    left: 18px;
+    top: 25px;
+    width: 48px;
+    height: 62px;
+  }
+
+  .loading-muscle i {
+    left: 36px;
+    top: 15px;
+    width: 44px;
+    height: 40px;
+  }
+
+  .game-loading-progress {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .game-loading-bar {
+    height: 58px;
+    border-radius: 18px;
+  }
+
   .intro-story {
     padding: 24px;
   }
@@ -7266,12 +7911,17 @@ button.selected {
 
 @media (pointer: coarse) {
   .mobile-joystick,
-  .mobile-attack {
+  .mobile-attack,
+  .move-pad {
     display: block;
   }
 
   .game.play-page .quick-hud {
     bottom: max(148px, calc(env(safe-area-inset-bottom) + 142px));
+  }
+
+  .click-duel {
+    bottom: max(154px, calc(env(safe-area-inset-bottom) + 148px));
   }
 }
 
@@ -7292,6 +7942,79 @@ button.selected {
   .game.play-page .sky {
     height: 100svh;
     min-height: 100svh;
+  }
+
+  .click-duel {
+    grid-template-columns: 54px minmax(0, 1fr) 54px;
+    gap: 5px;
+    width: calc(100% - 14px);
+  }
+
+  .click-duel-core {
+    padding: 9px 8px;
+  }
+
+  .click-duel-bar {
+    height: 30px;
+  }
+
+  .duel-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .click-duel-side {
+    padding: 5px;
+  }
+
+  .click-duel-side strong {
+    font-size: 10px;
+  }
+
+  .click-duel-tip {
+    min-width: 94px;
+    padding: 6px 8px;
+  }
+
+  .click-duel-tip span {
+    font-size: 15px;
+  }
+
+  .mobile-joystick {
+    width: 132px;
+    height: 132px;
+  }
+
+  .move-pad {
+    left: max(152px, calc(env(safe-area-inset-left) + 152px));
+    bottom: max(24px, env(safe-area-inset-bottom));
+    width: 112px;
+    height: 112px;
+  }
+
+  .move-pad-button {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    font-size: 18px;
+  }
+
+  .move-pad-button.w {
+    left: 38px;
+  }
+
+  .move-pad-button.a {
+    top: 38px;
+  }
+
+  .move-pad-button.s {
+    left: 38px;
+    top: 76px;
+  }
+
+  .move-pad-button.d {
+    left: 76px;
+    top: 38px;
   }
 
   .auth-panel {
@@ -7444,6 +8167,14 @@ button.selected {
 
   .tutorial-main h2 {
     font-size: 22px;
+  }
+
+  .guide-scroll {
+    max-height: 48vh;
+  }
+
+  .guide-columns {
+    grid-template-columns: 1fr;
   }
 
   .tutorial-tip {
@@ -7612,6 +8343,28 @@ button.selected {
 @keyframes bar-shine {
   from { background-position: 0% 50%; }
   to { background-position: 180% 50%; }
+}
+
+@keyframes loading-clouds {
+  from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+  to { transform: translate3d(1.5%, 1%, 0) scale(1.04); }
+}
+
+@keyframes loading-muscle-pulse {
+  0%, 100% { transform: rotate(-18deg) scale(1); }
+  50% { transform: rotate(-18deg) scale(1.06); }
+}
+
+@keyframes click-slash {
+  0% { opacity: 0; transform: translateX(-70px) rotate(-18deg) scaleX(0.25); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(170px) rotate(-18deg) scaleX(1.1); }
+}
+
+@keyframes dragon-fire-burst {
+  0% { opacity: 0; transform: translateX(80px) scaleX(0.2); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-190px) scaleX(1.25); }
 }
 
 @keyframes attack-ready {
