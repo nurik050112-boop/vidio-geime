@@ -132,6 +132,12 @@ type DuelTradeOffer =
   | null;
 
 const arcaneSpells = [
+  { name: 'Огненный вихрь', icon: 'O', power: 20, mana: 32, cooldown: 5_400, targets: 28, radius: 70, speed: 40 },
+  { name: 'Рассекающий ветер', icon: 'V', power: 17, mana: 24, cooldown: 4_200, targets: 24, radius: 70, speed: 40 },
+  { name: 'Ледяной дождь', icon: 'I', power: 18, mana: 28, cooldown: 4_800, targets: 26, radius: 70, speed: 40 },
+  { name: 'Окаменение', icon: 'K', power: 16, mana: 26, cooldown: 5_200, targets: 22, radius: 70, speed: 40 },
+  { name: 'Громовой разлом', icon: 'G', power: 22, mana: 36, cooldown: 6_200, targets: 34, radius: 70, speed: 40 },
+  { name: 'Теневая коса', icon: 'Q', power: 19, mana: 30, cooldown: 5_600, targets: 30, radius: 70, speed: 40 },
   { name: 'Огонь', icon: 'F', power: 8, mana: 14, cooldown: 4_200, targets: 3 },
   { name: 'Лед', icon: 'I', power: 7, mana: 12, cooldown: 3_800, targets: 4 },
   { name: 'Молния', icon: 'L', power: 10, mana: 18, cooldown: 4_800, targets: 5 },
@@ -1253,7 +1259,7 @@ function createAdminNuke(): Weapon {
     id: `admin-nuke-${Date.now()}-${Math.random()}`,
     name: 'Админская ядерка',
     rarity: 'Секретное',
-    damage: Number.MAX_SAFE_INTEGER,
+    damage: 1_000_000,
     displayDamage: adminNukeDamageText,
     hiddenDamageText: adminNukeHiddenDamageText,
     price: 0,
@@ -1345,6 +1351,18 @@ function createArcaneScepter(level = 1): Weapon {
     rarity: 'Секретное',
     damage,
     displayDamage: `${formatPower(damage)} + магия`,
+    price: 0,
+  };
+}
+
+function createMagicStaff(name: string, level = 1, bonus = 1): Weapon {
+  const damage = Math.min(Number.MAX_SAFE_INTEGER, (180_000 + level * 120_000) * worldWeaponMultiplier(Math.max(1, level)) * bonus);
+  return {
+    id: `arcane-scepter-${name}-${Date.now()}-${Math.random()}`,
+    name,
+    rarity: 'Секретное',
+    damage,
+    displayDamage: `${formatPower(damage)} + радиус 70м`,
     price: 0,
   };
 }
@@ -1490,6 +1508,7 @@ export function HomePage() {
   const [cityMonsters, setCityMonsters] = useState(() => savedGameRef.current?.cityMonsters ?? dragonSons.map(() => monstersPerCity));
   const [, setMonsterAttackCount] = useState(0);
   const [battlePulse, setBattlePulse] = useState(0);
+  const [nukePulse, setNukePulse] = useState(0);
   const [fireWavePulse, setFireWavePulse] = useState(0);
   const [waterWavePulse, setWaterWavePulse] = useState(0);
   const [soulFirePulse, setSoulFirePulse] = useState(0);
@@ -1628,6 +1647,7 @@ export function HomePage() {
   const artifactGoldMultiplier = equippedArtifact ? 1 + equippedArtifact.goldBonusPercent / 100 : 1;
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
   const waterSwordArtifactMultiplier = equippedArtifactId === 'seaPearl' && isAisultanSword(equippedWeapon) ? 11 : 1;
+  const equippedWeaponDamage = isAdminNuke(equippedWeapon) ? 1_000_000 : equippedWeapon?.damage ?? 0;
   const reward = enemy ? 120 + chapter * 110 : 0;
   const currentMonsters = isDeathGodBoss || isFinalSpiritBoss || isAdminBoss || isAdminWorldBosses || isAisSharkBoss || isAisGodBoss || isNuraliKingBoss || isBbiBoss || isFinalBoss || isFamilyBoss || isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss ? 0 : isFinalSpiritWorld ? finalSpiritMonstersLeft : isMonsterAvalancheWorld ? monsterAvalancheLeft : isAdminWorld ? adminWorldMonstersLeft : isAisWorld ? aisMonstersLeft : isNuraliWorld ? nuraliMonstersLeft : isBbiWorld ? bbiMonstersLeft : isArailmWorld ? arailmMonstersLeft : isMansurDungeon ? mansurMonstersLeft : isAnuarWorld ? anuarBombsLeft : isFuryDungeon ? furyMonstersLeft : isDungeon ? dungeon.enemiesLeft : cityMonsters[chapter] ?? 0;
   const musicKey = isFinalReveal
@@ -1687,7 +1707,7 @@ export function HomePage() {
   const currentDragonHp = isDeathGodBoss ? deathGodHp : isFinalSpiritBoss ? finalSpiritDragonHp : isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? scaledDragonPower(baseDragonHp, 15) : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonHp, 10) : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 2 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
   const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 100);
   const deathSwordMultiplier = equippedArtifactId === 'godHead' && equippedWeapon?.id.startsWith('death-sword-') ? 7.66 : 1;
-  const weaponBonus = Math.floor((isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0) * deathSwordMultiplier);
+  const weaponBonus = Math.floor((isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeaponDamage) * deathSwordMultiplier);
   const petBonus = Math.min(20, upgradePower(items.pet, shopBasePower.pet));
   const attackBonus = upgradePower(items.sword, shopBasePower.sword) + petBonus + Math.floor(weaponBonus * waterSwordArtifactMultiplier);
   const isClickDuelActive = !isFinalReveal && currentMonsters === 0 && enemyHp > 0 && heroHp > 0;
@@ -1894,15 +1914,19 @@ export function HomePage() {
   const visibleQuests = quests.filter((quest) => quest.done).slice(-3).concat(activeQuest).filter((quest, index, list) => list.findIndex((item) => item.title === quest.title) === index);
   const inventoryPreviewLimit = 80;
   const visibleWeapons = showFullInventory ? weapons : weapons.slice(-inventoryPreviewLimit);
+  const magicWeapons = weapons.filter(isArcaneWeapon);
+  const visibleMagicWeapons = showFullInventory ? magicWeapons : magicWeapons.slice(-inventoryPreviewLimit);
   const visibleArmors = showFullInventory ? armors : armors.slice(-inventoryPreviewLimit);
   const currentPlayerPower = Math.max(1_000, attackBonus + defenseBonus + currentHeroMaxHp);
   const hasArcaneWeapon = isArcaneWeapon(equippedWeapon);
   const selectedSpell = arcaneSpells[selectedArcaneSpell % arcaneSpells.length];
+  const selectedSpellRadiusMeters = 'radius' in selectedSpell ? selectedSpell.radius : 70;
+  const selectedSpellSpeedMeters = 'speed' in selectedSpell ? selectedSpell.speed : 40;
   const arcaneSkillCooldownMs = selectedSpell.cooldown;
   const arcaneSkillManaCost = selectedSpell.mana;
   const arcaneSkillRemainingMs = Math.max(0, arcaneSkillReadyAt - arcaneCooldownNow);
   const arcaneSkillReady = hasArcaneWeapon && arcaneSkillRemainingMs === 0 && heroMana >= arcaneSkillManaCost;
-  const arcaneSkillDamage = Math.max(1, Math.floor((attackBonus + (equippedWeapon?.damage ?? 0) + 2_500) * artifactDamageMultiplier * selectedSpell.power));
+  const arcaneSkillDamage = Math.max(1, Math.floor((attackBonus + equippedWeaponDamage + 2_500) * artifactDamageMultiplier * selectedSpell.power));
   const allAchievementsUnlocked = achievements.every((achievement) => unlockedAchievements.includes(achievement.id));
 
   function speakText(text: string, sceneKey: string) {
@@ -2117,6 +2141,21 @@ export function HomePage() {
     if (equippedWeapon?.id === weapon.id) setEquippedWeapon(null);
     addGold(sellPrice);
     setMessage(`Продано оружие: ${getWeaponDisplayName(weapon)}. Получено ${formatPower(sellPrice * goldMultiplier)} золота.`);
+  }
+
+  function claimMagicStaffs() {
+    const staffNames = ['Посох огненного вихря', 'Посох ветра', 'Посох ледяного дождя', 'Посох окаменения', 'Посох громового разлома'];
+    const ownedNames = new Set(weapons.filter(isArcaneWeapon).map((weapon) => weapon.name));
+    const newStaffs = staffNames
+      .filter((name) => !ownedNames.has(name))
+      .map((name, index) => createMagicStaff(name, Math.max(3, chapter + 3 + index), 1 + index * 0.18));
+    if (newStaffs.length === 0) {
+      setMessage('Все магические посохи уже есть в инвентаре.');
+      return;
+    }
+    setWeapons((currentWeapons) => [...currentWeapons, ...newStaffs]);
+    setEquippedWeapon(newStaffs[0]);
+    setMessage(`Получено магическое оружие: ${newStaffs.map((staff) => staff.name).join(', ')}.`);
   }
 
   function sellArmor(armor: Armor) {
@@ -2951,6 +2990,7 @@ export function HomePage() {
     }
 
     if (equippedWeapon?.id.startsWith('admin-nuke-')) {
+      setNukePulse((pulse) => pulse + 1);
       if (isBbiWorld) {
         setBbiMonstersLeft(0);
         setBbiWorldEntered(false);
@@ -3679,7 +3719,9 @@ export function HomePage() {
     setArcaneCooldownNow(Date.now());
 
     if (currentMonsters > 0) {
-      const spellKills = Math.min(currentMonsters, Math.max(1, selectedSpell.targets + Math.floor(arcaneSkillDamage / Math.max(1, currentMonsterHp * 2))));
+      const radiusBonusKills = Math.floor(selectedSpellRadiusMeters / 10);
+      const speedBonusKills = Math.floor(selectedSpellSpeedMeters / 10);
+      const spellKills = Math.min(currentMonsters, Math.max(1, selectedSpell.targets + radiusBonusKills + speedBonusKills + Math.floor(arcaneSkillDamage / Math.max(1, currentMonsterHp * 2))));
       const nextMonsters = Math.max(0, currentMonsters - spellKills);
       setCurrentMonsterCount(nextMonsters);
       setNearestMonster(nextMonsters > 0 ? makeNearestMonsterSpawn(currentMonsterHp) : { ...nearestMonsterRef.current, hp: 0, alive: false });
@@ -3690,7 +3732,7 @@ export function HomePage() {
         setMessage(`${selectedSpell.name}: магия уничтожила ${formatPower(spellKills)} монстров. Теперь появился босс: ${formatPower(currentDragonHp)} HP.${streakRewardText ? ` ${streakRewardText}` : ''}`);
         return;
       }
-      setMessage(`${selectedSpell.name}: магия уничтожила ${formatPower(spellKills)} монстров. Осталось ${formatPower(nextMonsters)}. Мана -${arcaneSkillManaCost}.${streakRewardText ? ` ${streakRewardText}` : ''}`);
+      setMessage(`${selectedSpell.name}: радиус ${selectedSpellRadiusMeters}м, скорость ${selectedSpellSpeedMeters}м/с, уничтожено ${formatPower(spellKills)} монстров. Осталось ${formatPower(nextMonsters)}. Мана -${arcaneSkillManaCost}.${streakRewardText ? ` ${streakRewardText}` : ''}`);
       return;
     }
 
@@ -3702,7 +3744,7 @@ export function HomePage() {
       clearCity();
       return;
     }
-    setMessage(`${selectedSpell.name}: заклинание ударило на -${formatPower(arcaneSkillDamage)} HP. Мана -${arcaneSkillManaCost}, перезарядка ${Math.ceil(arcaneSkillCooldownMs / 1000)} сек.`);
+    setMessage(`${selectedSpell.name}: радиус ${selectedSpellRadiusMeters}м, скорость ${selectedSpellSpeedMeters}м/с, удар -${formatPower(arcaneSkillDamage)} HP. Мана -${arcaneSkillManaCost}, перезарядка ${Math.ceil(arcaneSkillCooldownMs / 1000)} сек.`);
   }
 
   function strike() {
@@ -3746,6 +3788,7 @@ export function HomePage() {
       return;
     }
     if (isAdminNuke(equippedWeapon)) {
+      setNukePulse((pulse) => pulse + 1);
       setEnemyHp(0);
       setMessage(`Админская ядерка ударила силой ${adminNukeDamageText} и уничтожила ${isBbiBoss ? 'босса' : 'дракона'} сразу.`);
       clearCity();
@@ -3753,7 +3796,7 @@ export function HomePage() {
     }
 
     const manaDamage = upgradePower(shopLevels.mana, shopBasePower.mana);
-    const arcaneSwingDamage = hasArcaneWeapon ? Math.max(1, Math.floor((equippedWeapon?.damage ?? 0) * 1.35)) : 0;
+    const arcaneSwingDamage = hasArcaneWeapon ? Math.max(1, Math.floor(equippedWeaponDamage * 1.35)) : 0;
     const heroDamage = Math.floor((18 + chapter * 5 + attackBonus + manaDamage + arcaneSwingDamage) * artifactDamageMultiplier * artifactAttackSpeedMultiplier);
     const nextEnemyHp = Math.max(0, enemyHp - heroDamage);
 
@@ -5321,8 +5364,8 @@ export function HomePage() {
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
               <div className="guide-current-version">
-                <strong>Текущая версия: vMobileCityModels</strong>
-                <span>На телефонах интерфейс компактнее, а goblin-модель используется только в обычных городах.</span>
+                <strong>Текущая версия: vMagicStaffs70</strong>
+                <span>Добавлен раздел магического оружия, посохи и быстрые способности радиусом 70 метров.</span>
               </div>
               <p>Ходи по захваченному городу, ищи монстров, бей их рядом или магией, собирай золото, покупай улучшения и открывай новых боссов. Монстров можно зачищать мечом или заклинаниями; когда город очищен, появляется дракон.</p>
               <div className="guide-columns">
@@ -5448,6 +5491,10 @@ export function HomePage() {
                   <span>vWorldManaBalance: в Пылающем мире есть полоса маны, ник и гость скрыты, урон магазина уменьшен</span>
                   <span>vCityGoblinOnly: новая goblin-модель появляется только в обычных городах</span>
                   <span>vMobileCityModels: мобильные кнопки, HUD и джойстик стали компактнее</span>
+                  <span>vNukeScreenFix: ядерка больше не ломает экран, огромный урон считается безопасно</span>
+                  <span>v3DLoadGuard: если модель долго грузится, игра всё равно запускает карту</span>
+                  <span>vMagicStaffs70: отдельный раздел магического оружия, посохи и способности снизу</span>
+                  <span>vFastSpells40: огненный вихрь, ветер, ледяной дождь, окаменение и другие летят 40 м/с с радиусом 70 м</span>
                 </div>
               </div>
             </div>
@@ -5596,8 +5643,8 @@ export function HomePage() {
             <span />
             <span />
           </div>
-          {equippedWeapon?.id.startsWith('admin-nuke-') && battlePulse > 0 && (
-            <div className="nuke-explosion" key={battlePulse}>
+          {nukePulse > 0 && (
+            <div className="nuke-explosion" key={nukePulse}>
               <span />
               <span />
               <span />
@@ -5817,6 +5864,10 @@ export function HomePage() {
                     <small>{spell.mana}</small>
                   </button>
                 ))}
+              </div>
+              <div className="arcane-spell-info">
+                <strong>{selectedSpell.name}</strong>
+                <span>радиус {selectedSpellRadiusMeters}м | скорость {selectedSpellSpeedMeters}м/с</span>
               </div>
               <button
                 className={`arcane-skill-button ${arcaneSkillReady ? 'ready' : 'cooldown'}`}
@@ -6650,6 +6701,40 @@ export function HomePage() {
             </div>
           </div>
         )}
+
+        <div className="weapons magic-weapons">
+          <div className="inventory-head">
+            <div>
+              <p className="label">Магическое оружие</p>
+              <strong>{magicWeapons.length > 0 ? `Посохи: ${magicWeapons.length}` : 'Посохи и способности'}</strong>
+            </div>
+            <button onClick={claimMagicStaffs} type="button">
+              Получить посохи
+            </button>
+          </div>
+          <div className={showFullInventory ? 'inventory-list full' : 'inventory-list'}>
+            {visibleMagicWeapons.map((weapon) => (
+              <button
+                className={`weapon weapon-card magic-staff ${rarityClass[weapon.rarity]} weapon-style-${getWeaponStyleIndex(weapon)} ${equippedWeapon?.id === weapon.id ? 'equipped' : ''}`}
+                onClick={() => setEquippedWeapon(weapon)}
+                key={weapon.id}
+              >
+                <span className="weapon-picture" aria-hidden="true">
+                  <i />
+                </span>
+                <span className="weapon-name">{weapon.name}</span>
+                <small>{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | способности снизу</small>
+                <small className="weapon-model-label">70м радиус | 40м/с полёт</small>
+              </button>
+            ))}
+            {visibleMagicWeapons.length === 0 && (
+              <div className="magic-empty">
+                <strong>Магические посохи ещё не взяты</strong>
+                <span>Нажми “Получить посохи”, потом выбери способность внизу боя.</span>
+              </div>
+            )}
+          </div>
+        </div>
 
         {weapons.length > 0 && (
           <div className="weapons">

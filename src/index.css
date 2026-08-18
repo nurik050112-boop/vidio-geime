@@ -976,6 +976,36 @@ button.secondary {
   color: #101014;
 }
 
+.arcane-spell-info {
+  display: grid;
+  gap: 2px;
+  width: min(252px, calc(100vw - 146px));
+  padding: 7px 9px;
+  border: 2px solid rgba(255, 248, 232, 0.55);
+  border-radius: 8px;
+  color: #fff8e8;
+  text-align: right;
+  background: rgba(12, 10, 22, 0.66);
+  backdrop-filter: blur(5px);
+}
+
+.arcane-spell-info strong,
+.arcane-spell-info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arcane-spell-info strong {
+  font-size: 13px;
+}
+
+.arcane-spell-info span {
+  color: #75e6da;
+  font-size: 11px;
+  font-weight: 900;
+}
+
 .arcane-spell-panel .arcane-skill-button {
   position: static;
 }
@@ -6138,6 +6168,53 @@ button.selected {
 .weapon-card {
   grid-template-columns: 58px minmax(0, 1fr);
   align-items: center;
+}
+
+.magic-weapons {
+  border-color: #4f46e5;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(117, 230, 218, 0.24), transparent 34%),
+    linear-gradient(180deg, #fffdf4, #eef2ff);
+}
+
+.magic-staff {
+  background: linear-gradient(180deg, #4338ca, #0f172a 58%, #3b0764);
+}
+
+.magic-staff .weapon-picture {
+  background:
+    radial-gradient(circle at 50% 22%, rgba(117, 230, 218, 0.85), transparent 12px),
+    radial-gradient(circle at 50% 50%, rgba(181, 108, 255, 0.35), transparent 30px),
+    #111827;
+}
+
+.magic-staff .weapon-picture::before {
+  width: 9px;
+  height: 58px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #75e6da, #fff8e8 20%, #8b5cf6 72%, #251105);
+  transform: translateX(-50%) rotate(13deg);
+}
+
+.magic-staff .weapon-picture::after {
+  left: 50%;
+  top: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #75e6da 35%, #b56cff 72%);
+  box-shadow: 0 0 18px rgba(117, 230, 218, 0.9);
+  transform: translateX(-50%);
+}
+
+.magic-empty {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 2px dashed rgba(79, 70, 229, 0.46);
+  border-radius: 8px;
+  color: #251105;
+  background: rgba(255, 255, 255, 0.56);
 }
 
 .weapon span {

@@ -632,6 +632,7 @@ function makeHero() {
     leftBoot,
     rightBoot,
     plume,
+    head: helmet,
   };
   hero.position.set(-3.4, 0, 1.2);
   return hero;
@@ -1596,6 +1597,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
       requiredModels.delete(key);
       if (!disposed && requiredModels.size === 0) setModelsReady(true);
     };
+    const modelReadyFallback = window.setTimeout(() => {
+      if (!disposed) setModelsReady(true);
+    }, 5000);
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#081111');
@@ -2163,7 +2167,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         bolt.userData.life = 0.001;
         bolt.userData.duration = count > 6 ? 1.05 : 0.78;
         bolt.userData.facing = facing + spread;
-        bolt.userData.speed = count > 6 ? 10.5 + launched * 0.25 : 8.4 + launched * 0.2;
+        bolt.userData.speed = effectKind < 6 ? 40 : count > 6 ? 10.5 + launched * 0.25 : 8.4 + launched * 0.2;
         bolt.userData.lane = launched;
         bolt.userData.kind = effectKind;
         launched += 1;
@@ -2514,7 +2518,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         arcaneBurstRing.userData.life = progress >= 1 ? 0 : nextBurstLife;
         arcaneBurstRing.visible = progress < 1;
         arcaneBurstRing.rotation.z = time * 3.2;
-        arcaneBurstRing.scale.setScalar(0.4 + progress * 4.2);
+        arcaneBurstRing.scale.setScalar(0.4 + progress * (data.arcaneSpellKind < 6 ? 7.0 : 4.2));
         (arcaneBurstRing.material as THREE.MeshBasicMaterial).opacity = (1 - progress) * 0.82;
         arcaneBurstLight.intensity = (1 - progress) * 6.5;
       } else {
@@ -3086,6 +3090,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
 
     return () => {
       disposed = true;
+      window.clearTimeout(modelReadyFallback);
       window.cancelAnimationFrame(frame);
       window.removeEventListener('resize', resize);
       if (renderer.domElement.parentElement === container) container.removeChild(renderer.domElement);
