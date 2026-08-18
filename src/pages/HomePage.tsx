@@ -5139,8 +5139,8 @@ export function HomePage() {
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
               <div className="guide-current-version">
-                <strong>Текущая версия: vQuest500 + v3DInventory</strong>
-                <span>Добавлены 500 квестов с наградами, 3D-фото оружия и облачное сохранение прогресса.</span>
+                <strong>Текущая версия: vFlyingArtifact</strong>
+                <span>Когда артефакт надет, рядом с героем летает светящийся 3D-артефакт с осколками и следом.</span>
               </div>
               <p>В каждом городе 1000 монстров. Сначала выбей всех монстров, потом бей босса города. После 10 драконов откроется финальный бой, подземный мир, души финального босса и Король ада.</p>
               <div className="guide-columns">
@@ -5227,6 +5227,7 @@ export function HomePage() {
                   <span>vGuide: полный гайд и список версий</span>
                   <span>vQuest500: 500 квестов с деньгами, мечами и броней</span>
                   <span>v3DInventory: 3D-фото всех видов оружия в инвентаре</span>
+                  <span>vFlyingArtifact: надетый артефакт летает рядом с героем в 3D</span>
                 </div>
               </div>
             </div>

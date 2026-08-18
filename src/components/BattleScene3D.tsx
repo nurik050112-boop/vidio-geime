@@ -550,9 +550,28 @@ function makeHeroArtifact() {
   pendant.rotation.z = Math.PI;
   const halo = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.012, 8, 30), glowMat);
   halo.rotation.x = Math.PI / 2;
+  const trail = new THREE.Mesh(
+    new THREE.TorusGeometry(0.52, 0.01, 8, 54, Math.PI * 1.42),
+    new THREE.MeshBasicMaterial({ color: '#75e6da', transparent: true, opacity: 0.48, depthWrite: false })
+  );
+  trail.rotation.x = Math.PI / 2.18;
+  const shardMat = new THREE.MeshStandardMaterial({
+    color: '#fff8e8',
+    emissive: '#75e6da',
+    emissiveIntensity: 1.2,
+    roughness: 0.24,
+    metalness: 0.32,
+  });
+  const shards = new THREE.Group();
+  for (let index = 0; index < 6; index += 1) {
+    const shard = new THREE.Mesh(new THREE.TetrahedronGeometry(0.055 + (index % 2) * 0.018, 0), shardMat);
+    shard.castShadow = true;
+    shard.userData.phase = (index / 6) * Math.PI * 2;
+    shards.add(shard);
+  }
   const light = new THREE.PointLight('#75e6da', 1.6, 4);
-  group.add(ring, core, orb, pendant, halo, light);
-  group.userData = { ring, core, orb, pendant, halo, light, glowMat, gemMat, darkMat };
+  group.add(trail, shards, ring, core, orb, pendant, halo, light);
+  group.userData = { ring, core, orb, pendant, halo, trail, shards, light, glowMat, gemMat, shardMat, darkMat };
   return group;
 }
 
@@ -563,9 +582,12 @@ function updateHeroArtifactStyle(artifact: THREE.Group, icon: string | null) {
     orb: THREE.Mesh;
     pendant: THREE.Mesh;
     halo: THREE.Mesh;
+    trail: THREE.Mesh;
+    shards: THREE.Group;
     light: THREE.PointLight;
     glowMat: THREE.MeshStandardMaterial;
     gemMat: THREE.MeshStandardMaterial;
+    shardMat: THREE.MeshStandardMaterial;
   };
   artifact.visible = Boolean(icon);
   if (!icon) return;
@@ -581,6 +603,9 @@ function updateHeroArtifactStyle(artifact: THREE.Group, icon: string | null) {
   data.glowMat.emissive.set(color);
   data.gemMat.color.set(color);
   data.gemMat.emissive.set(color);
+  data.shardMat.color.set(color);
+  data.shardMat.emissive.set(color);
+  (data.trail.material as THREE.MeshBasicMaterial).color.set(color);
   data.light.color.set(color);
 }
 
@@ -1987,16 +2012,34 @@ export function BattleScene3D(props: BattleScene3DProps) {
 
       updateHeroArtifactStyle(heroArtifact, data.equippedArtifactIcon);
       if (heroArtifact.visible) {
-        const orbit = time * 1.8;
-        const side = 0.72 + Math.sin(time * 1.3) * 0.08;
+        const orbit = time * 2.15;
+        const side = 0.86 + Math.sin(time * 1.3) * 0.1;
         heroArtifact.position.set(
-          hero.position.x + Math.cos(renderFacing) * side + Math.sin(orbit) * 0.12,
-          hero.position.y + 1.58 + Math.sin(time * 3.1) * 0.12,
-          hero.position.z - Math.sin(renderFacing) * side + Math.cos(orbit) * 0.12
+          hero.position.x + Math.cos(renderFacing) * side + Math.sin(orbit) * 0.26,
+          hero.position.y + 1.68 + Math.sin(time * 3.1) * 0.16 + (data.heroAnimation === 'heal' ? 0.18 : 0),
+          hero.position.z - Math.sin(renderFacing) * side + Math.cos(orbit) * 0.26
         );
-        heroArtifact.rotation.y = time * 2.4;
-        heroArtifact.rotation.x = Math.sin(time * 2.2) * 0.28;
-        heroArtifact.scale.setScalar(1 + Math.sin(time * 4) * 0.08);
+        heroArtifact.rotation.y = time * 3.1;
+        heroArtifact.rotation.x = Math.sin(time * 2.2) * 0.32;
+        heroArtifact.rotation.z = Math.sin(time * 1.7) * 0.18;
+        heroArtifact.scale.setScalar(1.16 + Math.sin(time * 4) * 0.1 + (data.heroAnimation === 'heal' ? 0.18 : 0));
+        const artifactData = heroArtifact.userData as {
+          halo: THREE.Mesh;
+          trail: THREE.Mesh;
+          shards: THREE.Group;
+          light: THREE.PointLight;
+        };
+        artifactData.halo.rotation.z = time * 2.7;
+        artifactData.trail.rotation.z = -time * 1.9;
+        (artifactData.trail.material as THREE.MeshBasicMaterial).opacity = 0.42 + Math.sin(time * 5) * 0.12;
+        artifactData.light.intensity = 1.9 + Math.sin(time * 4.6) * 0.55 + (data.heroAnimation === 'heal' ? 1.2 : 0);
+        artifactData.shards.children.forEach((shard, index) => {
+          const phase = typeof shard.userData.phase === 'number' ? shard.userData.phase : index;
+          const shardOrbit = time * (2.7 + index * 0.12) + phase;
+          shard.position.set(Math.cos(shardOrbit) * 0.46, Math.sin(time * 3 + phase) * 0.18, Math.sin(shardOrbit) * 0.46);
+          shard.rotation.set(time * 2.2 + phase, time * 3.4 + phase, time * 1.6);
+          shard.scale.setScalar(1 + Math.sin(time * 5 + phase) * 0.18);
+        });
       }
 
       const visibleCount = Math.ceil((data.monstersLeft / 100) * monsters.children.length);
