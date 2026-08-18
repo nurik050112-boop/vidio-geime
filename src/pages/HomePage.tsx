@@ -5139,8 +5139,8 @@ export function HomePage() {
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
               <div className="guide-current-version">
-                <strong>Текущая версия: vFlyingArtifact</strong>
-                <span>Когда артефакт надет, рядом с героем летает светящийся 3D-артефакт с осколками и следом.</span>
+                <strong>Текущая версия: vEquippedSword3D</strong>
+                <span>Когда меч надет, он отображается в 3D-сцене у героя и меняется под стиль оружия.</span>
               </div>
               <p>В каждом городе 1000 монстров. Сначала выбей всех монстров, потом бей босса города. После 10 драконов откроется финальный бой, подземный мир, души финального босса и Король ада.</p>
               <div className="guide-columns">
@@ -5228,6 +5228,7 @@ export function HomePage() {
                   <span>vQuest500: 500 квестов с деньгами, мечами и броней</span>
                   <span>v3DInventory: 3D-фото всех видов оружия в инвентаре</span>
                   <span>vFlyingArtifact: надетый артефакт летает рядом с героем в 3D</span>
+                  <span>vEquippedSword3D: надетый меч виден у героя в 3D-бою</span>
                 </div>
               </div>
             </div>
@@ -5291,6 +5292,7 @@ export function HomePage() {
               chapter={chapter}
               locationIndex={mapLocationIndex}
               equippedArtifactIcon={equippedArtifact?.icon ?? null}
+              equippedWeaponStyle={equippedWeaponStyle}
             />
           </div>
           {isClickDuelActive && (
