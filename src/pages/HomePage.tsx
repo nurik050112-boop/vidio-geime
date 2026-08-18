@@ -1134,6 +1134,12 @@ function scaledDragonPower(base: number, chapter: number) {
   return Number.isFinite(value) ? Math.min(value, Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER;
 }
 
+function worldWeaponMultiplier(level: number) {
+  const exponent = Math.max(0, Math.floor(level) - 1);
+  const value = 100 ** exponent;
+  return Number.isFinite(value) ? Math.min(value, Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER;
+}
+
 function rollRarity(multiplier = 1): Rarity | null {
   const roll = Math.random() * 100;
   if (roll < 0.01 * multiplier) return 'Легендарка';
@@ -1149,7 +1155,7 @@ function createWeapon(rarity: Rarity, level: number): Weapon {
   const material = weaponMaterials[Math.floor(Math.random() * weaponMaterials.length)];
   const enchant = weaponEnchants[Math.floor(Math.random() * weaponEnchants.length)];
   const rune = weaponRunes[Math.floor(Math.random() * weaponRunes.length)];
-  const cityMultiplier = Math.min(Number.MAX_SAFE_INTEGER, 10 ** Math.max(0, level - 1));
+  const cityMultiplier = worldWeaponMultiplier(level);
   const baseDamage = rarityDamage[rarity] + level * 6 + Math.floor(Math.random() * 12);
   const damage = Math.min(Number.MAX_SAFE_INTEGER, baseDamage * cityMultiplier);
 
@@ -1202,11 +1208,12 @@ function rollDungeonWeapon(level: number) {
 }
 
 function createSecretWeapon(level = 1): Weapon {
+  const damage = Math.min(Number.MAX_SAFE_INTEGER, (rarityDamage['Секретное'] + level * 100_000) * worldWeaponMultiplier(level));
   return {
     id: `secret-${Date.now()}-${Math.random()}`,
     name: 'иди нах',
     rarity: 'Секретное',
-    damage: rarityDamage['Секретное'] + level * 100_000,
+    damage,
     price: rarityPrice['Секретное'],
   };
 }
@@ -5139,8 +5146,8 @@ export function HomePage() {
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
               <div className="guide-current-version">
-                <strong>Текущая версия: vEquippedSword3D</strong>
-                <span>Когда меч надет, он отображается в 3D-сцене у героя и меняется под стиль оружия.</span>
+                <strong>Текущая версия: vWeaponWorld100</strong>
+                <span>Оружие каждого нового мира усиливается в 100 раз и отображается у героя в 3D.</span>
               </div>
               <p>В каждом городе 1000 монстров. Сначала выбей всех монстров, потом бей босса города. После 10 драконов откроется финальный бой, подземный мир, души финального босса и Король ада.</p>
               <div className="guide-columns">
@@ -5229,6 +5236,7 @@ export function HomePage() {
                   <span>v3DInventory: 3D-фото всех видов оружия в инвентаре</span>
                   <span>vFlyingArtifact: надетый артефакт летает рядом с героем в 3D</span>
                   <span>vEquippedSword3D: надетый меч виден у героя в 3D-бою</span>
+                  <span>vWeaponWorld100: оружие каждого мира сильнее прошлого в 100 раз</span>
                 </div>
               </div>
             </div>
