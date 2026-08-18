@@ -4,7 +4,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 type BattleScene3DProps = {
   dragonColor: string;
-  heroAnimation: 'idle' | 'strike' | 'step' | 'heal';
+  heroAnimation: 'idle' | 'strike' | 'step' | 'heal' | 'cast';
   isHeroMoving: boolean;
   isFinalReveal: boolean;
   burn: number;
@@ -28,9 +28,10 @@ type BattleScene3DProps = {
   arcaneBurstPulse: number;
 };
 
-const monsterRunSpeedMetersPerSecond = 10 / 3.6;
+const monsterRunSpeedMetersPerSecond = 18 / 3.6;
 const monsterHitRangeMeters = 5;
-const monsterRetreatRangeMeters = 6.2;
+const monsterPressureRangeMeters = 12;
+const monsterAggroRangeMeters = 100;
 const worldRadiusMeters = 5_000;
 const worldDiameterMeters = worldRadiusMeters * 2;
 
@@ -81,6 +82,11 @@ function hashSceneKey(value: string) {
     hash = (hash * 31 + value.charCodeAt(index)) % 997;
   }
   return hash;
+}
+
+function smoothAngle(current: number, target: number, delta: number, speed: number) {
+  const turn = Math.atan2(Math.sin(target - current), Math.cos(target - current));
+  return current + turn * (1 - Math.exp(-delta * speed));
 }
 
 function addPillar(scene: THREE.Object3D, x: number, z: number, color: string, glow: string) {
@@ -2102,7 +2108,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       elementalFx.add(fx);
       return fx;
     };
-    const elementalColors = ['#ff6b2b', '#75e6da', '#dff8ff', '#ff9f1c', '#8bd8ff', '#f8fbff', '#fff8e8', '#65ff7a', '#ff4fd8', '#8f5bff', '#ff2a1f', '#66f7ff'];
+    const elementalColors = ['#ff6b2b', '#75e6da', '#dff8ff', '#ff9f1c', '#8bd8ff', '#f8fbff', '#fff8e8', '#65ff7a', '#ff4fd8', '#8f5bff', '#ff2a1f', '#66f7ff', '#b7ff5a', '#8b5e34', '#facc15', '#ff7849', '#38bdf8', '#fff176'];
     const elementalMeshes = [
       makeFxMesh(new THREE.TorusGeometry(1.15, 0.08, 10, 72, Math.PI * 1.18), '#ff6b2b', 0.82),
       makeFxMesh(new THREE.CylinderGeometry(1.1, 1.6, 1.1, 24, 1, true), '#75e6da', 0.66),
@@ -2116,6 +2122,12 @@ export function BattleScene3D(props: BattleScene3DProps) {
       makeFxMesh(new THREE.ConeGeometry(0.84, 2.7, 7, 1, true), '#8f5bff', 0.76),
       makeFxMesh(new THREE.RingGeometry(0.42, 1.6, 32), '#ff2a1f', 0.84),
       makeFxMesh(new THREE.IcosahedronGeometry(0.7, 1), '#66f7ff', 0.7),
+      makeFxMesh(new THREE.TorusGeometry(1.05, 0.055, 8, 72, Math.PI * 1.7), '#b7ff5a', 0.72),
+      makeFxMesh(new THREE.ConeGeometry(1.15, 1.9, 6, 1, true), '#8b5e34', 0.76),
+      makeFxMesh(new THREE.TorusKnotGeometry(0.72, 0.035, 96, 10), '#facc15', 0.82),
+      makeFxMesh(new THREE.DodecahedronGeometry(0.95, 0), '#ff7849', 0.84),
+      makeFxMesh(new THREE.CylinderGeometry(0.72, 1.35, 2.2, 18, 1, true), '#38bdf8', 0.76),
+      makeFxMesh(new THREE.SphereGeometry(1.05, 24, 16), '#fff176', 0.72),
     ];
     const elementalLight = new THREE.PointLight('#fff8e8', 0, 14);
     scene.add(elementalFx, elementalLight);
@@ -2147,6 +2159,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         bolt.userData.facing = facing + spread;
         bolt.userData.speed = count > 6 ? 10.5 + launched * 0.25 : 8.4 + launched * 0.2;
         bolt.userData.lane = launched;
+        bolt.userData.kind = effectKind;
         launched += 1;
       });
       if (count > 6) {
@@ -2215,6 +2228,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       if (hasNewArcaneBurst) lastArcaneBurstPulse = data.arcaneBurstPulse;
       if (!attackSwing) {
         if (data.heroHeight > 0) playHeroClip(findHeroClip('Jump_Full_Short', 'Jump'), 0.1, false, 1.1);
+        else if (data.heroAnimation === 'cast') playHeroClip(findHeroClip('Spellcast_Raise', 'Spellcast', 'Cheer', 'Interact'), 0.08, false, 1.25);
         else if (data.isHeroMoving) playHeroClip(findHeroClip('Running_A', 'Running_B', 'Walking_A', 'Walking_B', 'Walking_C', 'Walking', 'Run'), 0.16, false, 1.18);
         else if (data.heroAnimation === 'heal') playHeroClip(findHeroClip('Cheer'), 0.12, false, 1);
         else playHeroClip(findHeroClip('Idle', 'idle'), 0.24, false, 0.9);
@@ -2268,10 +2282,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       } else if (Math.hypot(moveDX, moveDZ) > 0.005) {
         heroFacing = Math.atan2(moveDX, moveDZ);
       }
-      let turnDelta = heroFacing - renderFacing;
-      turnDelta = Math.atan2(Math.sin(turnDelta), Math.cos(turnDelta));
-      const turnBlend = 1 - Math.exp(-delta * (data.isHeroMoving ? 7.2 : 4.8));
-      renderFacing += turnDelta * turnBlend;
+      renderFacing = smoothAngle(renderFacing, heroFacing, delta, data.isHeroMoving ? 4.6 : 3.2);
       lastHeroX = heroX;
       lastHeroZ = heroZ;
       if (hasNewArcanePulse || hasNewArcaneBurst) {
@@ -2324,7 +2335,32 @@ export function BattleScene3D(props: BattleScene3DProps) {
         hero.userData.plume.rotation.x = 0.22 + counterStride * 0.08 * runAmount;
         hero.userData.sword.rotation.set(0.12, 0, -1.34);
       }
-      if (data.heroAnimation === 'strike' || attackSwing > 0) {
+      if (data.heroAnimation === 'cast') {
+        const castWave = Math.sin(time * 8);
+        hero.position.y += 0.05 + Math.max(0, castWave) * 0.08;
+        hero.rotation.x = -0.08 + castWave * 0.025;
+        hero.rotation.z = Math.sin(time * 5.2) * 0.035;
+        if (downloadedHeroModel) {
+          downloadedHeroModel.position.y = 0.08 + Math.max(0, castWave) * 0.08;
+          downloadedHeroModel.rotation.x = -0.16 + castWave * 0.04;
+          downloadedHeroModel.rotation.z = Math.sin(time * 5.8) * 0.06;
+        }
+        if (useFallbackHeroRig) {
+          hero.userData.leftArm.rotation.x = -1.45 + castWave * 0.18;
+          hero.userData.rightArm.rotation.x = -1.55 - castWave * 0.14;
+          hero.userData.leftArm.rotation.z = -0.18 + Math.sin(time * 6) * 0.12;
+          hero.userData.rightArm.rotation.z = 0.25 - Math.sin(time * 6) * 0.12;
+          hero.userData.sword.rotation.set(-1.15 + castWave * 0.18, 0.18, -0.35 + Math.sin(time * 7) * 0.08);
+        }
+        heroEquippedWeapon.position.set(hero.position.x + Math.sin(renderFacing) * 0.42, hero.position.y + 1.88 + Math.max(0, castWave) * 0.12, hero.position.z + Math.cos(renderFacing) * 0.42);
+        heroEquippedWeapon.rotation.set(-1.35 + castWave * 0.18, renderFacing, -0.22 + Math.sin(time * 7) * 0.1);
+        heroEquippedWeapon.scale.multiplyScalar(1.12 + Math.max(0, castWave) * 0.12);
+        slashTrail.visible = true;
+        slashTrail.position.set(hero.position.x, hero.position.y + 1.55, hero.position.z);
+        slashTrail.rotation.set(Math.PI / 2, 0, time * 4.6);
+        slashTrail.scale.setScalar(0.7 + Math.max(0, castWave) * 0.55);
+        (slashTrail.material as THREE.MeshBasicMaterial).opacity = 0.32 + Math.max(0, castWave) * 0.3;
+      } else if (data.heroAnimation === 'strike' || attackSwing > 0) {
         const attackPhase = THREE.MathUtils.clamp(1 - attackSwing, 0, 1);
         const windup = THREE.MathUtils.smoothstep(attackPhase, 0, isTwoHandedWeapon ? 0.34 : 0.24);
         const slash = Math.sin(THREE.MathUtils.clamp((attackPhase - (isTwoHandedWeapon ? 0.24 : 0.16)) / (isTwoHandedWeapon ? 0.32 : 0.34), 0, 1) * Math.PI);
@@ -2397,7 +2433,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         hero.rotation.z = 0;
       }
 
-      if (!(data.heroAnimation === 'strike' || attackSwing > 0)) {
+      if (!(data.heroAnimation === 'strike' || data.heroAnimation === 'cast' || attackSwing > 0)) {
         heroEquippedWeapon.position.set(hero.position.x + 0.64 + Math.sin(walkCycle) * (data.isHeroMoving ? 0.035 : 0), hero.position.y + 1.44 + stepLift * 0.04, hero.position.z + 0.22);
         heroEquippedWeapon.rotation.set(-0.58 + Math.sin(walkCycle) * (data.isHeroMoving ? 0.08 : 0.02), renderFacing - 0.28, -0.78 + Math.sin(walkCycle * 0.7) * (data.isHeroMoving ? 0.06 : 0.02));
       }
@@ -2416,7 +2452,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         }
       });
 
-      if (!(data.heroAnimation === 'strike' || attackSwing > 0)) {
+      if (!(data.heroAnimation === 'strike' || data.heroAnimation === 'cast' || attackSwing > 0)) {
         slashTrail.visible = false;
         (slashTrail.material as THREE.MeshBasicMaterial).opacity = 0;
       }
@@ -2441,17 +2477,18 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const facing = (bolt.userData.facing as number) || renderFacing;
         const speed = (bolt.userData.speed as number) || 8;
         const lane = (bolt.userData.lane as number) || 0;
+        const kind = (bolt.userData.kind as number) || 0;
         const nextLife = life + delta;
         const progress = Math.min(1, nextLife / duration);
         bolt.userData.life = progress >= 1 ? 0 : nextLife;
         bolt.position.x += Math.sin(facing) * speed * delta;
         bolt.position.z += Math.cos(facing) * speed * delta;
         bolt.position.y += Math.sin(progress * Math.PI * 2 + lane) * delta * 1.4;
-        bolt.scale.setScalar(1 + Math.sin(progress * Math.PI) * 1.6);
+        bolt.scale.setScalar(1 + Math.sin(progress * Math.PI) * (kind >= 15 ? 2.2 : 1.6));
         const boltMaterial = bolt instanceof THREE.Mesh ? bolt.material : null;
         if (boltMaterial instanceof THREE.MeshBasicMaterial) {
           boltMaterial.opacity = (1 - progress) * 0.9;
-          boltMaterial.color.set(lane % 3 === 0 ? '#ffe66d' : lane % 3 === 1 ? '#b56cff' : '#75e6da');
+          boltMaterial.color.set(elementalColors[(kind + lane) % elementalColors.length]);
         }
         bolt.visible = progress < 1;
       });
@@ -2580,52 +2617,58 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const toHeroX = hero.position.x - current.position.x;
         const toHeroZ = hero.position.z - current.position.z;
         const distance = Math.max(0.001, Math.hypot(toHeroX, toHeroZ));
+        const wantsToKillHero = distance <= monsterAggroRangeMeters;
+        const isPressuringHero = distance <= monsterPressureRangeMeters;
         const attackRange = monsterHitRangeMeters;
         current.userData.attackCooldown = Math.max(0, (current.userData.attackCooldown as number) - delta);
         const botAngle = (current.userData.botAngle as number) + Math.sin(time * 0.5 + index) * 0.35;
         const botOrbit = current.userData.botOrbit as number;
+        const homeX = typeof current.userData.homeX === 'number' ? current.userData.homeX : current.position.x;
+        const homeZ = typeof current.userData.homeZ === 'number' ? current.userData.homeZ : current.position.z;
         const targetRadius = distance > attackRange ? Math.max(0.2, attackRange - 0.7 + botOrbit * 0.35) : attackRange + botOrbit;
-        const targetX = hero.position.x - (toHeroX / distance) * targetRadius + Math.cos(botAngle) * botOrbit;
-        const targetZ = hero.position.z - (toHeroZ / distance) * targetRadius + Math.sin(botAngle) * botOrbit;
+        const targetX = wantsToKillHero
+          ? hero.position.x - (toHeroX / distance) * targetRadius + Math.cos(botAngle) * botOrbit
+          : homeX + Math.cos(time * 0.35 + index) * (1.8 + botOrbit);
+        const targetZ = wantsToKillHero
+          ? hero.position.z - (toHeroZ / distance) * targetRadius + Math.sin(botAngle) * botOrbit
+          : homeZ + Math.sin(time * 0.32 + index) * (1.8 + botOrbit);
         const moveX = targetX - current.position.x;
         const moveZ = targetZ - current.position.z;
         const moveDistance = Math.max(0.001, Math.hypot(moveX, moveZ));
-        const botState = current.userData.botState as string;
-        const speed = (current.userData.speed as number) * (botState === 'retreat' ? 0.72 : distance > attackRange ? 1 : 0.45);
+        const speed = (current.userData.speed as number) * (wantsToKillHero && distance > monsterPressureRangeMeters ? 1.08 : isPressuringHero && distance > attackRange ? 1.28 : wantsToKillHero ? 0.72 : 0.45);
 
-        if (botState === 'retreat') {
-          const retreatStep = Math.min(1.1, speed * delta);
-          current.position.x -= (toHeroX / distance) * retreatStep;
-          current.position.z -= (toHeroZ / distance) * retreatStep;
-          if (distance > monsterRetreatRangeMeters) current.userData.botState = 'chase';
-          current.userData.attackFlash = Math.max(0, (current.userData.attackFlash as number) - delta * 1.4);
+        if (!wantsToKillHero) {
+          const stepDistance = Math.min(moveDistance, speed * delta * 0.58);
+          current.position.x += (moveX / moveDistance) * stepDistance;
+          current.position.z += (moveZ / moveDistance) * stepDistance;
+          current.userData.attackFlash = Math.max(0, (current.userData.attackFlash as number) - delta * 1.8);
+          current.userData.attackCycle = 0;
+          current.userData.botState = 'patrol';
         } else if (distance > attackRange) {
           const stepDistance = Math.min(Math.max(0, distance - attackRange), speed * delta);
           current.position.x += (moveX / moveDistance) * stepDistance + shake * (index % 2 ? 0.012 : -0.012);
           current.position.z += (moveZ / moveDistance) * stepDistance;
           current.userData.attackFlash = Math.max(0, (current.userData.attackFlash as number) - delta * 1.8);
           current.userData.attackCycle = Math.max(0, (current.userData.attackCycle as number) - delta * 0.8);
-          current.userData.botState = 'chase';
+          current.userData.botState = 'kill';
         } else {
           current.userData.attackCycle = ((current.userData.attackCycle as number) + delta * 1.55) % 1;
           current.userData.attackFlash = Math.min(1, (current.userData.attackFlash as number) + delta * 5);
           current.position.x -= (toHeroX / distance) * 0.018 * Math.sin(time * 14 + index);
           current.position.z -= (toHeroZ / distance) * 0.018 * Math.sin(time * 14 + index);
-          current.userData.botState = 'attack';
+          current.userData.botState = 'kill';
           if ((current.userData.attackCooldown as number) === 0 && (current.userData.attackCycle as number) > 0.58) {
             current.userData.attackCooldown = 1.05 + (index % 4) * 0.12;
-            current.userData.botState = 'retreat';
+            current.userData.botState = 'kill';
           }
         }
 
-        const walk = time * (distance > attackRange ? 9.8 : 5.4) + index;
+        const walk = time * (distance > attackRange ? (isPressuringHero ? 10.8 : 8.4) : 5.4) + index;
         const attack = current.userData.attackFlash as number;
         const monsterBaseY = typeof current.userData.baseY === 'number' ? current.userData.baseY : 0.08;
         current.position.y = monsterBaseY + Math.max(0, Math.sin(walk * 2) * 0.08) + (attack > 0.4 ? Math.sin(time * 22 + index) * 0.06 : 0);
         const faceHero = Math.atan2(toHeroX, toHeroZ) + Math.PI;
-        let monsterTurnDelta = faceHero - current.rotation.y;
-        monsterTurnDelta = Math.atan2(Math.sin(monsterTurnDelta), Math.cos(monsterTurnDelta));
-        current.rotation.y += monsterTurnDelta * Math.min(1, delta * 8);
+        current.rotation.y = smoothAngle(current.rotation.y, faceHero, delta, distance > attackRange ? 4.8 : 3.6);
         current.rotation.y += Math.sin(walk) * (distance > attackRange ? 0.035 : 0.06);
         const attackCycle = current.userData.attackCycle as number;
         const monsterWindup = THREE.MathUtils.smoothstep(attackCycle, 0.05, 0.34);
@@ -2810,9 +2853,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       nightKingBoss.visible = false;
       if (activeSpecialBoss) {
         const bossTargetAngle = Math.atan2(heroWorldX - activeSpecialBoss.position.x, heroWorldZ - activeSpecialBoss.position.z);
-        let bossTurnDelta = bossTargetAngle - activeSpecialBoss.rotation.y;
-        bossTurnDelta = Math.atan2(Math.sin(bossTurnDelta), Math.cos(bossTurnDelta));
-        activeSpecialBoss.rotation.y += bossTurnDelta * Math.min(1, delta * 2.6);
+        activeSpecialBoss.rotation.y = smoothAngle(activeSpecialBoss.rotation.y, bossTargetAngle, delta, 1.9);
         const bossPhase = typeof activeSpecialBoss.userData.phase === 'number' ? activeSpecialBoss.userData.phase : 0;
         const bossAttackPulse = Math.max(pulse * 2.2, Math.max(0, Math.sin(time * (specialBossKey === 'fury' || specialBossKey === 'admin' ? 3.8 : 2.6) + bossPhase)));
         const bossFloat = Math.sin(time * (specialBossKey === 'fury' || specialBossKey === 'admin' ? 2.4 : 1.25) + bossPhase);
@@ -2847,7 +2888,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         specialBossAura.visible = false;
         specialBossBlast.visible = false;
         const bossTargetAngle = Math.atan2(heroWorldX - nightKingBoss.position.x, heroWorldZ - nightKingBoss.position.z);
-        nightKingBoss.rotation.y = THREE.MathUtils.lerp(nightKingBoss.rotation.y, bossTargetAngle, Math.min(1, delta * 2.8));
+        nightKingBoss.rotation.y = smoothAngle(nightKingBoss.rotation.y, bossTargetAngle, delta, 2.0);
         nightKingBoss.position.y = Math.sin(time * 1.2) * 0.08;
         nightKingBoss.position.x = shake * 0.85;
         const bossHead = nightKingFallback.userData.head;
@@ -2951,7 +2992,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         hero.position.y + lookHeight,
         hero.position.z + Math.cos(renderFacing) * lookAhead
       );
-      const followSpeed = data.isHeroMoving ? 4.8 : 7.5;
+      const followSpeed = data.isHeroMoving ? 3.7 : 6.1;
       if (!cameraReady) {
         camera.position.copy(cameraTarget);
         smoothLookTarget.copy(lookTarget);

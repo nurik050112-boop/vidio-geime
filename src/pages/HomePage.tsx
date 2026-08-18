@@ -70,6 +70,7 @@ type Artifact = {
   healthBonusPercent?: number;
   defenseBonusPercent?: number;
   luckBonusPercent?: number;
+  manaBonusPercent?: number;
   healingBonusPercent?: number;
   icon: string;
   text: string;
@@ -85,7 +86,7 @@ type Quest = {
   reward: string;
 };
 
-type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
+type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal' | 'cast';
 type EndingChoice = 'spare' | 'fight' | 'family' | null;
 type SecretEnding = 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | 'monsterAvalanche' | 'deathHell' | 'deathVictory' | null;
 type AchievementId = 'dragonPeace' | 'dragonWar' | 'goblinKing' | 'furyKing' | 'anuarKing' | 'mansurKing' | 'arailmKing' | 'aisultanSea' | 'adminImpossible' | 'bbiBadEnding' | 'impossibleEnding' | 'monsterAvalanche' | 'deathHell' | 'deathVictory';
@@ -131,18 +132,24 @@ type DuelTradeOffer =
   | null;
 
 const arcaneSpells = [
-  { name: 'Огонь', icon: 'F', power: 8 },
-  { name: 'Лед', icon: 'I', power: 7 },
-  { name: 'Молния', icon: 'L', power: 10 },
-  { name: 'Вода', icon: 'W', power: 7 },
-  { name: 'Свет', icon: 'S', power: 9 },
-  { name: 'Тьма', icon: 'D', power: 11 },
-  { name: 'Луч', icon: 'B', power: 12 },
-  { name: 'Яд', icon: 'P', power: 8 },
-  { name: 'Звезда', icon: '*', power: 13 },
-  { name: 'Портал', icon: 'O', power: 9 },
-  { name: 'Метеор', icon: 'M', power: 15 },
-  { name: 'Кристалл', icon: 'C', power: 10 },
+  { name: 'Огонь', icon: 'F', power: 8, mana: 14, cooldown: 4_200, targets: 3 },
+  { name: 'Лед', icon: 'I', power: 7, mana: 12, cooldown: 3_800, targets: 4 },
+  { name: 'Молния', icon: 'L', power: 10, mana: 18, cooldown: 4_800, targets: 5 },
+  { name: 'Вода', icon: 'W', power: 7, mana: 12, cooldown: 3_600, targets: 4 },
+  { name: 'Свет', icon: 'S', power: 9, mana: 16, cooldown: 4_400, targets: 6 },
+  { name: 'Тьма', icon: 'D', power: 11, mana: 20, cooldown: 5_200, targets: 7 },
+  { name: 'Луч', icon: 'B', power: 12, mana: 22, cooldown: 5_600, targets: 8 },
+  { name: 'Яд', icon: 'P', power: 8, mana: 14, cooldown: 4_200, targets: 6 },
+  { name: 'Звезда', icon: '*', power: 13, mana: 24, cooldown: 6_000, targets: 10 },
+  { name: 'Портал', icon: 'O', power: 9, mana: 18, cooldown: 4_900, targets: 9 },
+  { name: 'Метеор', icon: 'M', power: 15, mana: 30, cooldown: 7_200, targets: 14 },
+  { name: 'Кристалл', icon: 'C', power: 10, mana: 18, cooldown: 4_800, targets: 8 },
+  { name: 'Ветер', icon: 'V', power: 8, mana: 13, cooldown: 3_500, targets: 7 },
+  { name: 'Земля', icon: 'E', power: 11, mana: 21, cooldown: 5_400, targets: 9 },
+  { name: 'Руна', icon: 'R', power: 12, mana: 22, cooldown: 5_800, targets: 11 },
+  { name: 'Комета', icon: 'K', power: 18, mana: 38, cooldown: 8_500, targets: 20 },
+  { name: 'Шторм', icon: 'T', power: 14, mana: 28, cooldown: 6_800, targets: 16 },
+  { name: 'Солнце', icon: 'U', power: 16, mana: 34, cooldown: 8_000, targets: 18 },
 ] as const;
 
 const firstDragonCities: CityStage[] = [
@@ -421,11 +428,13 @@ const cityHalfSize = (citySizeMeters / 2) * 1_000;
 const heroMoveSpeedPerSecond = (10 / 3.6) * 1_000;
 const meleeRangeMeters = 5;
 const meleeRangeUnits = meleeRangeMeters * 1_000;
-const monsterRunSpeedPerSecond = (5 / 3.6) * 1_000;
-const monsterSpawnDistanceUnits = 28_000;
+const monsterPressureRangeUnits = 12_000;
+const monsterRunSpeedPerSecond = (18 / 3.6) * 1_000;
+const monsterSpawnDistanceUnits = 11_000;
+const monsterAggroDistanceUnits = 100_000;
 const monsterBotAttackDamage = 10;
-const monsterBotAttackCooldownMs = 900;
-const monsterChaseCatchTimeMs = 15_000;
+const monsterBotAttackCooldownMs = 1_100;
+const monsterChaseCatchTimeMs = 2_500;
 
 type NearestMonsterState = {
   x: number;
@@ -882,19 +891,19 @@ const achievements: { id: AchievementId; name: string }[] = [
 ];
 
 const endingArtifacts: Artifact[] = [
-  { id: 'starRing', name: 'Кольцо звезды', ending: 'dragonPeace', bonusPercent: 10, goldBonusPercent: 10, attackSpeedPercent: 10, icon: 'star-ring', text: 'Концовка мира драконов' },
-  { id: 'dragonPendant', name: 'Шлем-дракон', ending: 'dragonWar', bonusPercent: 20, goldBonusPercent: 20, attackSpeedPercent: 20, icon: 'dragon-pendant', text: 'Плохая концовка драконов' },
-  { id: 'magicBottle', name: 'Фиолетовый сосуд', ending: 'goblinKing', bonusPercent: 30, goldBonusPercent: 30, attackSpeedPercent: 30, icon: 'magic-bottle', text: 'Тайна гоблинов' },
-  { id: 'goldHoop', name: 'Золотое кольцо', ending: 'furyKing', bonusPercent: 40, goldBonusPercent: 40, attackSpeedPercent: 40, icon: 'gold-hoop', text: 'Концовка фури' },
-  { id: 'greenRelic', name: 'Зеленая печать', ending: 'anuarKing', bonusPercent: 50, goldBonusPercent: 50, attackSpeedPercent: 50, icon: 'green-relic', text: 'Бомбическая концовка' },
-  { id: 'snowGlobe', name: 'Снежный шлем', ending: 'mansurKing', bonusPercent: 60, goldBonusPercent: 60, attackSpeedPercent: 60, icon: 'snow-globe', text: 'Подземелье Мансура' },
-  { id: 'moonCrystal', name: 'Лунный кристалл', ending: 'arailmKing', bonusPercent: 70, goldBonusPercent: 70, attackSpeedPercent: 70, icon: 'moon-crystal', text: 'Код хочет выбраться' },
-  { id: 'seaPearl', name: 'Шар водного вихря', ending: 'aisultanSea', bonusPercent: 1000, goldBonusPercent: 10000, attackSpeedPercent: 1000, icon: 'sea-pearl', text: 'Воденой мир: усиливает воденой меч на 1000%' },
-  { id: 'deathPendant', name: 'Кулон смерти', ending: 'adminImpossible', bonusPercent: 100000, goldBonusPercent: 100000, attackSpeedPercent: 100000, healthBonusPercent: 100000, defenseBonusPercent: 100000, luckBonusPercent: 100000, healingBonusPercent: 100, icon: 'death-pendant', text: 'Админская сила заключена в кулоне смерти' },
-  { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 80, goldBonusPercent: 80, attackSpeedPercent: 80, icon: 'sun-orb', text: 'BBI концовка' },
-  { id: 'impossibleMedallion', name: 'Медальон невозможности', ending: 'impossibleEnding', bonusPercent: 1000, goldBonusPercent: 1000, attackSpeedPercent: 1000, icon: 'impossible-medallion', text: 'Невозможная концовка мира Нурали' },
-  { id: 'avalancheCrown', name: 'Корона лавины', ending: 'monsterAvalanche', bonusPercent: 100, goldBonusPercent: 100, attackSpeedPercent: 100, healthBonusPercent: 100, defenseBonusPercent: 100, luckBonusPercent: 100, icon: 'avalanche-crown', text: 'Концовка лавины монстров' },
-  { id: 'godHead', name: 'Голова бога', ending: 'deathVictory', bonusPercent: 666, goldBonusPercent: 666, attackSpeedPercent: 666, healthBonusPercent: 666, defenseBonusPercent: 666, luckBonusPercent: 666, healingBonusPercent: 666, icon: 'god-head', text: 'Победа над смертью: усиливает меч смерти' },
+  { id: 'starRing', name: 'Кольцо звезды', ending: 'dragonPeace', bonusPercent: 10, goldBonusPercent: 10, attackSpeedPercent: 10, manaBonusPercent: 10, icon: 'star-ring', text: 'Концовка мира драконов' },
+  { id: 'dragonPendant', name: 'Шлем-дракон', ending: 'dragonWar', bonusPercent: 20, goldBonusPercent: 20, attackSpeedPercent: 20, manaBonusPercent: 20, icon: 'dragon-pendant', text: 'Плохая концовка драконов' },
+  { id: 'magicBottle', name: 'Фиолетовый сосуд', ending: 'goblinKing', bonusPercent: 30, goldBonusPercent: 30, attackSpeedPercent: 30, manaBonusPercent: 50, icon: 'magic-bottle', text: 'Тайна гоблинов' },
+  { id: 'goldHoop', name: 'Золотое кольцо', ending: 'furyKing', bonusPercent: 40, goldBonusPercent: 40, attackSpeedPercent: 40, manaBonusPercent: 40, icon: 'gold-hoop', text: 'Концовка фури' },
+  { id: 'greenRelic', name: 'Зеленая печать', ending: 'anuarKing', bonusPercent: 50, goldBonusPercent: 50, attackSpeedPercent: 50, manaBonusPercent: 50, icon: 'green-relic', text: 'Бомбическая концовка' },
+  { id: 'snowGlobe', name: 'Снежный шлем', ending: 'mansurKing', bonusPercent: 60, goldBonusPercent: 60, attackSpeedPercent: 60, manaBonusPercent: 60, icon: 'snow-globe', text: 'Подземелье Мансура' },
+  { id: 'moonCrystal', name: 'Лунный кристалл', ending: 'arailmKing', bonusPercent: 70, goldBonusPercent: 70, attackSpeedPercent: 70, manaBonusPercent: 90, icon: 'moon-crystal', text: 'Код хочет выбраться' },
+  { id: 'seaPearl', name: 'Шар водного вихря', ending: 'aisultanSea', bonusPercent: 1000, goldBonusPercent: 10000, attackSpeedPercent: 1000, manaBonusPercent: 1000, icon: 'sea-pearl', text: 'Воденой мир: усиливает воденой меч на 1000%' },
+  { id: 'deathPendant', name: 'Кулон смерти', ending: 'adminImpossible', bonusPercent: 100000, goldBonusPercent: 100000, attackSpeedPercent: 100000, healthBonusPercent: 100000, defenseBonusPercent: 100000, luckBonusPercent: 100000, manaBonusPercent: 100000, healingBonusPercent: 100, icon: 'death-pendant', text: 'Админская сила заключена в кулоне смерти' },
+  { id: 'sunOrb', name: 'Солнечная сфера', ending: 'bbiBadEnding', bonusPercent: 80, goldBonusPercent: 80, attackSpeedPercent: 80, manaBonusPercent: 80, icon: 'sun-orb', text: 'BBI концовка' },
+  { id: 'impossibleMedallion', name: 'Медальон невозможности', ending: 'impossibleEnding', bonusPercent: 1000, goldBonusPercent: 1000, attackSpeedPercent: 1000, manaBonusPercent: 1000, icon: 'impossible-medallion', text: 'Невозможная концовка мира Нурали' },
+  { id: 'avalancheCrown', name: 'Корона лавины', ending: 'monsterAvalanche', bonusPercent: 100, goldBonusPercent: 100, attackSpeedPercent: 100, healthBonusPercent: 100, defenseBonusPercent: 100, luckBonusPercent: 100, manaBonusPercent: 100, icon: 'avalanche-crown', text: 'Концовка лавины монстров' },
+  { id: 'godHead', name: 'Голова бога', ending: 'deathVictory', bonusPercent: 666, goldBonusPercent: 666, attackSpeedPercent: 666, healthBonusPercent: 666, defenseBonusPercent: 666, luckBonusPercent: 666, manaBonusPercent: 666, healingBonusPercent: 666, icon: 'god-head', text: 'Победа над смертью: усиливает меч смерти' },
 ];
 
 const shopItems: ShopItem[] = [
@@ -1454,6 +1463,7 @@ export function HomePage() {
   const heroAnimationTimer = useRef<number | null>(null);
   const pressedKeys = useRef<Set<string>>(new Set());
   const joystickVector = useRef({ x: 0, z: 0 });
+  const movementVelocity = useRef({ x: 0, z: 0 });
   const joystickPointerId = useRef<number | null>(null);
   const lastMoveAt = useRef<number | null>(null);
   const clickTimesRef = useRef<number[]>([]);
@@ -1473,6 +1483,8 @@ export function HomePage() {
     heroHp: heroMaxHp,
     heroPosition: { x: -18_000, z: 0 },
     isFinalReveal: false,
+    nearestMonsterInAggro: false,
+    nearestMonsterInPressure: false,
     nearestMonsterInRange: false,
   });
   const [cityMonsters, setCityMonsters] = useState(() => savedGameRef.current?.cityMonsters ?? dragonSons.map(() => monstersPerCity));
@@ -1598,7 +1610,8 @@ export function HomePage() {
   const equippedArtifact = unlockedArtifacts.find((artifact) => artifact.id === equippedArtifactId) ?? null;
   const artifactHealthMultiplier = equippedArtifact?.healthBonusPercent ? 1 + equippedArtifact.healthBonusPercent / 100 : 1;
   const currentHeroMaxHp = hasAdminHelmet ? Number.MAX_SAFE_INTEGER : Math.floor((heroMaxHp + upgradePower(healthLevel, shopBasePower.health)) * artifactHealthMultiplier);
-  const currentHeroMaxMana = heroMaxMana + upgradePower(shopLevels.mana, shopBasePower.mana);
+  const artifactManaMultiplier = equippedArtifact?.manaBonusPercent ? 1 + equippedArtifact.manaBonusPercent / 100 : 1;
+  const currentHeroMaxMana = Math.floor((heroMaxMana + upgradePower(shopLevels.mana, shopBasePower.mana)) * artifactManaMultiplier);
   const heroHealthText = hasAdminHelmet ? `${adminHelmetHealthText} / ${adminHelmetHealthText}` : `${heroHp} / ${currentHeroMaxHp}`;
   const heroHealthPercent = Math.max(0, Math.min(100, (heroHp / currentHeroMaxHp) * 100));
 
@@ -1665,6 +1678,8 @@ export function HomePage() {
   const currentMonsterHp = isFinalSpiritWorld ? finalSpiritMonsterHp : isMonsterAvalancheWorld ? monsterAvalancheHp : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : baseMonsterHp;
   const nearestMonsterDistanceUnits = nearestMonster.alive ? Math.hypot(heroPosition.x - nearestMonster.x, heroPosition.z - nearestMonster.z) : Number.POSITIVE_INFINITY;
   const nearestMonsterDistanceMeters = nearestMonsterDistanceUnits / 1_000;
+  const nearestMonsterInAggro = currentMonsters > 0 && nearestMonster.alive && nearestMonsterDistanceUnits <= monsterAggroDistanceUnits;
+  const nearestMonsterInPressure = currentMonsters > 0 && nearestMonster.alive && nearestMonsterDistanceUnits <= monsterPressureRangeUnits;
   const nearestMonsterInRange = currentMonsters > 0 && nearestMonster.alive && nearestMonsterDistanceUnits <= meleeRangeUnits;
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const finalSpiritDragonHp = Math.max(1, Math.floor((kingDragonHp * 2) / 100));
@@ -1881,11 +1896,11 @@ export function HomePage() {
   const visibleArmors = showFullInventory ? armors : armors.slice(-inventoryPreviewLimit);
   const currentPlayerPower = Math.max(1_000, attackBonus + defenseBonus + currentHeroMaxHp);
   const hasArcaneWeapon = isArcaneWeapon(equippedWeapon);
-  const arcaneSkillCooldownMs = 8_000;
-  const arcaneSkillManaCost = 20;
+  const selectedSpell = arcaneSpells[selectedArcaneSpell % arcaneSpells.length];
+  const arcaneSkillCooldownMs = selectedSpell.cooldown;
+  const arcaneSkillManaCost = selectedSpell.mana;
   const arcaneSkillRemainingMs = Math.max(0, arcaneSkillReadyAt - arcaneCooldownNow);
   const arcaneSkillReady = hasArcaneWeapon && arcaneSkillRemainingMs === 0 && heroMana >= arcaneSkillManaCost;
-  const selectedSpell = arcaneSpells[selectedArcaneSpell % arcaneSpells.length];
   const arcaneSkillDamage = Math.max(1, Math.floor((attackBonus + (equippedWeapon?.damage ?? 0) + 2_500) * artifactDamageMultiplier * selectedSpell.power));
   const allAchievementsUnlocked = achievements.every((achievement) => unlockedAchievements.includes(achievement.id));
 
@@ -2741,6 +2756,34 @@ export function HomePage() {
     setTutorialOpen(false);
   }
 
+  function setCurrentMonsterCount(nextMonsters: number) {
+    if (isAdminWorld) {
+      setAdminWorldMonstersLeft(nextMonsters);
+    } else if (isFinalSpiritWorld) {
+      setFinalSpiritMonstersLeft(nextMonsters);
+    } else if (isMonsterAvalancheWorld) {
+      setMonsterAvalancheLeft(nextMonsters);
+    } else if (isBbiWorld) {
+      setBbiMonstersLeft(nextMonsters);
+    } else if (isNuraliWorld) {
+      setNuraliMonstersLeft(nextMonsters);
+    } else if (isAisWorld) {
+      setAisMonstersLeft(nextMonsters);
+    } else if (isArailmWorld) {
+      setArailmMonstersLeft(nextMonsters);
+    } else if (isMansurDungeon) {
+      setMansurMonstersLeft(nextMonsters);
+    } else if (isAnuarWorld) {
+      setAnuarBombsLeft(nextMonsters);
+    } else if (isFuryDungeon) {
+      setFuryMonstersLeft(nextMonsters);
+    } else if (isDungeon && dungeon) {
+      setDungeon({ ...dungeon, enemiesLeft: nextMonsters });
+    } else {
+      setCityMonsters(cityMonsters.map((count, index) => (index === chapter ? nextMonsters : count)));
+    }
+  }
+
   function equipArtifact(artifact: Artifact) {
     const healingPercent = 20 * (1 + (artifact.healingBonusPercent ?? 0) / 100);
     const healingAmount = Math.max(1, Math.floor(currentHeroMaxHp * (healingPercent / 100)));
@@ -2813,7 +2856,8 @@ export function HomePage() {
   }
 
   useEffect(() => {
-    const moveTimer = window.setInterval(() => {
+    let frame = 0;
+    const tickMovement = () => {
       const now = performance.now();
       const deltaSeconds = lastMoveAt.current === null ? 0.016 : Math.min(0.05, (now - lastMoveAt.current) / 1000);
       lastMoveAt.current = now;
@@ -2826,19 +2870,39 @@ export function HomePage() {
       if (keys.has('d') || keys.has('keyd') || keys.has('arrowright')) dx += 1;
       dx += joystickVector.current.x;
       dz += joystickVector.current.z;
-      const moving = Math.hypot(dx, dz) > 0.05;
-      setHeroMoving(moving);
-      if (moving) {
-        const length = Math.max(1, Math.hypot(dx, dz));
-        const direction = { x: dx / length, z: dz / length };
-        setHeroDirection(direction);
-        moveHero(direction.x * heroMoveSpeedPerSecond * deltaSeconds, direction.z * heroMoveSpeedPerSecond * deltaSeconds);
+      const inputLength = Math.hypot(dx, dz);
+      const hasInput = inputLength > 0.05;
+      const targetDirection = hasInput ? { x: dx / inputLength, z: dz / inputLength } : { x: 0, z: 0 };
+      const targetSpeed = hasInput ? heroMoveSpeedPerSecond : 0;
+      const currentVelocity = movementVelocity.current;
+      const acceleration = hasInput ? 9.5 : 12.5;
+      const blend = 1 - Math.exp(-deltaSeconds * acceleration);
+      const nextVelocity = {
+        x: currentVelocity.x + (targetDirection.x * targetSpeed - currentVelocity.x) * blend,
+        z: currentVelocity.z + (targetDirection.z * targetSpeed - currentVelocity.z) * blend,
+      };
+      if (!hasInput && Math.hypot(nextVelocity.x, nextVelocity.z) < heroMoveSpeedPerSecond * 0.025) {
+        nextVelocity.x = 0;
+        nextVelocity.z = 0;
       }
-    }, 24);
+      movementVelocity.current = nextVelocity;
+      const nextSpeed = Math.hypot(nextVelocity.x, nextVelocity.z);
+      const moving = hasInput || nextSpeed > heroMoveSpeedPerSecond * 0.035;
+      setHeroMoving(moving);
+      if (nextSpeed > heroMoveSpeedPerSecond * 0.02) {
+        const direction = { x: nextVelocity.x / Math.max(1, nextSpeed), z: nextVelocity.z / Math.max(1, nextSpeed) };
+        setHeroDirection(direction);
+        moveHero(nextVelocity.x * deltaSeconds, nextVelocity.z * deltaSeconds);
+      }
+      frame = window.requestAnimationFrame(tickMovement);
+    };
+
+    frame = window.requestAnimationFrame(tickMovement);
 
     return () => {
-      window.clearInterval(moveTimer);
+      window.cancelAnimationFrame(frame);
       lastMoveAt.current = null;
+      movementVelocity.current = { x: 0, z: 0 };
       setHeroMoving(false);
     };
   }, []);
@@ -3488,9 +3552,8 @@ export function HomePage() {
         const dx = heroPosition.x - monster.x;
         const dz = heroPosition.z - monster.z;
         const distance = Math.hypot(dx, dz);
-        const aggroDistance = 12_000;
         const stopDistance = meleeRangeUnits * 1.05;
-        if (distance > aggroDistance || distance <= stopDistance) return monster;
+        if (distance > monsterAggroDistanceUnits || distance <= stopDistance) return monster;
         const step = Math.min(distance - stopDistance, monsterRunSpeedPerSecond * 0.04);
         const length = Math.max(1, distance);
         return {
@@ -3514,26 +3577,30 @@ export function HomePage() {
       heroHp,
       heroPosition,
       isFinalReveal,
+      nearestMonsterInAggro,
+      nearestMonsterInPressure,
       nearestMonsterInRange,
     };
-  }, [chapter, currentMonsters, currentMonsterTotal, defenseBonus, hasAdminHelmet, heroHp, heroPosition, isFinalReveal, nearestMonsterInRange]);
+  }, [chapter, currentMonsters, currentMonsterTotal, defenseBonus, hasAdminHelmet, heroHp, heroPosition, isFinalReveal, nearestMonsterInAggro, nearestMonsterInPressure, nearestMonsterInRange]);
 
   useEffect(() => {
     const attackTimer = window.setInterval(() => {
       const state = monsterBotRef.current;
       if (state.isFinalReveal || state.currentMonsters <= 0 || state.heroHp <= 0 || state.hasAdminHelmet) return;
+      if (!state.nearestMonsterInAggro) return;
       if (Date.now() - monsterChaseStartedAt.current < monsterChaseCatchTimeMs) return;
-      if (!state.nearestMonsterInRange) return;
+      if (!state.nearestMonsterInPressure) return;
 
-      const crowdPressure = Math.max(1, Math.ceil(Math.min(state.currentMonsters, state.currentMonsterTotal) / Math.max(1, state.currentMonsterTotal / 6)));
-      const rawDamage = monsterBotAttackDamage + state.chapter * 4 + crowdPressure * 2;
+      const hunterBots = Math.max(1, Math.ceil(Math.min(state.currentMonsters, state.currentMonsterTotal) / Math.max(1, state.currentMonsterTotal / 10)));
+      const rangePressure = state.nearestMonsterInRange ? 1 : 0.22;
+      const rawDamage = Math.ceil((monsterBotAttackDamage + state.chapter * 4 + hunterBots * 3) * rangePressure);
       const damage = Math.max(1, rawDamage - Math.floor(state.defenseBonus * 0.08));
       setBattlePulse((pulse) => pulse + 1);
       setMonsterAttackCount((count) => count + 1);
       setHeroHp((hp) => {
         const nextHp = Math.max(0, hp - damage);
         if (nextHp === 0) {
-          setMessage(`Монстры добрались до героя и нанесли ${formatPower(damage)} урона. Герой упал, восстанови HP.`);
+          setMessage(`${formatPower(hunterBots)} монстров окружили героя и нанесли ${formatPower(damage)} урона. Герой упал, восстанови HP.`);
         }
         return nextHp;
       });
@@ -3596,15 +3663,37 @@ export function HomePage() {
     return () => window.clearInterval(manaTimer);
   }, [currentHeroMaxMana]);
 
+  useEffect(() => {
+    setHeroMana((mana) => Math.min(currentHeroMaxMana, mana));
+  }, [currentHeroMaxMana]);
+
   function castArcaneSkill() {
-    if (!hasArcaneWeapon || isFinalReveal || !enemy || currentMonsters > 0 || enemyHp <= 0 || !arcaneSkillReady) return;
-    playHeroAnimation('strike', 560);
+    if (!hasArcaneWeapon || isFinalReveal || !enemy || !arcaneSkillReady) return;
+    playHeroAnimation('cast', 760);
     setBattlePulse((pulse) => pulse + 1);
     setArcanePulse((pulse) => pulse + 1);
-    setArcaneBurstPulse((pulse) => pulse + 1);
+    if (selectedSpell.targets >= 8 || selectedSpell.power >= 12) setArcaneBurstPulse((pulse) => pulse + 1);
     setHeroMana((mana) => Math.max(0, mana - arcaneSkillManaCost));
     setArcaneSkillReadyAt(Date.now() + arcaneSkillCooldownMs);
     setArcaneCooldownNow(Date.now());
+
+    if (currentMonsters > 0) {
+      const spellKills = Math.min(currentMonsters, Math.max(1, selectedSpell.targets + Math.floor(arcaneSkillDamage / Math.max(1, currentMonsterHp * 2))));
+      const nextMonsters = Math.max(0, currentMonsters - spellKills);
+      setCurrentMonsterCount(nextMonsters);
+      setNearestMonster(nextMonsters > 0 ? makeNearestMonsterSpawn(currentMonsterHp) : { ...nearestMonsterRef.current, hp: 0, alive: false });
+      addGold(spellKills * Math.max(2, chapter + 1));
+      const streakRewardText = addWinStreak(`${selectedSpell.name} x${spellKills}`);
+      if (nextMonsters === 0) {
+        setEnemyHp(currentDragonHp);
+        setMessage(`${selectedSpell.name}: магия уничтожила ${formatPower(spellKills)} монстров. Теперь появился босс: ${formatPower(currentDragonHp)} HP.${streakRewardText ? ` ${streakRewardText}` : ''}`);
+        return;
+      }
+      setMessage(`${selectedSpell.name}: магия уничтожила ${formatPower(spellKills)} монстров. Осталось ${formatPower(nextMonsters)}. Мана -${arcaneSkillManaCost}.${streakRewardText ? ` ${streakRewardText}` : ''}`);
+      return;
+    }
+
+    if (enemyHp <= 0) return;
     const nextEnemyHp = Math.max(0, enemyHp - arcaneSkillDamage);
     setEnemyHp(nextEnemyHp);
     if (nextEnemyHp === 0) {
@@ -3612,7 +3701,7 @@ export function HomePage() {
       clearCity();
       return;
     }
-    setMessage(`${selectedSpell.name}: заклинание ударило на -${formatPower(arcaneSkillDamage)} HP. Перезарядка 8 сек.`);
+    setMessage(`${selectedSpell.name}: заклинание ударило на -${formatPower(arcaneSkillDamage)} HP. Мана -${arcaneSkillManaCost}, перезарядка ${Math.ceil(arcaneSkillCooldownMs / 1000)} сек.`);
   }
 
   function strike() {
@@ -4343,15 +4432,39 @@ export function HomePage() {
       return;
     }
 
+    const email = authEmail.trim();
+    const password = authPassword.trim();
+    if (!email || !password) {
+      setAuthMessage('Напиши почту и пароль.');
+      return;
+    }
+    if (password.length < 6) {
+      setAuthMessage('Пароль должен быть минимум 6 символов.');
+      return;
+    }
+
     setAuthBusy(true);
     setAuthMessage('');
-    const { error } = await supabase.auth.signInWithPassword({
-      email: authEmail,
-      password: authPassword,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) setAuthMessage(error.message);
-    setAuthBusy(false);
+      if (error) {
+        setAuthMessage(error.message);
+      } else if (data.user) {
+        window.localStorage.removeItem('dragon-game-guest-mode');
+        setGuestMode(false);
+        setAuthUser(data.user);
+        setAuthMessage('');
+        setMessage('Ты вошел в аккаунт.');
+      }
+    } catch {
+      setAuthMessage('Не получилось войти. Проверь интернет и попробуй еще раз.');
+    } finally {
+      setAuthBusy(false);
+    }
   }
 
   async function createAccount() {
@@ -4360,20 +4473,42 @@ export function HomePage() {
       return;
     }
 
+    const email = authEmail.trim();
+    const password = authPassword.trim();
+    if (!email || !password) {
+      setAuthMessage('Напиши почту и пароль для регистрации.');
+      return;
+    }
+    if (password.length < 6) {
+      setAuthMessage('Пароль должен быть минимум 6 символов.');
+      return;
+    }
+
     setAuthBusy(true);
     setAuthMessage('');
-    const { data, error } = await supabase.auth.signUp({
-      email: authEmail,
-      password: authPassword,
-      options: { emailRedirectTo: window.location.origin },
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: window.location.origin },
+      });
 
-    if (error) {
-      setAuthMessage(error.message);
-    } else if (!data.session) {
-      setAuthMessage('Аккаунт создан. Подтверди почту, если Supabase попросит.');
+      if (error) {
+        setAuthMessage(error.message);
+      } else if (data.session && data.user) {
+        window.localStorage.removeItem('dragon-game-guest-mode');
+        setGuestMode(false);
+        setAuthUser(data.user);
+        setAuthMessage('');
+        setMessage('Аккаунт создан. Ты вошел в игру.');
+      } else {
+        setAuthMessage('Аккаунт создан. Если Supabase попросит, подтверди почту и потом нажми Войти.');
+      }
+    } catch {
+      setAuthMessage('Не получилось создать аккаунт. Проверь интернет и попробуй еще раз.');
+    } finally {
+      setAuthBusy(false);
     }
-    setAuthBusy(false);
   }
 
   async function signInWithGoogle() {
@@ -5180,10 +5315,10 @@ export function HomePage() {
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
               <div className="guide-current-version">
-                <strong>Текущая версия: vCapturedCityMagic</strong>
-                <span>Свободная 3D-карта, захваченные города, мана, много магии и новые анимации героя.</span>
+                <strong>Текущая версия: vRealMonsterHunt</strong>
+                <span>Реалистичная охота монстров: 100 м обнаружение, 12 м давление, 5 м ближняя атака.</span>
               </div>
-              <p>Ходи по захваченному городу, ищи монстров, бей их рядом или магией, собирай золото, покупай улучшения и открывай новых боссов. Когда монстры города побеждены, появляется дракон.</p>
+              <p>Ходи по захваченному городу, ищи монстров, бей их рядом или магией, собирай золото, покупай улучшения и открывай новых боссов. Монстров можно зачищать мечом или заклинаниями; когда город очищен, появляется дракон.</p>
               <div className="guide-columns">
                 <div>
                   <strong>Управление</strong>
@@ -5193,13 +5328,16 @@ export function HomePage() {
                   <span>F: быстрый удар</span>
                   <span>На телефоне: джойстик для движения, тап по сцене для удара</span>
                   <span>Кнопка Гайд открывает эту подсказку в любой момент</span>
+                  <span>Повороты героя, камеры, монстров и боссов стали плавными</span>
                 </div>
                 <div>
                   <strong>Бой</strong>
-                  <span>Монстры стоят в городе и реагируют, когда герой подходит близко</span>
-                  <span>Обычный радиус ближнего боя: 5 метров</span>
+                  <span>Монстры замечают героя в радиусе 100 метров</span>
+                  <span>На 12 метрах начинается опасное давление</span>
+                  <span>На 5 метрах начинается сильная ближняя атака</span>
                   <span>После всех монстров появляется дракон или особый босс</span>
                   <span>Двуручные мечи бьют тяжелой анимацией с большим замахом</span>
+                  <span>Магия теперь может уничтожать группы монстров в городе</span>
                   <span>Магазин качает меч, броню, HP, ману и питомца</span>
                   <span>Удар рядом бьет ближайшего монстра</span>
                 </div>
@@ -5207,12 +5345,16 @@ export function HomePage() {
                   <strong>Магия и мана</strong>
                   <span>У героя есть мана: 100 в начале игры</span>
                   <span>Кристалл маны в магазине повышает максимум маны</span>
-                  <span>Заклинания тратят ману и дают 3D-эффекты</span>
-                  <span>Есть огонь, лед, молния, вода, свет, тьма, яд, метеор и другие стихии</span>
+                  <span>Артефакты дают процент к максимуму маны</span>
+                  <span>Заклинания тратят разное количество маны и имеют разную перезарядку</span>
+                  <span>18 заклинаний: огонь, лед, молния, вода, свет, тьма, яд, метеор, комета, шторм, солнце и другие</span>
+                  <span>При магии герой делает отдельную каст-анимацию</span>
                   <span>Мана постепенно восстанавливается во время игры</span>
                 </div>
                 <div>
                   <strong>Монстры</strong>
+                  <span>Боты-охотники бегут к герою, когда он входит в радиус обнаружения</span>
+                  <span>Урон больше не идет из воздуха: сначала монстр должен приблизиться</span>
                   <span>Гоблины: прыгают и бьют ножом или дубиной</span>
                   <span>Пауки: перебирают лапами и кусают</span>
                   <span>Орки: топают и бьют топором</span>
@@ -5253,7 +5395,7 @@ export function HomePage() {
                   <span>Оружие повышает урон</span>
                   <span>Броня повышает защиту</span>
                   <span>Огненный питомец дает до 20 урона</span>
-                  <span>Артефакты дают урон, деньги, скорость и HP</span>
+                  <span>Артефакты дают урон, деньги, скорость, HP и процент маны</span>
                   <span>Магический посох открывает выбор заклинаний</span>
                   <span>Секретные мечи появляются после особых концовок</span>
                   <span>Предмет можно продать в инвентаре</span>
@@ -5289,6 +5431,12 @@ export function HomePage() {
                   <span>vThreatDragon: дракон стал угрожающим с аурой и огнем</span>
                   <span>vHeroMotion: ходьба и атака двуручным мечом стали живее</span>
                   <span>vCapturedCityMagic: захваченный город и полный гайд</span>
+                  <span>vBetterMagic: 18 заклинаний, разная мана, кулдауны и массовая зачистка</span>
+                  <span>vSmoothTurns: плавные повороты героя, камеры, монстров и боссов</span>
+                  <span>vManaArtifacts: артефакты дают процент к максимуму маны</span>
+                  <span>vSmoothManaArtifacts: полный гайд обновлен под все новые версии</span>
+                  <span>vMonsterBots100: монстры-боты охотятся на героя в радиусе 100 метров</span>
+                  <span>vRealMonsterHunt: реалистичная погоня, давление на 12 м и ближний урон на 5 м</span>
                 </div>
               </div>
             </div>
@@ -5297,7 +5445,7 @@ export function HomePage() {
           <div className="tutorial-tip tutorial-goblin">
             <span className="tutorial-arrow tutorial-arrow-down" />
             <b>1</b>
-            <p>Иди к монстру и убей его. Двигайся WASD или стрелками, бей кликом или F.</p>
+            <p>Иди к монстру и убей его. Двигайся WASD, бей кликом, тапом или F.</p>
           </div>
           <div className="tutorial-tip tutorial-world">
             <span className="tutorial-arrow tutorial-arrow-up" />
@@ -5650,22 +5798,24 @@ export function HomePage() {
                       event.stopPropagation();
                       setSelectedArcaneSpell(index);
                     }}
+                    title={`${spell.name}: ${spell.mana} маны`}
                     type="button"
                   >
                     {spell.icon}
+                    <small>{spell.mana}</small>
                   </button>
                 ))}
               </div>
               <button
                 className={`arcane-skill-button ${arcaneSkillReady ? 'ready' : 'cooldown'}`}
-                disabled={!arcaneSkillReady || heroHp === 0 || currentMonsters > 0}
+                disabled={!arcaneSkillReady || heroHp === 0}
                 onClick={(event) => {
                   event.stopPropagation();
                   castArcaneSkill();
                 }}
                 type="button"
               >
-                {heroMana < arcaneSkillManaCost ? 'Мана' : arcaneSkillReady ? selectedSpell.name : `${Math.ceil(arcaneSkillRemainingMs / 1000)}с`}
+                {heroMana < arcaneSkillManaCost ? `${arcaneSkillManaCost} маны` : arcaneSkillReady ? selectedSpell.name : `${Math.ceil(arcaneSkillRemainingMs / 1000)}с`}
               </button>
             </div>
           )}
@@ -6239,7 +6389,7 @@ export function HomePage() {
                 <strong>Золото: {infiniteGold ? '∞' : formatPower(gold)}</strong>
                 <strong>Деньги: x{goldMultiplier}</strong>
                 <strong>Урон: +{formatPower(attackBonus)}</strong>
-                <strong>Артефакт: {equippedArtifact ? `+${equippedArtifact.bonusPercent}% урон, +${equippedArtifact.goldBonusPercent}% деньги, +${equippedArtifact.attackSpeedPercent}% скорость` : 'нет'}</strong>
+                <strong>Артефакт: {equippedArtifact ? `+${equippedArtifact.bonusPercent}% урон, +${equippedArtifact.goldBonusPercent}% деньги, +${equippedArtifact.attackSpeedPercent}% скорость, +${equippedArtifact.manaBonusPercent ?? 0}% мана` : 'нет'}</strong>
                 <strong>Защита: -{hasAdminHelmet ? '∞' : formatPower(defenseBonus)}</strong>
                 <strong>Деньги за босса: {formatPower(reward)}</strong>
                 <strong>Монстры: {formatPower(currentMonsters)}</strong>
@@ -6370,7 +6520,7 @@ export function HomePage() {
                         <span className={`artifact-icon ${artifact.icon}`}><span /></span>
                         <strong>{artifact.name}</strong>
                         <small>{unlocked ? artifact.text : 'Открой концовку'}</small>
-                        <b>{unlocked ? `${equipped ? 'Надет: ' : ''}+${artifact.bonusPercent}% урон, +${artifact.goldBonusPercent}% деньги, +${artifact.attackSpeedPercent}% скорость, лечит 20% HP${artifact.healingBonusPercent ? `, +${artifact.healingBonusPercent}% к исцелению` : ''}${artifact.healthBonusPercent ? `, +${artifact.healthBonusPercent}% здоровье` : ''}${artifact.defenseBonusPercent ? `, +${artifact.defenseBonusPercent}% защита` : ''}${artifact.luckBonusPercent ? `, +${artifact.luckBonusPercent}% удача` : ''}${artifact.id === 'seaPearl' ? ', воденой меч +1000%' : ''}` : 'Закрыт'}</b>
+                        <b>{unlocked ? `${equipped ? 'Надет: ' : ''}+${artifact.bonusPercent}% урон, +${artifact.goldBonusPercent}% деньги, +${artifact.attackSpeedPercent}% скорость, +${artifact.manaBonusPercent ?? 0}% мана, лечит 20% HP${artifact.healingBonusPercent ? `, +${artifact.healingBonusPercent}% к исцелению` : ''}${artifact.healthBonusPercent ? `, +${artifact.healthBonusPercent}% здоровье` : ''}${artifact.defenseBonusPercent ? `, +${artifact.defenseBonusPercent}% защита` : ''}${artifact.luckBonusPercent ? `, +${artifact.luckBonusPercent}% удача` : ''}${artifact.id === 'seaPearl' ? ', воденой меч +1000%' : ''}` : 'Закрыт'}</b>
                       </button>
                     );
                   })}
