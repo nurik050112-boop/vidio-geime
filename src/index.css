@@ -8162,6 +8162,10 @@ button.selected {
     min-height: 100svh;
   }
 
+  .game.play-page .stage {
+    overflow: hidden;
+  }
+
   .click-duel {
     grid-template-columns: 54px minmax(0, 1fr) 54px;
     gap: 5px;
@@ -8199,8 +8203,22 @@ button.selected {
   }
 
   .mobile-joystick {
-    width: 132px;
-    height: 132px;
+    left: max(12px, env(safe-area-inset-left));
+    bottom: max(14px, env(safe-area-inset-bottom));
+    width: 112px;
+    height: 112px;
+    border-width: 3px;
+  }
+
+  .mobile-joystick::before {
+    width: 58px;
+    height: 58px;
+    box-shadow: 0 -31px 0 -25px #fff8e8, 31px 0 0 -25px #fff8e8, 0 31px 0 -25px #fff8e8, -31px 0 0 -25px #fff8e8;
+  }
+
+  .mobile-joystick span {
+    width: 50px;
+    height: 50px;
   }
 
   .movement-pad {
@@ -8238,11 +8256,12 @@ button.selected {
   .auth-panel {
     top: max(6px, env(safe-area-inset-top));
     left: 6px;
-    right: 6px;
+    right: auto;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     gap: 6px;
-    max-width: none;
+    width: min(196px, calc(100vw - 128px));
+    max-width: 196px;
   }
 
   .auth-panel > span,
@@ -8254,8 +8273,8 @@ button.selected {
   }
 
   .nickname-field {
-    grid-template-columns: auto minmax(66px, 104px);
-    min-height: 30px;
+    grid-template-columns: auto minmax(58px, 1fr);
+    min-height: 28px;
     padding: 4px 5px;
   }
 
@@ -8264,61 +8283,63 @@ button.selected {
   }
 
   .nickname-field input {
-    min-height: 28px;
+    min-height: 26px;
     padding: 4px 6px;
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .page-switch {
-    top: max(50px, calc(env(safe-area-inset-top) + 48px));
-    right: 7px;
-    min-height: 34px;
-    padding: 6px 9px;
-    font-size: 12px;
+    top: max(7px, calc(env(safe-area-inset-top) + 7px));
+    right: 6px;
+    min-height: 30px;
+    padding: 5px 8px;
+    border-width: 2px;
+    font-size: 11px;
     box-shadow: 0 6px 14px rgba(20, 8, 4, 0.28);
   }
 
   .achievements-link {
-    top: max(91px, calc(env(safe-area-inset-top) + 89px));
+    top: max(43px, calc(env(safe-area-inset-top) + 43px));
   }
 
   .guide-button {
-    top: max(132px, calc(env(safe-area-inset-top) + 130px));
-    right: 7px;
-    min-height: 34px;
-    padding: 6px 9px;
-    font-size: 12px;
+    top: max(79px, calc(env(safe-area-inset-top) + 79px));
+    right: 6px;
+    min-height: 30px;
+    padding: 5px 8px;
+    font-size: 11px;
   }
 
   .quick-hud {
     left: 7px;
     right: 7px;
-    bottom: max(148px, calc(env(safe-area-inset-bottom) + 142px));
+    bottom: max(134px, calc(env(safe-area-inset-bottom) + 128px));
     grid-template-columns: 1fr;
-    gap: 7px;
-    max-height: 126px;
+    gap: 5px;
+    max-height: 104px;
     overflow: auto;
-    padding: 8px;
+    padding: 7px;
     border-radius: 8px;
   }
 
   .quick-hud div {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 5px 8px;
+    gap: 4px 7px;
   }
 
   .quick-hud strong {
     grid-column: 1 / -1;
     overflow: hidden;
-    font-size: 14px;
+    font-size: 13px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .quick-hud span {
     overflow: hidden;
-    font-size: 13px;
+    font-size: 12px;
+    line-height: 1.15;
     text-overflow: ellipsis;
     white-space: nowrap;
   }

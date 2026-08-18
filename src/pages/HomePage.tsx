@@ -1752,6 +1752,7 @@ export function HomePage() {
                 : isDungeon
                     ? `dungeon-${chapter}`
                     : `city-${chapter}`;
+  const useCityGoblinModel = mapSceneKey.startsWith('city-') && !isDungeon;
   const collisionContextRef = useRef({ chapter, mapLocationIndex });
 
   useEffect(() => {
@@ -5320,8 +5321,8 @@ export function HomePage() {
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
               <div className="guide-current-version">
-                <strong>Текущая версия: vWorldManaBalance</strong>
-                <span>Больше 3D-анимаций, меньше толпа монстров, мана в Пылающем мире и спокойнее урон магазина.</span>
+                <strong>Текущая версия: vMobileCityModels</strong>
+                <span>На телефонах интерфейс компактнее, а goblin-модель используется только в обычных городах.</span>
               </div>
               <p>Ходи по захваченному городу, ищи монстров, бей их рядом или магией, собирай золото, покупай улучшения и открывай новых боссов. Монстров можно зачищать мечом или заклинаниями; когда город очищен, появляется дракон.</p>
               <div className="guide-columns">
@@ -5445,6 +5446,8 @@ export function HomePage() {
                   <span>vRealActors: герой, монстры и дракон получили больше живых 3D-анимаций</span>
                   <span>vLessCrowd: на карте меньше видимых монстров, чтобы свободнее ходить</span>
                   <span>vWorldManaBalance: в Пылающем мире есть полоса маны, ник и гость скрыты, урон магазина уменьшен</span>
+                  <span>vCityGoblinOnly: новая goblin-модель появляется только в обычных городах</span>
+                  <span>vMobileCityModels: мобильные кнопки, HUD и джойстик стали компактнее</span>
                 </div>
               </div>
             </div>
@@ -5506,6 +5509,7 @@ export function HomePage() {
               monsterKind={enemy?.monsterKind ?? 'goblin'}
               viewDistance={1_000}
               sceneKey={mapSceneKey}
+              useCityGoblinModel={useCityGoblinModel}
               chapter={chapter}
               locationIndex={mapLocationIndex}
               equippedArtifactIcon={equippedArtifact?.icon ?? null}

@@ -18,6 +18,7 @@ type BattleScene3DProps = {
   monsterKind: string;
   viewDistance: number;
   sceneKey: string;
+  useCityGoblinModel: boolean;
   chapter: number;
   locationIndex: number;
   equippedArtifactIcon: string | null;
@@ -2013,43 +2014,47 @@ export function BattleScene3D(props: BattleScene3DProps) {
     }
     scene.add(monsters);
 
-    gltfLoader.load(
-      '/models/goblin-model/scene.gltf',
-      (gltf) => {
-        const template = gltf.scene;
-        template.traverse((object) => {
-          if (object instanceof THREE.Mesh) {
-            object.castShadow = true;
-            object.receiveShadow = true;
-          }
-        });
-        monsters.children.forEach((monster, index) => {
-          const current = monster as THREE.Group;
-          if (!current.userData.isGoblin) return;
-          current.children.forEach((child) => {
-            child.visible = false;
+    if (refs.current.useCityGoblinModel) {
+      gltfLoader.load(
+        '/models/goblin-model/scene.gltf',
+        (gltf) => {
+          const template = gltf.scene;
+          template.traverse((object) => {
+            if (object instanceof THREE.Mesh) {
+              object.castShadow = true;
+              object.receiveShadow = true;
+            }
           });
-          const model = template.clone(true);
-          fitGoblinModel(model);
-          model.name = 'loaded-goblin-model';
-          model.rotation.y += (index % 2 ? 0.08 : -0.08);
-          current.add(model);
-          current.userData.loadedGoblinModel = model;
-          current.userData.loadedGoblinBaseRotationY = model.rotation.y;
-          current.userData.baseY = 0.02;
-        });
-        markModelReady('goblin');
-      },
-      undefined,
-      () => {
-        monsters.children.forEach((monster) => {
-          (monster as THREE.Group).children.forEach((child) => {
-            child.visible = true;
+          monsters.children.forEach((monster, index) => {
+            const current = monster as THREE.Group;
+            if (!current.userData.isGoblin) return;
+            current.children.forEach((child) => {
+              child.visible = false;
+            });
+            const model = template.clone(true);
+            fitGoblinModel(model);
+            model.name = 'loaded-goblin-model';
+            model.rotation.y += (index % 2 ? 0.08 : -0.08);
+            current.add(model);
+            current.userData.loadedGoblinModel = model;
+            current.userData.loadedGoblinBaseRotationY = model.rotation.y;
+            current.userData.baseY = 0.02;
           });
-        });
-        markModelReady('goblin');
-      }
-    );
+          markModelReady('goblin');
+        },
+        undefined,
+        () => {
+          monsters.children.forEach((monster) => {
+            (monster as THREE.Group).children.forEach((child) => {
+              child.visible = true;
+            });
+          });
+          markModelReady('goblin');
+        }
+      );
+    } else {
+      markModelReady('goblin');
+    }
 
     const ashMat = new THREE.MeshBasicMaterial({ color: '#aee9e3', transparent: true, opacity: 0.58 });
     const motes = new THREE.Group();
