@@ -907,7 +907,7 @@ const endingArtifacts: Artifact[] = [
 ];
 
 const shopItems: ShopItem[] = [
-  { id: 'sword', name: 'Меч рассвета', price: 120, bonus: '+100 урона' },
+  { id: 'sword', name: 'Меч рассвета', price: 120, bonus: '+20 урона' },
   { id: 'pet', name: 'Огненный питомец', price: 180, bonus: '+20 урона максимум' },
   { id: 'clothes', name: 'Одежда странника', price: 90, bonus: '-3 урона от огня' },
   { id: 'helmet', name: 'Шлем героя', price: 140, bonus: '-5 урона от огня' },
@@ -918,7 +918,7 @@ const shopItems: ShopItem[] = [
 ];
 
 const shopBasePower: Record<ShopItem['id'], number> = {
-  sword: 100,
+  sword: 20,
   pet: 10,
   clothes: 3,
   helmet: 5,
@@ -4518,23 +4518,33 @@ export function HomePage() {
     }
 
     setAuthBusy(true);
-    setAuthMessage('');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
-    });
+    setAuthMessage('Открываю вход Google...');
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+          skipBrowserRedirect: true,
+        },
+      });
 
-    if (error) {
-      setAuthMessage(error.message);
+      if (error) {
+        setAuthMessage(error.message);
+        setAuthBusy(false);
+        return;
+      }
+
+      if (data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+
+      setAuthMessage('Google не вернул ссылку входа. Проверь настройки Google OAuth в Supabase.');
+    } catch {
+      setAuthMessage('Не получилось открыть Google. Проверь интернет и настройки Supabase.');
+    } finally {
       setAuthBusy(false);
     }
-  }
-
-  function enterAsGuest() {
-    window.localStorage.setItem('dragon-game-guest-mode', 'yes');
-    setGuestMode(true);
-    setAuthMessage('');
-    setMessage('Ты вошел как гость. Можно играть без аккаунта.');
   }
 
   if (!authUser && !guestMode) {
@@ -4583,9 +4593,6 @@ export function HomePage() {
               <button type="submit" disabled={authBusy}>{authBusy ? '...' : 'Войти'}</button>
               <button className="secondary" type="button" onClick={createAccount} disabled={authBusy}>
                 Зарегистрироваться
-              </button>
-              <button className="secondary" onClick={enterAsGuest} disabled={authBusy} type="button">
-                Войти как гость
               </button>
               {authMessage && <p>{authMessage}</p>}
             </form>
@@ -5255,6 +5262,7 @@ export function HomePage() {
 
   return (
     <main className={`game ${isWorldPage ? 'world-page' : 'play-page'}`}>
+      {!isWorldPage && (
       <div className="auth-panel">
         <label className="nickname-field">
           <span>Ник</span>
@@ -5267,10 +5275,7 @@ export function HomePage() {
             value={nickname}
           />
         </label>
-        {!authUser && (
-          guestMode ? (
-            <span>Гость</span>
-          ) : (
+        {!authUser && !guestMode && (
           <>
             <button onClick={() => setAuthOpen((open) => !open)} type="button">
               {authOpen ? 'Закрыть' : 'Войти'}
@@ -5301,13 +5306,13 @@ export function HomePage() {
                 <button className="secondary" type="button" onClick={signInWithGoogle} disabled={authBusy}>
                   Аккаунт
                 </button>
-                {authMessage && <p>{authMessage}</p>}
-              </form>
-            )}
-          </>
-          )
+              {authMessage && <p>{authMessage}</p>}
+            </form>
+          )}
+        </>
         )}
       </div>
+      )}
       {tutorialOpen && (
         <div className="tutorial-overlay" role="dialog" aria-label="Обучение игре">
           <div className="tutorial-card tutorial-main">
@@ -5315,8 +5320,8 @@ export function HomePage() {
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
               <div className="guide-current-version">
-                <strong>Текущая версия: vRealMonsterHunt</strong>
-                <span>Реалистичная охота монстров: 100 м обнаружение, 12 м давление, 5 м ближняя атака.</span>
+                <strong>Текущая версия: vWorldManaBalance</strong>
+                <span>Больше 3D-анимаций, меньше толпа монстров, мана в Пылающем мире и спокойнее урон магазина.</span>
               </div>
               <p>Ходи по захваченному городу, ищи монстров, бей их рядом или магией, собирай золото, покупай улучшения и открывай новых боссов. Монстров можно зачищать мечом или заклинаниями; когда город очищен, появляется дракон.</p>
               <div className="guide-columns">
@@ -5437,6 +5442,9 @@ export function HomePage() {
                   <span>vSmoothManaArtifacts: полный гайд обновлен под все новые версии</span>
                   <span>vMonsterBots100: монстры-боты охотятся на героя в радиусе 100 метров</span>
                   <span>vRealMonsterHunt: реалистичная погоня, давление на 12 м и ближний урон на 5 м</span>
+                  <span>vRealActors: герой, монстры и дракон получили больше живых 3D-анимаций</span>
+                  <span>vLessCrowd: на карте меньше видимых монстров, чтобы свободнее ходить</span>
+                  <span>vWorldManaBalance: в Пылающем мире есть полоса маны, ник и гость скрыты, урон магазина уменьшен</span>
                 </div>
               </div>
             </div>
@@ -5553,7 +5561,7 @@ export function HomePage() {
             <span />
           </div>
           <div className="monster-pack" data-kind={enemy?.monsterKind ?? 'goblin'}>
-            {Array.from({ length: Math.max(0, Math.min(4, Math.ceil(currentMonsters / 500))) }).map((_, index) => {
+            {Array.from({ length: Math.max(0, Math.min(3, Math.ceil(currentMonsters / 700))) }).map((_, index) => {
               const mixedMonster = monsterKinds[(chapter + index) % monsterKinds.length];
               const monsterKind = isFinalSpiritWorld ? 'shadow' : isAdminWorld ? 'admin' : isAisWorld ? 'fish' : isNuraliWorld ? 'nurali' : isBbiWorld ? 'shadow' : isArailmWorld ? 'arailm' : isMansurDungeon ? 'mansur' : isAnuarWorld ? 'bomb' : isFuryDungeon ? 'fury' : enemy?.monsterKind ?? mixedMonster[0];
               const monsterColumn = index % 8;
@@ -6061,6 +6069,15 @@ export function HomePage() {
           <p className="eyebrow">Пылающий мир</p>
           <h1>Меч против сыновей дракона</h1>
           <p>{message}</p>
+        </div>
+        <div className="world-mana-panel" aria-label="Мана героя">
+          <div>
+            <strong>Мана</strong>
+            <span>{Math.floor(heroMana)} / {currentHeroMaxMana}</span>
+          </div>
+          <div className="world-mana-bar">
+            <span style={{ width: `${Math.max(0, Math.min(100, (heroMana / currentHeroMaxMana) * 100))}%` }} />
+          </div>
         </div>
 
         {dailyRewardText && (

@@ -1985,7 +1985,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
 
     const monsterSlashMaterial = new THREE.MeshBasicMaterial({ color: '#ff4d2e', transparent: true, opacity: 0, depthWrite: false });
     const monsters = new THREE.Group();
-    for (let i = 0; i < 36; i += 1) {
+    const visualMonsterCount = 24;
+    for (let i = 0; i < visualMonsterCount; i += 1) {
       const monster = makeMonster(refs.current.monsterKind, i);
       const attackTrail = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.03, 8, 28, Math.PI * 1.12), monsterSlashMaterial.clone());
       attackTrail.visible = false;
@@ -1993,7 +1994,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       attackTrail.rotation.set(-0.55, 0, 0.92);
       monster.add(attackTrail);
       const ring = 8 + (i % 6) * 3.7;
-      const angle = (i / 36) * Math.PI * 2;
+      const angle = (i / visualMonsterCount) * Math.PI * 2;
       const homeX = Math.cos(angle) * ring + Math.sin(i * 1.7) * 4;
       const homeZ = Math.sin(angle) * ring - 5 + Math.cos(i * 1.2) * 4;
       monster.position.set(homeX, 0, homeZ);
@@ -2296,15 +2297,18 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const stepLift = Math.abs(Math.sin(walkCycle));
       const runTilt = data.isHeroMoving ? Math.sin(walkCycle * 0.5) * 0.055 : 0;
       const walkPower = data.isHeroMoving ? 0.74 : 0.12;
+      const idleBreath = Math.sin(time * 1.8) * 0.018;
+      const idleShift = Math.sin(time * 1.15) * 0.012;
+      const capeWind = Math.sin(time * 2.4 + hero.position.x * 0.08 + hero.position.z * 0.05);
       const useFallbackHeroRig = !hasDownloadedHeroAnimations;
       const isTwoHandedWeapon = [3, 11, 14, 16, 18, 19].includes(data.equippedWeaponStyle);
       const downloadedHeroModel = hero.userData.downloadedModel as THREE.Object3D | undefined;
       updateEquippedHeroWeapon(heroEquippedWeapon, data.equippedWeaponStyle, data.hasArcaneWeapon);
-      hero.scale.setScalar(1);
+      hero.scale.set(1 + Math.abs(idleBreath) * 0.018, 1 + idleBreath, 1 - Math.abs(idleBreath) * 0.012);
       hero.position.y =
         jumpHeight +
         Math.sin(time * 2.6) * (useFallbackHeroRig ? 0.035 : 0.022) +
-        (data.isHeroMoving ? stepLift * (useFallbackHeroRig ? 0.095 : 0.045) : 0);
+        (data.isHeroMoving ? stepLift * (useFallbackHeroRig ? 0.095 : 0.045) : idleShift);
       hero.rotation.y = renderFacing + Math.sin(time * 1.8) * 0.014;
       hero.rotation.x = data.isHeroMoving ? -0.04 + runTilt * (useFallbackHeroRig ? 1 : 0.55) : 0;
       hero.rotation.z = data.isHeroMoving ? Math.sin(walkCycle) * (useFallbackHeroRig ? 0.055 : 0.024) : 0;
@@ -2312,18 +2316,18 @@ export function BattleScene3D(props: BattleScene3DProps) {
         downloadedHeroModel.rotation.x = data.isHeroMoving ? stride * 0.035 - stepLift * 0.025 : Math.sin(time * 1.2) * 0.006;
         downloadedHeroModel.rotation.y = Math.sin(time * 1.4) * (data.isHeroMoving ? 0.018 : 0.006);
         downloadedHeroModel.rotation.z = data.isHeroMoving ? counterStride * 0.035 : Math.sin(time * 1.7) * 0.006;
-        downloadedHeroModel.position.y = data.isHeroMoving ? stepLift * 0.07 : Math.sin(time * 1.6) * 0.012;
+        downloadedHeroModel.position.y = data.isHeroMoving ? stepLift * 0.07 : Math.sin(time * 1.6) * 0.012 + idleBreath * 0.35;
       }
       if (useFallbackHeroRig) {
         const runAmount = data.isHeroMoving ? 1 : 0;
-        hero.userData.cape.rotation.y = Math.sin(time * 2.2) * 0.04 - stride * 0.16 * runAmount;
-        hero.userData.cape.rotation.x = -stepLift * 0.13 * runAmount + Math.sin(time * 1.7) * 0.025;
+        hero.userData.cape.rotation.y = capeWind * 0.08 - stride * 0.18 * runAmount;
+        hero.userData.cape.rotation.x = -stepLift * 0.15 * runAmount + Math.sin(time * 1.7) * 0.035 - Math.max(0, capeWind) * 0.04;
         hero.userData.leftLeg.rotation.x = stride * walkPower - jumpHeight * 0.28;
         hero.userData.rightLeg.rotation.x = -stride * walkPower - jumpHeight * 0.28;
         hero.userData.leftLeg.rotation.z = 0.07 + counterStride * 0.08 * runAmount;
         hero.userData.rightLeg.rotation.z = -0.07 - counterStride * 0.08 * runAmount;
-        hero.userData.leftArm.rotation.x = -stride * (data.isHeroMoving ? 0.58 : 0.08);
-        hero.userData.rightArm.rotation.x = -0.18 + stride * (data.isHeroMoving ? 0.42 : 0.05);
+        hero.userData.leftArm.rotation.x = -stride * (data.isHeroMoving ? 0.58 : 0.08) - idleBreath * 1.3;
+        hero.userData.rightArm.rotation.x = -0.18 + stride * (data.isHeroMoving ? 0.42 : 0.05) - idleBreath * 1.1;
         hero.userData.leftArm.rotation.z = -0.55 + Math.sin(time * 5) * 0.08 + stepLift * 0.14 * runAmount;
         hero.userData.rightArm.rotation.z = -1.18 - Math.sin(time * 5) * 0.05 - stepLift * 0.1 * runAmount;
         hero.userData.leftShoulder.rotation.z = -0.08 + stride * 0.08 * runAmount;
@@ -2332,7 +2336,10 @@ export function BattleScene3D(props: BattleScene3DProps) {
         hero.userData.rightGauntlet.rotation.x = stride * 0.3 * runAmount;
         hero.userData.leftBoot.rotation.x = -0.08 + Math.max(0, -stride) * 0.34 * runAmount;
         hero.userData.rightBoot.rotation.x = -0.08 + Math.max(0, stride) * 0.34 * runAmount;
-        hero.userData.plume.rotation.x = 0.22 + counterStride * 0.08 * runAmount;
+        hero.userData.head.rotation.x = -0.02 + idleBreath * 1.6 - stepLift * 0.035 * runAmount;
+        hero.userData.head.rotation.y = Math.sin(time * 1.25) * 0.035 + stride * 0.035 * runAmount;
+        hero.userData.plume.rotation.x = 0.22 + counterStride * 0.08 * runAmount + capeWind * 0.05;
+        hero.userData.plume.rotation.z = Math.sin(time * 2.8) * 0.08 + stride * 0.08 * runAmount;
         hero.userData.sword.rotation.set(0.12, 0, -1.34);
       }
       if (data.heroAnimation === 'cast') {
@@ -2434,8 +2441,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
       }
 
       if (!(data.heroAnimation === 'strike' || data.heroAnimation === 'cast' || attackSwing > 0)) {
-        heroEquippedWeapon.position.set(hero.position.x + 0.64 + Math.sin(walkCycle) * (data.isHeroMoving ? 0.035 : 0), hero.position.y + 1.44 + stepLift * 0.04, hero.position.z + 0.22);
-        heroEquippedWeapon.rotation.set(-0.58 + Math.sin(walkCycle) * (data.isHeroMoving ? 0.08 : 0.02), renderFacing - 0.28, -0.78 + Math.sin(walkCycle * 0.7) * (data.isHeroMoving ? 0.06 : 0.02));
+        heroEquippedWeapon.position.set(hero.position.x + 0.64 + Math.sin(walkCycle) * (data.isHeroMoving ? 0.045 : 0.012), hero.position.y + 1.44 + stepLift * 0.04 + idleBreath * 0.8, hero.position.z + 0.22 + Math.cos(time * 1.6) * 0.012);
+        heroEquippedWeapon.rotation.set(-0.58 + Math.sin(walkCycle) * (data.isHeroMoving ? 0.1 : 0.03), renderFacing - 0.28 + Math.sin(time * 1.1) * 0.015, -0.78 + Math.sin(walkCycle * 0.7) * (data.isHeroMoving ? 0.08 : 0.03));
       }
       const weaponData = heroEquippedWeapon.userData as { aura: THREE.Mesh; magicRunes: THREE.Group };
       weaponData.aura.rotation.z = time * 2.4;
@@ -2484,6 +2491,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
         bolt.position.x += Math.sin(facing) * speed * delta;
         bolt.position.z += Math.cos(facing) * speed * delta;
         bolt.position.y += Math.sin(progress * Math.PI * 2 + lane) * delta * 1.4;
+        bolt.rotation.x += delta * (4.8 + kind * 0.08);
+        bolt.rotation.y += delta * (6.2 + lane * 0.18);
+        bolt.rotation.z += delta * (7.6 + kind * 0.12);
         bolt.scale.setScalar(1 + Math.sin(progress * Math.PI) * (kind >= 15 ? 2.2 : 1.6));
         const boltMaterial = bolt instanceof THREE.Mesh ? bolt.material : null;
         if (boltMaterial instanceof THREE.MeshBasicMaterial) {
@@ -2665,8 +2675,14 @@ export function BattleScene3D(props: BattleScene3DProps) {
 
         const walk = time * (distance > attackRange ? (isPressuringHero ? 10.8 : 8.4) : 5.4) + index;
         const attack = current.userData.attackFlash as number;
+        const chaseIntensity = wantsToKillHero ? THREE.MathUtils.clamp(1 - distance / monsterAggroRangeMeters, 0.08, 1) : 0;
+        const pressureIntensity = isPressuringHero ? THREE.MathUtils.clamp(1 - distance / monsterPressureRangeMeters, 0.18, 1) : 0;
+        const breathing = Math.sin(time * (1.35 + (index % 5) * 0.08) + index) * (wantsToKillHero ? 0.014 : 0.03);
+        const footPlant = Math.abs(Math.sin(walk));
+        const stalkLean = wantsToKillHero ? 0.04 + chaseIntensity * 0.14 : 0;
         const monsterBaseY = typeof current.userData.baseY === 'number' ? current.userData.baseY : 0.08;
         current.position.y = monsterBaseY + Math.max(0, Math.sin(walk * 2) * 0.08) + (attack > 0.4 ? Math.sin(time * 22 + index) * 0.06 : 0);
+        current.position.y += footPlant * (wantsToKillHero ? 0.018 : 0.008);
         const faceHero = Math.atan2(toHeroX, toHeroZ) + Math.PI;
         current.rotation.y = smoothAngle(current.rotation.y, faceHero, delta, distance > attackRange ? 4.8 : 3.6);
         current.rotation.y += Math.sin(walk) * (distance > attackRange ? 0.035 : 0.06);
@@ -2685,7 +2701,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
           loadedMonsterModel.rotation.x = -0.08 - monsterSwing * 0.34 + loadedLift * 0.08;
           loadedMonsterModel.rotation.y = loadedMonsterBaseRotationY + Math.sin(walk * 0.6 + index) * 0.11;
           loadedMonsterModel.rotation.z = loadedStep * 0.1 + monsterHit * attack * 0.22;
-          loadedMonsterModel.scale.setScalar(1 + loadedLift * 0.045 + monsterWindup * attack * 0.05);
+          loadedMonsterModel.scale.setScalar(1 + loadedLift * 0.045 + monsterWindup * attack * 0.05 + pressureIntensity * 0.025);
         }
         const attackTrail = current.userData.attackTrail as THREE.Mesh | undefined;
         if (attackTrail) {
@@ -2700,44 +2716,45 @@ export function BattleScene3D(props: BattleScene3DProps) {
         if (current.userData.isGoblin) {
           const skitter = Math.sin(walk * 1.45);
           const stab = monsterHit * attack;
-          current.rotation.x = -0.12 - monsterSwing * 0.28 + Math.abs(skitter) * 0.035;
-          current.rotation.z = Math.sin(walk * 0.7) * 0.11;
+          current.rotation.x = -0.12 - pressureIntensity * 0.16 - monsterSwing * 0.28 + Math.abs(skitter) * 0.035;
+          current.rotation.z = Math.sin(walk * 0.7) * (0.11 + chaseIntensity * 0.04);
           current.position.y += Math.abs(skitter) * 0.045;
-          current.userData.armL.rotation.x = 0.25 + skitter * 0.38 - monsterSwing * 0.65;
+          current.userData.armL.rotation.x = 0.25 + skitter * (0.38 + chaseIntensity * 0.14) - monsterSwing * 0.65;
           current.userData.armL.rotation.z = -1.08 - monsterWindup * 0.3 + Math.sin(walk + 0.6) * 0.18;
           current.userData.armR.rotation.x = -0.45 - skitter * 0.42 - monsterWindup * 1.65 - stab * 2.1 + monsterRecover * 1.2;
           current.userData.armR.rotation.z = 1.15 + monsterWindup * 0.85 + stab * 0.55 + Math.sin(walk + 1.2) * 0.16;
-          current.userData.legL.rotation.x = skitter * 0.78;
-          current.userData.legR.rotation.x = -skitter * 0.78;
+          current.userData.legL.rotation.x = skitter * (0.78 + chaseIntensity * 0.18);
+          current.userData.legR.rotation.x = -skitter * (0.78 + chaseIntensity * 0.18);
           current.userData.footL.rotation.x = -0.12 - skitter * 0.32;
           current.userData.footR.rotation.x = -0.12 + skitter * 0.32;
-          current.userData.head.rotation.x = -0.1 + monsterSwing * 0.35 + Math.sin(walk * 0.7) * 0.1;
+          current.userData.head.rotation.x = -0.1 - pressureIntensity * 0.08 + monsterSwing * 0.35 + Math.sin(walk * 0.7) * 0.1;
           current.userData.head.rotation.z = Math.sin(walk * 0.55) * 0.09;
-          current.userData.jaw.rotation.x = attack ? 0.18 + stab * 0.32 : Math.max(0, Math.sin(walk * 0.8)) * 0.08;
-          current.userData.earL.rotation.y = -0.34 + Math.sin(walk * 0.9) * 0.12;
-          current.userData.earR.rotation.y = 0.34 - Math.sin(walk * 0.9) * 0.12;
+          current.userData.jaw.rotation.x = attack ? 0.18 + pressureIntensity * 0.08 + stab * 0.32 : Math.max(0, Math.sin(walk * 0.8)) * (0.08 + pressureIntensity * 0.08);
+          current.userData.earL.rotation.y = -0.34 + Math.sin(walk * 0.9) * (0.12 + pressureIntensity * 0.07);
+          current.userData.earR.rotation.y = 0.34 - Math.sin(walk * 0.9) * (0.12 + pressureIntensity * 0.07);
           current.userData.knife.rotation.z = -0.18 - monsterWindup * 0.75 - stab * 1.05 + monsterRecover * 0.85;
           current.userData.knife.position.z = 0.02 + stab * 0.18;
           current.userData.goblinClub.rotation.z = -monsterWindup * 0.65 - stab * 1.15 + monsterRecover * 0.75 + Math.sin(walk) * 0.12;
         } else if (current.userData.isSpider) {
           const spiderStep = Math.sin(walk * 1.65);
-          current.rotation.x = -0.22 - monsterSwing * 0.18 + Math.abs(spiderStep) * 0.04;
-          current.rotation.z = Math.sin(walk * 0.8) * 0.08;
+          current.rotation.x = -0.22 - pressureIntensity * 0.12 - monsterSwing * 0.18 + Math.abs(spiderStep) * 0.04;
+          current.rotation.z = Math.sin(walk * 0.8) * (0.08 + chaseIntensity * 0.03);
+          current.position.y -= pressureIntensity * 0.035;
           current.userData.spiderLegs.children.forEach((leg: THREE.Object3D, legIndex: number) => {
             const side = legIndex < 4 ? -1 : 1;
             const phase = Math.sin(walk * 1.8 + legIndex * 0.7);
-            leg.rotation.z = side * (1.02 + (legIndex % 4) * 0.12 + phase * 0.32);
-            leg.rotation.x = 0.18 - (legIndex % 4) * 0.06 + Math.cos(walk * 1.5 + legIndex) * 0.16 - monsterSwing * 0.22;
+            leg.rotation.z = side * (1.02 + (legIndex % 4) * 0.12 + phase * (0.32 + chaseIntensity * 0.12));
+            leg.rotation.x = 0.18 - (legIndex % 4) * 0.06 + Math.cos(walk * 1.5 + legIndex) * (0.16 + chaseIntensity * 0.08) - monsterSwing * 0.22;
           });
           current.userData.spiderFace.rotation.x = monsterSwing * 0.26 + Math.sin(walk) * 0.05;
-          current.userData.spiderAbdomen.scale.y = 0.72 + Math.abs(spiderStep) * 0.18 + attack * 0.12;
+          current.userData.spiderAbdomen.scale.y = 0.72 + Math.abs(spiderStep) * 0.18 + attack * 0.12 + breathing;
           current.userData.jaw.rotation.x = attack ? 0.1 + monsterHit * 0.38 : Math.max(0, Math.sin(walk)) * 0.08;
         } else if (current.userData.isStone || current.userData.isGiant) {
           const heavyStep = Math.sin(walk * 0.75);
           current.position.y += Math.max(0, Math.abs(heavyStep) - 0.55) * 0.12;
-          current.rotation.x = -monsterSwing * 0.28 + Math.abs(heavyStep) * 0.025;
-          current.rotation.z = heavyStep * 0.045;
-          current.userData.armL.rotation.x = heavyStep * 0.26 - monsterSwing * 1.25;
+          current.rotation.x = -pressureIntensity * 0.1 - monsterSwing * 0.28 + Math.abs(heavyStep) * 0.025;
+          current.rotation.z = heavyStep * (0.045 + chaseIntensity * 0.02);
+          current.userData.armL.rotation.x = heavyStep * (0.26 + chaseIntensity * 0.08) - monsterSwing * 1.25;
           current.userData.armR.rotation.x = -heavyStep * 0.26 - monsterWindup * 1.1 - monsterHit * 1.95 + monsterRecover * 0.8;
           current.userData.legL.rotation.x = heavyStep * 0.28;
           current.userData.legR.rotation.x = -heavyStep * 0.28;
@@ -2816,6 +2833,16 @@ export function BattleScene3D(props: BattleScene3DProps) {
         if (current.userData.backSpikes instanceof THREE.Group) {
           current.userData.backSpikes.rotation.x = Math.sin(walk * 0.35 + index) * 0.06;
         }
+        const aliveScale = current.scale.x;
+        if (aliveScale > 0.03) {
+          current.scale.set(
+            aliveScale * (1 + pressureIntensity * 0.018),
+            aliveScale * (1 + breathing + pressureIntensity * 0.028 + monsterWindup * attack * 0.018),
+            aliveScale * (1 - pressureIntensity * 0.01)
+          );
+          current.rotation.x -= stalkLean * (distance > attackRange ? 0.65 : 0.25);
+          current.rotation.z += Math.sin(walk * 0.45 + index) * (wantsToKillHero ? 0.028 : 0.012);
+        }
       });
 
       const bossSceneKey = data.sceneKey.toLowerCase();
@@ -2866,7 +2893,17 @@ export function BattleScene3D(props: BattleScene3DProps) {
         activeSpecialBoss.rotation.z = Math.sin(time * 1.35 + bossPhase) * (specialBossKey === 'fury' ? 0.08 : 0.035) + bossAttackPulse * 0.045;
         const attackGlow = Math.max(0, Math.sin(time * (specialBossKey === 'admin' ? 9 : 5.8) + bossPhase));
         const bossBaseScale = typeof activeSpecialBoss.userData.baseScale === 'number' ? activeSpecialBoss.userData.baseScale : activeSpecialBoss.scale.x;
-        activeSpecialBoss.scale.setScalar(bossBaseScale * (1 + attackGlow * (specialBossKey === 'death' || specialBossKey === 'admin' ? 0.055 : 0.035)));
+        activeSpecialBoss.scale.set(
+          bossBaseScale * (1 + attackGlow * (specialBossKey === 'death' || specialBossKey === 'admin' ? 0.055 : 0.035)),
+          bossBaseScale * (1 + Math.sin(time * 1.7 + bossPhase) * 0.025 + bossAttackPulse * 0.05),
+          bossBaseScale * (1 + attackGlow * 0.025)
+        );
+        activeSpecialBoss.children.forEach((part, partIndex) => {
+          if (part instanceof THREE.Mesh || part instanceof THREE.Group) {
+            part.rotation.x += Math.sin(time * (1.8 + partIndex * 0.08) + bossPhase) * delta * 0.08;
+            part.rotation.z += Math.cos(time * (1.4 + partIndex * 0.07) + bossPhase) * delta * 0.06;
+          }
+        });
         const bossTint = typeof activeSpecialBoss.userData.tint === 'string' ? activeSpecialBoss.userData.tint : '#ff2a1f';
         (specialBossAura.material as THREE.MeshBasicMaterial).color.set(bossTint);
         specialBossAura.visible = true;
@@ -2936,23 +2973,46 @@ export function BattleScene3D(props: BattleScene3DProps) {
       }
       dragonData.bodyMat.color.set(data.dragonColor);
       const threat = Math.max(pulse * 1.4, Math.max(0, Math.sin(time * 1.55)) * 0.34);
-      dragon.position.y = Math.sin(time * 2.1) * 0.18 + threat * 0.08;
-      dragon.position.x = 4.75 + shake * 1.45 - threat * 0.25;
-      dragon.rotation.y = Math.sin(time * 1.1) * 0.14 - threat * 0.05;
-      dragon.rotation.x = -threat * 0.035;
-      dragonData.body.scale.y = 1.22 + Math.sin(time * 2.8) * 0.045 + threat * 0.03;
-      dragonData.neck.rotation.z = -0.78 + Math.sin(time * 2.2) * 0.08 - threat * 0.1;
-      dragonData.head.rotation.y = Math.sin(time * 2.1) * 0.1;
-      dragonData.head.rotation.z = Math.sin(time * 1.7) * 0.055 - threat * 0.05;
+      const dragonBreath = Math.sin(time * 1.8);
+      const wingBeat = Math.sin(time * (6.2 + threat * 2.2));
+      const wingSnap = Math.max(0, wingBeat) ** 1.7;
+      const headSnap = Math.max(0, Math.sin(time * 3.2 + pulse * 2.4));
+      const flameFlicker = 0.85 + Math.max(0, Math.sin(time * 17.5)) * 0.28 + Math.sin(time * 31) * 0.08;
+      dragon.position.y = Math.sin(time * 2.1) * 0.18 + threat * 0.08 + wingSnap * 0.045;
+      dragon.position.x = 4.75 + shake * 1.45 - threat * 0.25 - headSnap * threat * 0.08;
+      dragon.rotation.y = Math.sin(time * 1.1) * 0.14 - threat * 0.05 + headSnap * 0.025;
+      dragon.rotation.x = -threat * 0.035 + dragonBreath * 0.012;
+      dragonData.body.scale.set(
+        1.95 + threat * 0.035,
+        1.22 + dragonBreath * 0.055 + threat * 0.045,
+        0.92 + Math.abs(dragonBreath) * 0.025 + threat * 0.035
+      );
+      dragonData.neck.rotation.z = -0.78 + Math.sin(time * 2.2) * 0.08 - threat * 0.14 - headSnap * 0.06;
+      dragonData.neck.rotation.y = Math.sin(time * 1.35) * 0.07 + threat * 0.035;
+      dragonData.head.rotation.x = -0.04 - threat * 0.08 + headSnap * 0.05;
+      dragonData.head.rotation.y = Math.sin(time * 2.1) * 0.1 + headSnap * 0.08;
+      dragonData.head.rotation.z = Math.sin(time * 1.7) * 0.055 - threat * 0.075;
       dragonData.spines.rotation.z = Math.sin(time * 2.6) * 0.035 - threat * 0.05;
-      dragonData.wingL.rotation.z = -0.92 + Math.sin(time * 6.8) * 0.52 - threat * 0.2;
-      dragonData.wingR.rotation.z = 0.92 - Math.sin(time * 6.8) * 0.52 + threat * 0.2;
-      dragonData.wingL.rotation.x = Math.sin(time * 4.8) * 0.1 + threat * 0.12;
-      dragonData.wingR.rotation.x = -Math.sin(time * 4.8) * 0.1 - threat * 0.12;
-      dragonData.jaw.rotation.z = -0.18 - burn * 0.18 - threat * 0.2 - Math.max(0, Math.sin(time * 7.5)) * 0.13;
-      dragonData.tail.rotation.y = Math.sin(time * 1.8) * 0.34 + threat * 0.12;
-      dragonData.tail.rotation.z = Math.sin(time * 1.35) * 0.11;
-      dragonData.fire.scale.set(1.15 + threat * 0.6, 1.05 + burn * 0.8 + threat * 0.7 + Math.sin(time * 16) * 0.16, 1.15 + threat * 0.6);
+      dragonData.spines.rotation.x = Math.sin(time * 1.9) * 0.025 - threat * 0.035;
+      dragonData.wingL.rotation.z = -0.92 + wingBeat * 0.48 + wingSnap * 0.28 - threat * 0.28;
+      dragonData.wingR.rotation.z = 0.92 - wingBeat * 0.48 - wingSnap * 0.28 + threat * 0.28;
+      dragonData.wingL.rotation.x = Math.sin(time * 4.8) * 0.1 + threat * 0.18 - wingSnap * 0.12;
+      dragonData.wingR.rotation.x = -Math.sin(time * 4.8) * 0.1 - threat * 0.18 + wingSnap * 0.12;
+      dragonData.wingL.rotation.y = 0.08 + Math.sin(time * 3.1) * 0.05 + threat * 0.04;
+      dragonData.wingR.rotation.y = -0.08 - Math.sin(time * 3.1) * 0.05 - threat * 0.04;
+      dragonData.jaw.rotation.z = -0.18 - burn * 0.18 - threat * 0.28 - Math.max(0, Math.sin(time * 7.5)) * 0.16;
+      dragonData.tail.rotation.y = Math.sin(time * 1.8) * 0.34 + threat * 0.16;
+      dragonData.tail.rotation.z = Math.sin(time * 1.35) * 0.11 + headSnap * threat * 0.06;
+      dragonData.tail.children.forEach((segment, segmentIndex) => {
+        segment.rotation.y = Math.sin(time * 1.65 + segmentIndex * 0.62) * (0.08 + threat * 0.045);
+        segment.rotation.z = 1.12 - segmentIndex * 0.12 + Math.cos(time * 1.35 + segmentIndex * 0.5) * 0.045;
+      });
+      dragonData.fire.scale.set(
+        (1.15 + threat * 0.72) * flameFlicker,
+        1.05 + burn * 0.9 + threat * 0.9 + Math.sin(time * 16) * 0.18,
+        (1.15 + threat * 0.72) * (0.95 + Math.sin(time * 21) * 0.08)
+      );
+      (dragonData.fire.material as THREE.MeshBasicMaterial).opacity = dragon.visible ? Math.min(0.96, 0.48 + threat * 0.42 + burn * 0.18) : 0;
       if (dragonData.aura) {
         dragonData.aura.scale.setScalar(1 + threat * 0.42 + Math.sin(time * 3) * 0.08);
         (dragonData.aura.material as THREE.MeshBasicMaterial).opacity = dragon.visible ? 0.2 + threat * 0.28 : 0;
@@ -2965,15 +3025,23 @@ export function BattleScene3D(props: BattleScene3DProps) {
       if (dragonData.loadedFire) {
         const breathPower = dragon.visible ? Math.max(pulse * 2.8, threat) : 0;
         dragonData.loadedFire.visible = breathPower > 0.04;
-        (dragonData.loadedFire.material as THREE.MeshBasicMaterial).opacity = Math.min(0.95, 0.18 + breathPower);
-        dragonData.loadedFire.scale.set(1.2 + breathPower * 1.15, 1 + burn * 0.55 + breathPower * 0.55 + Math.sin(time * 18) * 0.12, 1.2 + breathPower * 1.15);
-        dragonData.loadedFire.position.set(-2.75 - breathPower * 1.0, 3.45 + Math.sin(time * 8) * 0.08, 0);
+        (dragonData.loadedFire.material as THREE.MeshBasicMaterial).opacity = Math.min(0.95, 0.18 + breathPower * 0.95);
+        dragonData.loadedFire.scale.set(
+          (1.2 + breathPower * 1.35) * flameFlicker,
+          1 + burn * 0.68 + breathPower * 0.72 + Math.sin(time * 18) * 0.14,
+          (1.2 + breathPower * 1.35) * (0.95 + Math.sin(time * 23) * 0.08)
+        );
+        dragonData.loadedFire.position.set(-2.75 - breathPower * 1.18 - headSnap * 0.12, 3.45 + Math.sin(time * 8) * 0.08 - threat * 0.08, Math.sin(time * 11) * 0.035);
       }
 
       motes.children.forEach((mote) => {
-        mote.position.y += 0.012 + Math.sin(time + mote.userData.seed) * 0.003;
-        mote.position.x += Math.sin(time * 0.8 + mote.userData.seed) * 0.006;
-        mote.position.z += Math.cos(time * 0.6 + mote.userData.seed) * 0.004;
+        const seed = typeof mote.userData.seed === 'number' ? mote.userData.seed : 0;
+        mote.position.y += 0.012 + Math.sin(time + seed) * 0.003;
+        mote.position.x += Math.sin(time * 0.8 + seed) * 0.006 + Math.sin(time * 2.1 + seed) * 0.002;
+        mote.position.z += Math.cos(time * 0.6 + seed) * 0.004 + Math.cos(time * 1.7 + seed) * 0.002;
+        mote.rotation.x += delta * (0.7 + (seed % 3) * 0.1);
+        mote.rotation.y += delta * (1.1 + (seed % 5) * 0.08);
+        mote.scale.setScalar(1 + Math.sin(time * 2.4 + seed) * 0.18);
         if (mote.position.y > 13.6) mote.position.y = 0.5;
       });
 
