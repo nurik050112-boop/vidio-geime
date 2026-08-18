@@ -130,6 +130,21 @@ type DuelTradeOffer =
   | { kind: 'armor'; item: Armor }
   | null;
 
+const arcaneSpells = [
+  { name: 'Огонь', icon: 'F', power: 8 },
+  { name: 'Лед', icon: 'I', power: 7 },
+  { name: 'Молния', icon: 'L', power: 10 },
+  { name: 'Вода', icon: 'W', power: 7 },
+  { name: 'Свет', icon: 'S', power: 9 },
+  { name: 'Тьма', icon: 'D', power: 11 },
+  { name: 'Луч', icon: 'B', power: 12 },
+  { name: 'Яд', icon: 'P', power: 8 },
+  { name: 'Звезда', icon: '*', power: 13 },
+  { name: 'Портал', icon: 'O', power: 9 },
+  { name: 'Метеор', icon: 'M', power: 15 },
+  { name: 'Кристалл', icon: 'C', power: 10 },
+] as const;
+
 const firstDragonCities: CityStage[] = [
   { name: 'Игнис', city: 'Клинковая Нора', country: 'Подземное королевство', lair: 'Площадь ржавых ножей под первым городом', monsterKind: 'goblin', monsterName: 'ножевые гоблины', title: 'сын искры', power: 1_000, color: '#ffb703', attackSpeed: 0.85, reaction: 'бьет очень быстро' },
   { name: 'Рубор', city: 'Орочий Вал', country: 'Земли тяжелых племен', lair: 'Крепость наплечников и костяных трофеев', monsterKind: 'orc', monsterName: 'броневые орки', title: 'сын пепла', power: 1_000_000, color: '#fb5607', attackSpeed: 1.3, reaction: 'бьет тяжелее и медленнее' },
@@ -357,7 +372,7 @@ const adminBoss: CityStage = {
   monsterKind: 'admin',
   monsterName: 'админские монстры',
   title: 'создатель невозможного режима',
-  power: Number.MAX_SAFE_INTEGER,
+  power: 500_000_000_000,
   color: '#ff2a1f',
   attackSpeed: 0.22,
   reaction: 'админ бьет так, будто нажал все кнопки сразу',
@@ -365,19 +380,19 @@ const adminBoss: CityStage = {
 
 const heroMaxHp = 200;
 const monstersPerCity = 1_000;
-const dungeonEnemiesTotal = 10_000;
-const furyDungeonEnemiesTotal = 100_000;
-const anuarBombEnemiesTotal = 100_000;
-const mansurDungeonEnemiesTotal = 100_000;
-const arailmEnemiesTotal = 100_000;
-const aisultanMonsterTotal = 1_000_000_000;
+const dungeonEnemiesTotal = 500;
+const furyDungeonEnemiesTotal = 700;
+const anuarBombEnemiesTotal = 700;
+const mansurDungeonEnemiesTotal = 700;
+const arailmEnemiesTotal = 700;
+const aisultanMonsterTotal = 1_000;
 const aisultanMonsterHp = 1_000;
 const aisultanSharkHp = aisultanMonsterHp * 10;
 const aisultanSeaGodHp = aisultanSharkHp * 10;
-const adminWorldMonsterTotal = 1_000_000_000;
+const adminWorldMonsterTotal = 1_000;
 const adminWorldMonsterHp = 1_000;
-const adminWorldBossesHp = Number.MAX_SAFE_INTEGER;
-const adminFinalBossHp = Number.MAX_SAFE_INTEGER;
+const adminWorldBossesHp = 250_000_000_000;
+const adminFinalBossHp = 500_000_000_000;
 const baseMonsterHp = 1_000;
 const baseDragonHp = 100_000_000;
 const adminNukeHiddenDamageText = '9'.repeat(999);
@@ -386,32 +401,31 @@ const adminHelmetHealthText = '∞';
 const furySwordDamageText = '1' + '0'.repeat(116);
 const mansurBladeDamageText = '99999999999999999999999999999999999999999999999999999999';
 const programSwordDamageText = '1000000000000000000000000';
-const arailmBossPowerText = '9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999';
 const bbiMonsterTotal = 100;
 const bbiMonsterHp = 1_000;
-const bbiManagerHp = 10_000_000_000_000_000;
+const bbiManagerHp = 5_000_000;
 const bbiDirectorHp = bbiManagerHp * 3;
-const bbiFinalBossHp = bbiDirectorHp * 5;
+const bbiFinalBossHp = bbiDirectorHp * 3;
 const nuraliMonsterTotal = 100;
 const nuraliMonsterHp = 1_000;
-const nuraliBossHp = 1e27;
-const monsterAvalancheTotal = 10_000_000_000;
+const nuraliBossHp = 25_000_000;
+const monsterAvalancheTotal = 1_000;
 const monsterAvalancheHp = 1_000;
 const monsterAvalancheDamage = 100_000;
 const monsterAvalancheStartChapter = 7;
-const finalSpiritMonsterTotal = 1_000_000;
+const finalSpiritMonsterTotal = 1_000;
 const finalSpiritMonsterHp = 1_000;
 const deathSwordDamageText = '999999999999999999999999999999999999999999999';
-const citySizeMeters = 200;
+const citySizeMeters = 5_000;
 const cityHalfSize = (citySizeMeters / 2) * 1_000;
-const heroMoveSpeedPerSecond = (16 / 3.6) * 1_000;
+const heroMoveSpeedPerSecond = (10 / 3.6) * 1_000;
 const meleeRangeMeters = 5;
 const meleeRangeUnits = meleeRangeMeters * 1_000;
-const monsterRunSpeedPerSecond = (10 / 3.6) * 1_000;
-const monsterSpawnDistanceUnits = 18_000;
+const monsterRunSpeedPerSecond = (5 / 3.6) * 1_000;
+const monsterSpawnDistanceUnits = 28_000;
 const monsterBotAttackDamage = 10;
 const monsterBotAttackCooldownMs = 900;
-const monsterChaseCatchTimeMs = 4_500;
+const monsterChaseCatchTimeMs = 15_000;
 
 type NearestMonsterState = {
   x: number;
@@ -501,6 +515,7 @@ type GameSaveState = {
   armors: Armor[];
   equippedArmor: Armor | null;
   equippedArtifactId: ArtifactId | null;
+  heroMana: number;
   heroPosition: { x: number; z: number };
   heroDirection: { x: number; z: number };
   mapLocationIndex: number;
@@ -513,6 +528,7 @@ type GameSaveState = {
 };
 
 const gameSaveStorageKey = 'dragon-game-save-v1';
+const heroMaxMana = 100;
 
 function readGameSave() {
   if (typeof window === 'undefined') return null;
@@ -883,11 +899,11 @@ const endingArtifacts: Artifact[] = [
 
 const shopItems: ShopItem[] = [
   { id: 'sword', name: 'Меч рассвета', price: 120, bonus: '+100 урона' },
-  { id: 'pet', name: 'Огненный питомец', price: 180, bonus: '+10 урона каждый удар' },
+  { id: 'pet', name: 'Огненный питомец', price: 180, bonus: '+20 урона максимум' },
   { id: 'clothes', name: 'Одежда странника', price: 90, bonus: '-3 урона от огня' },
   { id: 'helmet', name: 'Шлем героя', price: 140, bonus: '-5 урона от огня' },
   { id: 'armor', name: 'Драконья броня', price: 240, bonus: '-9 урона от огня' },
-  { id: 'mana', name: 'Фляга маны', price: 80, bonus: '+1 мощный удар' },
+  { id: 'mana', name: 'Кристалл маны', price: 120, bonus: '+25 максимум маны' },
   { id: 'health', name: 'Сердце рыцаря', price: 160, bonus: '+35 максимум здоровья' },
   { id: 'doubleStrike', name: 'Совместная смерть', price: 500, bonus: 'бьет 2 противников за раз' },
 ];
@@ -898,7 +914,7 @@ const shopBasePower: Record<ShopItem['id'], number> = {
   clothes: 3,
   helmet: 5,
   armor: 9,
-  mana: 35,
+  mana: 25,
   health: 35,
   doubleStrike: 1,
 };
@@ -918,8 +934,8 @@ function getShopPrice(item: ShopItem, level: number) {
 function getShopBonusText(item: ShopItem, level: number) {
   const bonus = nextUpgradePower(level, shopBasePower[item.id]);
   if (item.id === 'sword') return `+${bonus} урона`;
-  if (item.id === 'pet') return `+${bonus} к урону`;
-  if (item.id === 'mana') return `+${bonus} урона мощным ударом`;
+  if (item.id === 'pet') return `+${Math.min(20, bonus)} к урону, максимум 20`;
+  if (item.id === 'mana') return `+${bonus} максимум маны`;
   if (item.id === 'health') return `+${bonus} максимум здоровья`;
   if (item.id === 'doubleStrike') return `бьет ${2 + level} противников за раз`;
   return `-${bonus} урона от врагов`;
@@ -1043,6 +1059,7 @@ function formatHugeText(value: string) {
 
 function getWeaponStyleIndex(weapon: Weapon | null) {
   if (!weapon) return 0;
+  if (isArcaneWeapon(weapon)) return 4;
   if (weapon.id.startsWith('admin-nuke-')) return 18;
   if (isBbiLegendaryWeapon(weapon)) return 19;
   const text = `${weapon.id}-${weapon.name}-${weapon.rarity}`;
@@ -1108,6 +1125,10 @@ function isAisultanSword(weapon: Weapon | null) {
 
 function isDeathSword(weapon: Weapon | null) {
   return weapon?.id.startsWith('death-sword-') ?? false;
+}
+
+function isArcaneWeapon(weapon: Weapon | null) {
+  return weapon?.id.startsWith('arcane-scepter-') ?? false;
 }
 
 function getArmorStyleIndex(armor: Armor | null) {
@@ -1307,6 +1328,18 @@ function createAisultanSword(bestDamage: number): Weapon {
   };
 }
 
+function createArcaneScepter(level = 1): Weapon {
+  const damage = Math.min(Number.MAX_SAFE_INTEGER, (250_000 + level * 150_000) * worldWeaponMultiplier(Math.max(1, level)));
+  return {
+    id: `arcane-scepter-${Date.now()}-${Math.random()}`,
+    name: 'Сасопковый посох магии',
+    rarity: 'Секретное',
+    damage,
+    displayDamage: `${formatPower(damage)} + магия`,
+    price: 0,
+  };
+}
+
 function createAdminHelmet(): Armor {
   return {
     id: `admin-helmet-${Date.now()}-${Math.random()}`,
@@ -1328,7 +1361,7 @@ export function HomePage() {
   const isWorldPage = location === '/world';
   const isAchievementsPage = location === '/achievements';
   const savedGameRef = useRef(readGameSave());
-  const [tutorialOpen, setTutorialOpen] = useState(true);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
   const [chapter, setChapter] = useState(savedGameRef.current?.chapter ?? 0);
   const [healthLevel, setHealthLevel] = useState(savedGameRef.current?.healthLevel ?? 0);
   const [heroHp, setHeroHp] = useState(savedGameRef.current?.heroHp ?? heroMaxHp);
@@ -1402,6 +1435,7 @@ export function HomePage() {
   const [equippedArmor, setEquippedArmor] = useState<Armor | null>(savedGameRef.current?.equippedArmor ?? null);
   const [shopTab, setShopTab] = useState<'upgrades' | 'artifacts' | 'code' | 'duel' | 'players' | 'id'>('upgrades');
   const [equippedArtifactId, setEquippedArtifactId] = useState<ArtifactId | null>(savedGameRef.current?.equippedArtifactId ?? null);
+  const [heroMana, setHeroMana] = useState(savedGameRef.current?.heroMana ?? heroMaxMana);
   const [showFullInventory, setShowFullInventory] = useState(false);
   const [heroAnimation, setHeroAnimation] = useState<HeroAnimation>('idle');
   const [heroPosition, setHeroPosition] = useState(savedGameRef.current?.heroPosition ?? { x: -18_000, z: 0 });
@@ -1447,6 +1481,11 @@ export function HomePage() {
   const [fireWavePulse, setFireWavePulse] = useState(0);
   const [waterWavePulse, setWaterWavePulse] = useState(0);
   const [soulFirePulse, setSoulFirePulse] = useState(0);
+  const [arcanePulse, setArcanePulse] = useState(0);
+  const [arcaneBurstPulse, setArcaneBurstPulse] = useState(0);
+  const [selectedArcaneSpell, setSelectedArcaneSpell] = useState(0);
+  const [arcaneSkillReadyAt, setArcaneSkillReadyAt] = useState(0);
+  const [arcaneCooldownNow, setArcaneCooldownNow] = useState(Date.now());
   const [clickDuelPower, setClickDuelPower] = useState(50);
   const [clicksPerSecond, setClicksPerSecond] = useState(0);
   const [enemyBurning, setEnemyBurning] = useState(false);
@@ -1492,8 +1531,6 @@ export function HomePage() {
   const [achievementCode, setAchievementCode] = useState('');
   const [achievementCheatActive, setAchievementCheatActive] = useState(false);
   const [achievementMessage, setAchievementMessage] = useState('');
-  const [gameLoadingProgress, setGameLoadingProgress] = useState(0);
-  const [gameLoadingDone, setGameLoadingDone] = useState(false);
   const [introSkipped, setIntroSkipped] = useState(savedGameRef.current?.introSkipped ?? false);
   const [creatorCreditsOpen, setCreatorCreditsOpen] = useState(false);
   const paidQuestIds = useRef<Set<number>>(new Set(savedGameRef.current?.paidQuestIds ?? []));
@@ -1561,6 +1598,7 @@ export function HomePage() {
   const equippedArtifact = unlockedArtifacts.find((artifact) => artifact.id === equippedArtifactId) ?? null;
   const artifactHealthMultiplier = equippedArtifact?.healthBonusPercent ? 1 + equippedArtifact.healthBonusPercent / 100 : 1;
   const currentHeroMaxHp = hasAdminHelmet ? Number.MAX_SAFE_INTEGER : Math.floor((heroMaxHp + upgradePower(healthLevel, shopBasePower.health)) * artifactHealthMultiplier);
+  const currentHeroMaxMana = heroMaxMana + upgradePower(shopLevels.mana, shopBasePower.mana);
   const heroHealthText = hasAdminHelmet ? `${adminHelmetHealthText} / ${adminHelmetHealthText}` : `${heroHp} / ${currentHeroMaxHp}`;
   const heroHealthPercent = Math.max(0, Math.min(100, (heroHp / currentHeroMaxHp) * 100));
 
@@ -1628,25 +1666,25 @@ export function HomePage() {
   const nearestMonsterDistanceUnits = nearestMonster.alive ? Math.hypot(heroPosition.x - nearestMonster.x, heroPosition.z - nearestMonster.z) : Number.POSITIVE_INFINITY;
   const nearestMonsterDistanceMeters = nearestMonsterDistanceUnits / 1_000;
   const nearestMonsterInRange = currentMonsters > 0 && nearestMonster.alive && nearestMonsterDistanceUnits <= meleeRangeUnits;
-  const nearestMonsterHealthPercent = nearestMonster.alive ? Math.max(0, Math.min(100, (nearestMonster.hp / currentMonsterHp) * 100)) : 0;
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const finalSpiritDragonHp = Math.max(1, Math.floor((kingDragonHp * 2) / 100));
-  const deathGodHp = kingDragonHp * 10;
-  const currentDragonHp = isDeathGodBoss ? deathGodHp : isFinalSpiritBoss ? finalSpiritDragonHp : isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
+  const deathGodHp = kingDragonHp * 2;
+  const currentDragonHp = isDeathGodBoss ? deathGodHp : isFinalSpiritBoss ? finalSpiritDragonHp : isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? scaledDragonPower(baseDragonHp, 15) : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? scaledDragonPower(baseDragonHp, 10) : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 2 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
   const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 100);
   const deathSwordMultiplier = equippedArtifactId === 'godHead' && equippedWeapon?.id.startsWith('death-sword-') ? 7.66 : 1;
   const weaponBonus = Math.floor((isBbiLegendaryWeapon(equippedWeapon) ? bbiLegendaryDamage : equippedWeapon?.damage ?? 0) * deathSwordMultiplier);
-  const attackBonus = upgradePower(items.sword, shopBasePower.sword) + upgradePower(items.pet, shopBasePower.pet) + Math.floor(weaponBonus * waterSwordArtifactMultiplier);
+  const petBonus = Math.min(20, upgradePower(items.pet, shopBasePower.pet));
+  const attackBonus = upgradePower(items.sword, shopBasePower.sword) + petBonus + Math.floor(weaponBonus * waterSwordArtifactMultiplier);
   const isClickDuelActive = !isFinalReveal && currentMonsters === 0 && enemyHp > 0 && heroHp > 0;
   const clickDuelHeroPower = Math.max(1, Math.floor((18 + chapter * 5 + attackBonus) * artifactDamageMultiplier * artifactAttackSpeedMultiplier));
-  const clickDuelDragonPower = Math.max(1, Math.floor((enemy?.power ?? currentDragonHp) * (enemy?.attackSpeed ?? 1)));
+  const clickDuelDragonPower = Math.max(1, Math.floor(currentDragonHp * (enemy?.attackSpeed ?? 1)));
   const playerName = nickname.trim() || 'BBI герой';
   const dragonReaction = enemy?.reaction ?? 'обычная реакция';
   const currentMonsterTotal = isFinalSpiritWorld ? finalSpiritMonsterTotal : isMonsterAvalancheWorld ? monsterAvalancheTotal : isAdminWorld ? adminWorldMonsterTotal : isAisWorld ? aisultanMonsterTotal : isNuraliWorld ? nuraliMonsterTotal : isBbiWorld ? bbiMonsterTotal : isArailmWorld ? arailmEnemiesTotal : isMansurDungeon ? mansurDungeonEnemiesTotal : isAnuarWorld ? anuarBombEnemiesTotal : isFuryDungeon ? furyDungeonEnemiesTotal : isDungeon ? dungeonEnemiesTotal : monstersPerCity;
   const currentEnemyHealthText = currentMonsters > 0
     ? `Враг HP ${formatPower(currentMonsterHp)}`
     : isArailmKingBoss
-      ? `Босс HP ${formatHugeText(arailmBossPowerText)}`
+      ? `Босс HP ${formatPower(currentDragonHp)}`
     : `Дракон HP ${formatPower(enemyHp)}/${formatPower(currentDragonHp)}`;
   const introVoiceText = 'Драконы стали злыми. Они начали уничтожать города. Герой берет меч и идет спасать мир.';
   const endingVoiceText = impossibleEnding
@@ -1696,9 +1734,9 @@ export function HomePage() {
                 ? 'admin-city'
                 : isAisWorld || isAisSharkBoss || isAisGodBoss || aisFinalChoiceOpen
                   ? 'sea-city'
-                  : isDungeon
-                    ? `dungeon-${chapter}-${mapLocationIndex}`
-                    : `city-${chapter}-${mapLocationIndex}`;
+                : isDungeon
+                    ? `dungeon-${chapter}`
+                    : `city-${chapter}`;
   const collisionContextRef = useRef({ chapter, mapLocationIndex });
 
   useEffect(() => {
@@ -1706,18 +1744,8 @@ export function HomePage() {
   }, [chapter, mapLocationIndex]);
 
   useEffect(() => {
-    if (forcedCenterLocation) {
-      setMapLocationIndex(1);
-      return;
-    }
-
-    setMapLocationIndex((currentIndex) => {
-      if (currentIndex !== 0 && heroPosition.x < -22_000) return 0;
-      if (currentIndex !== 2 && heroPosition.x > 22_000) return 2;
-      if (currentIndex !== 1 && heroPosition.x > -11_000 && heroPosition.x < 11_000) return 1;
-      return currentIndex;
-    });
-  }, [forcedCenterLocation, heroPosition.x]);
+    if (forcedCenterLocation) setMapLocationIndex(1);
+  }, [forcedCenterLocation]);
   const battleScene = isDeathGodBoss
     ? 'scene-death-god'
     : isFinalSpiritBoss || finalSpiritWorldOpen
@@ -1852,6 +1880,13 @@ export function HomePage() {
   const visibleWeapons = showFullInventory ? weapons : weapons.slice(-inventoryPreviewLimit);
   const visibleArmors = showFullInventory ? armors : armors.slice(-inventoryPreviewLimit);
   const currentPlayerPower = Math.max(1_000, attackBonus + defenseBonus + currentHeroMaxHp);
+  const hasArcaneWeapon = isArcaneWeapon(equippedWeapon);
+  const arcaneSkillCooldownMs = 8_000;
+  const arcaneSkillManaCost = 20;
+  const arcaneSkillRemainingMs = Math.max(0, arcaneSkillReadyAt - arcaneCooldownNow);
+  const arcaneSkillReady = hasArcaneWeapon && arcaneSkillRemainingMs === 0 && heroMana >= arcaneSkillManaCost;
+  const selectedSpell = arcaneSpells[selectedArcaneSpell % arcaneSpells.length];
+  const arcaneSkillDamage = Math.max(1, Math.floor((attackBonus + (equippedWeapon?.damage ?? 0) + 2_500) * artifactDamageMultiplier * selectedSpell.power));
   const allAchievementsUnlocked = achievements.every((achievement) => unlockedAchievements.includes(achievement.id));
 
   function speakText(text: string, sceneKey: string) {
@@ -2013,7 +2048,7 @@ export function HomePage() {
       setShopLevels((levels) => ({ ...levels, sword: levels.sword + 3, health: levels.health + 2 }));
       setItems((items) => ({ ...items, sword: items.sword + 3, health: items.health + 2 }));
       setHealthLevel((level) => level + 2);
-      setHeroHp((hp) => hp + 500);
+      setHeroHp((hp) => Math.min(currentHeroMaxHp, hp + 500));
       return 'День 1: получено 25к монет, +3 урона меча и +2 здоровья.';
     }
 
@@ -2190,7 +2225,7 @@ export function HomePage() {
       setChapter(4);
       markSavedThrough(4);
       setFuryKingFightStarted(true);
-      setEnemyHp(Number.MAX_SAFE_INTEGER);
+      setEnemyHp(scaledDragonPower(baseDragonHp, 10));
       setMessage('Телепорт: Король фури вышел на бой.');
       navigate('/');
       return;
@@ -2220,8 +2255,8 @@ export function HomePage() {
       setChapter(8);
       markSavedThrough(8);
       setArailmKingFightStarted(true);
-      setEnemyHp(Number.MAX_SAFE_INTEGER);
-      setMessage(`Телепорт: босс Арайлым вышла на бой. HP и урон: ${formatHugeText(arailmBossPowerText)}.`);
+      setEnemyHp(scaledDragonPower(baseDragonHp, 15));
+      setMessage(`Телепорт: босс Арайлым вышла на бой. HP: ${formatPower(scaledDragonPower(baseDragonHp, 15))}.`);
       navigate('/');
       return;
     }
@@ -2290,7 +2325,7 @@ export function HomePage() {
   function applyGameSave(save: Partial<GameSaveState>) {
     setChapter(save.chapter ?? 0);
     setHealthLevel(save.healthLevel ?? 0);
-    setHeroHp(save.heroHp ?? heroMaxHp);
+    setHeroHp(Math.min(save.heroHp ?? heroMaxHp, currentHeroMaxHp));
     setEnemyHp(save.enemyHp ?? baseDragonHp);
     setMessage(save.message ?? 'Сейв загружен из Supabase.');
     setSavedCities(save.savedCities ?? []);
@@ -2359,6 +2394,7 @@ export function HomePage() {
     setArmors(save.armors ?? []);
     setEquippedArmor(save.equippedArmor ?? null);
     setEquippedArtifactId(save.equippedArtifactId ?? null);
+    setHeroMana(save.heroMana ?? heroMaxMana);
     setHeroPosition(save.heroPosition ?? { x: -18_000, z: 0 });
     setHeroDirection(save.heroDirection ?? { x: 0, z: -1 });
     setMapLocationIndex(save.mapLocationIndex ?? 0);
@@ -2490,6 +2526,7 @@ export function HomePage() {
       armors,
       equippedArmor,
       equippedArtifactId,
+      heroMana,
       heroPosition,
       heroDirection,
       mapLocationIndex,
@@ -2529,7 +2566,7 @@ export function HomePage() {
     bbiBadEnding, impossibleEnding, nuraliGateOpen, nuraliWorldEntered, nuraliMonstersLeft, nuraliChoiceOpen, nuraliBossFightStarted,
     monsterAvalancheEntered, monsterAvalancheLeft, monsterAvalancheEnding, finalSpiritWorldOpen, finalSpiritMonstersLeft, finalSpiritFightStarted,
     deathGodFightStarted, gold, goldMultiplier, infiniteGold, dungeon, relics, weapons, equippedWeapon, armors, equippedArmor, equippedArtifactId,
-    heroPosition, heroDirection, mapLocationIndex, cityMonsters, duelWins, items, shopLevels, introSkipped, authUser,
+    heroMana, heroPosition, heroDirection, mapLocationIndex, cityMonsters, duelWins, items, shopLevels, introSkipped, authUser,
   ]);
 
   useEffect(() => {
@@ -2566,7 +2603,7 @@ export function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return;
+    if (!isSupabaseConfigured || guestMode || !authOpen) return;
 
     supabase.auth.getUser().then(({ data }) => {
       setAuthUser(data.user);
@@ -2584,7 +2621,7 @@ export function HomePage() {
     return () => {
       data.subscription.unsubscribe();
     };
-  }, []);
+  }, [authOpen, guestMode]);
 
   useEffect(() => {
     const completedUnpaid = quests.filter((quest) => quest.done && !paidQuestIds.current.has(quest.id));
@@ -2679,7 +2716,11 @@ export function HomePage() {
     setShopLevels({ ...shopLevels, [item.id]: level + 1 });
     if (item.id === 'health') {
       setHealthLevel((level) => level + 1);
-      setHeroHp((hp) => hp + nextUpgradePower(level, shopBasePower.health));
+      setHeroHp((hp) => Math.min(currentHeroMaxHp + nextUpgradePower(level, shopBasePower.health), hp + nextUpgradePower(level, shopBasePower.health)));
+    }
+    if (item.id === 'mana') {
+      const manaBonus = nextUpgradePower(level, shopBasePower.mana);
+      setHeroMana((mana) => Math.min(currentHeroMaxMana + manaBonus, mana + manaBonus));
     }
     setMessage(`${item.name} куплен. ${bonusText}, следующий раз будет дороже и сильнее.`);
   }
@@ -2769,14 +2810,6 @@ export function HomePage() {
     joystickVector.current = { x: 0, z: 0 };
     setJoystickThumb({ x: 0, y: 0 });
     setHeroMoving(false);
-  }
-
-  function startTouchMove(key: string) {
-    pressedKeys.current.add(key);
-  }
-
-  function stopTouchMove(key: string) {
-    pressedKeys.current.delete(key);
   }
 
   useEffect(() => {
@@ -2884,7 +2917,7 @@ export function HomePage() {
         setArailmMonstersLeft(0);
         setArailmWorldEntered(false);
         setArailmChoiceOpen(true);
-        setMessage('100к код-монстров уничтожены. Теперь выбери: не сражаться или сражаться.');
+        setMessage(`${formatPower(arailmEnemiesTotal)} код-монстров уничтожены. Теперь выбери: не сражаться или сражаться.`);
         return;
       }
       if (isAisWorld) {
@@ -3045,7 +3078,7 @@ export function HomePage() {
       if (isArailmWorld) {
         setArailmWorldEntered(false);
         setArailmChoiceOpen(true);
-        setMessage('100к код-монстров побеждены. На экране выбор: не сражаться или сражаться.');
+        setMessage(`${formatPower(arailmEnemiesTotal)} код-монстров побеждены. На экране выбор: не сражаться или сражаться.`);
         return;
       }
       if (isAisWorld) {
@@ -3312,7 +3345,7 @@ export function HomePage() {
       setDeathGodFightStarted(true);
       setEnemyHp(deathGodHp);
       setHeroHp(currentHeroMaxHp);
-      setMessage(`Души финального босса умерли. Из ада вышел Король ада: ${formatPower(deathGodHp)} HP, в 10 раз сильнее финального босса.`);
+      setMessage(`Души финального босса умерли. Из ада вышел Король ада: ${formatPower(deathGodHp)} HP.`);
       navigate('/');
       return;
     }
@@ -3455,8 +3488,9 @@ export function HomePage() {
         const dx = heroPosition.x - monster.x;
         const dz = heroPosition.z - monster.z;
         const distance = Math.hypot(dx, dz);
-        const stopDistance = meleeRangeUnits * 0.85;
-        if (distance <= stopDistance) return monster;
+        const aggroDistance = 12_000;
+        const stopDistance = meleeRangeUnits * 1.05;
+        if (distance > aggroDistance || distance <= stopDistance) return monster;
         const step = Math.min(distance - stopDistance, monsterRunSpeedPerSecond * 0.04);
         const length = Math.max(1, distance);
         return {
@@ -3545,6 +3579,42 @@ export function HomePage() {
     return () => window.clearInterval(duelTimer);
   }, [isClickDuelActive, enemy?.attackSpeed]);
 
+  useEffect(() => {
+    if (!hasArcaneWeapon || arcaneSkillRemainingMs === 0) return;
+    const cooldownTimer = window.setInterval(() => {
+      setArcaneCooldownNow(Date.now());
+    }, 250);
+
+    return () => window.clearInterval(cooldownTimer);
+  }, [hasArcaneWeapon, arcaneSkillRemainingMs]);
+
+  useEffect(() => {
+    const manaTimer = window.setInterval(() => {
+      setHeroMana((mana) => Math.min(currentHeroMaxMana, mana + 2));
+    }, 1000);
+
+    return () => window.clearInterval(manaTimer);
+  }, [currentHeroMaxMana]);
+
+  function castArcaneSkill() {
+    if (!hasArcaneWeapon || isFinalReveal || !enemy || currentMonsters > 0 || enemyHp <= 0 || !arcaneSkillReady) return;
+    playHeroAnimation('strike', 560);
+    setBattlePulse((pulse) => pulse + 1);
+    setArcanePulse((pulse) => pulse + 1);
+    setArcaneBurstPulse((pulse) => pulse + 1);
+    setHeroMana((mana) => Math.max(0, mana - arcaneSkillManaCost));
+    setArcaneSkillReadyAt(Date.now() + arcaneSkillCooldownMs);
+    setArcaneCooldownNow(Date.now());
+    const nextEnemyHp = Math.max(0, enemyHp - arcaneSkillDamage);
+    setEnemyHp(nextEnemyHp);
+    if (nextEnemyHp === 0) {
+      setMessage(`${selectedSpell.name}: -${formatPower(arcaneSkillDamage)} HP. Враг уничтожен.`);
+      clearCity();
+      return;
+    }
+    setMessage(`${selectedSpell.name}: заклинание ударило на -${formatPower(arcaneSkillDamage)} HP. Перезарядка 8 сек.`);
+  }
+
   function strike() {
     if (isFinalReveal || !enemy) return;
     if (currentMonsters > 0) {
@@ -3566,6 +3636,9 @@ export function HomePage() {
     }
     if (isAisultanSword(equippedWeapon)) {
       setWaterWavePulse((pulse) => pulse + 1);
+    }
+    if (hasArcaneWeapon) {
+      setArcanePulse((pulse) => pulse + 1);
     }
     if (isDeathSword(equippedWeapon)) {
       const soulDamage = Math.max(1, Math.floor(enemyHp * 0.66));
@@ -3589,13 +3662,10 @@ export function HomePage() {
       return;
     }
 
-    const manaDamage = items.mana > 0 ? Math.max(shopBasePower.mana, upgradePower(shopLevels.mana, shopBasePower.mana)) : 0;
-    const heroDamage = Math.floor((18 + chapter * 5 + attackBonus + manaDamage) * artifactDamageMultiplier * artifactAttackSpeedMultiplier);
+    const manaDamage = upgradePower(shopLevels.mana, shopBasePower.mana);
+    const arcaneSwingDamage = hasArcaneWeapon ? Math.max(1, Math.floor((equippedWeapon?.damage ?? 0) * 1.35)) : 0;
+    const heroDamage = Math.floor((18 + chapter * 5 + attackBonus + manaDamage + arcaneSwingDamage) * artifactDamageMultiplier * artifactAttackSpeedMultiplier);
     const nextEnemyHp = Math.max(0, enemyHp - heroDamage);
-
-    if (items.mana > 0) {
-      setItems({ ...items, mana: items.mana - 1 });
-    }
 
     if (nextEnemyHp === 0) {
       setEnemyHp(0);
@@ -3673,6 +3743,15 @@ export function HomePage() {
       setAdminCode('');
       setMessage('Код ais228198 открыл 10 мир: водный мир Айсултана. Выбери: войти или выйти.');
       navigate('/world');
+      return;
+    }
+
+    if (code === 'magic') {
+      const arcaneWeapon = createArcaneScepter(Math.max(3, chapter + 3));
+      setWeapons((currentWeapons) => [...currentWeapons, arcaneWeapon]);
+      setEquippedWeapon(arcaneWeapon);
+      setAdminCode('');
+      setMessage(`Код magic дал ${getWeaponDisplayName(arcaneWeapon)}. Каждый взмах выпускает магию, навык дает много магии с перезарядкой.`);
       return;
     }
 
@@ -3761,7 +3840,7 @@ export function HomePage() {
     setAisFinalChoiceOpen(false);
     setAisGodFightStarted(false);
     setAdminCode('');
-    setMessage('Код arailm открыл красную программу. Войди и зачисти 100к код-монстров.');
+    setMessage(`Код arailm открыл красную программу. Войди и зачисти ${formatPower(arailmEnemiesTotal)} код-монстров.`);
     navigate('/world');
   }
 
@@ -4055,6 +4134,8 @@ export function HomePage() {
   }, [playerName]);
 
   useEffect(() => {
+    if (!authUser && !guestMode) return;
+
     const presence: OnlinePresence = {
       id: playerId,
       name: playerName,
@@ -4076,7 +4157,7 @@ export function HomePage() {
 
     rememberPlayers([]);
 
-    if (isSupabaseConfigured) {
+    if (isSupabaseConfigured && !guestMode) {
       const channel = supabase.channel('dragon-game-online-presence', {
         config: {
           presence: {
@@ -4138,7 +4219,7 @@ export function HomePage() {
       window.clearInterval(interval);
       window.removeEventListener('storage', onStorage);
     };
-  }, [currentPlayerPower, equippedArmor, equippedWeapon, playerId, playerName]);
+  }, [authUser, currentPlayerPower, equippedArmor, equippedWeapon, guestMode, playerId, playerName]);
 
   useEffect(() => {
     const refreshDuelRequests = () => {
@@ -4321,25 +4402,6 @@ export function HomePage() {
     setMessage('Ты вошел как гость. Можно играть без аккаунта.');
   }
 
-  useEffect(() => {
-    if (!authUser && !guestMode) return;
-    if (gameLoadingDone) return;
-
-    const loadingTimer = window.setInterval(() => {
-      setGameLoadingProgress((progress) => {
-        if (progress >= 100) {
-          window.clearInterval(loadingTimer);
-          window.setTimeout(() => setGameLoadingDone(true), 360);
-          return 100;
-        }
-        const step = progress < 72 ? 7 : progress < 92 ? 3 : 1;
-        return Math.min(100, progress + step);
-      });
-    }, 140);
-
-    return () => window.clearInterval(loadingTimer);
-  }, [authUser, guestMode, gameLoadingDone]);
-
   if (!authUser && !guestMode) {
     return (
       <main className="landing-page">
@@ -4392,34 +4454,6 @@ export function HomePage() {
               </button>
               {authMessage && <p>{authMessage}</p>}
             </form>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  if (!gameLoadingDone) {
-    return (
-      <main className="game-loading-page" aria-label="Загрузка игры">
-        <section className="game-loading-screen" role="status" aria-live="polite">
-          <div className="game-loading-topbar" aria-hidden="true">
-            <span className="loading-roblox-icon" />
-            <span className="loading-menu-icon" />
-            <span className="loading-chat-icon"><b>13</b></span>
-            <span className="loading-mic-icon" />
-          </div>
-          <div className="loading-muscle" aria-hidden="true">
-            <span />
-            <i />
-          </div>
-          <h1>Готовлю тебя.</h1>
-          <p>Присоединяйтесь к серверу сообщества, чтобы торговать!</p>
-          <div className="game-loading-progress">
-            <div className="game-loading-bar">
-              <span style={{ width: `${gameLoadingProgress}%` }} />
-              <b>Вы находитесь на обновлении #74</b>
-            </div>
-            <strong>{gameLoadingProgress}%</strong>
           </div>
         </section>
       </main>
@@ -5012,14 +5046,14 @@ export function HomePage() {
     return (
       <main className="arailm-choice-page">
         <section className="cave-choice arailm-choice" aria-label="Выбор arailm">
-          <p className="intro-kicker">100к монстров побеждены</p>
+          <p className="intro-kicker">{formatPower(arailmEnemiesTotal)} монстров побеждены</p>
           <h1>Сражаться или не сражаться</h1>
           <p>
             Если не сражаться, герой получит меч програм с уроном {formatHugeText(programSwordDamageText)}
             и сразу окажется на 5-м городе, будто 5 городов уже зачищены.
           </p>
           <p>
-            Если сражаться, у босса будет {formatHugeText(arailmBossPowerText)} HP и такой же урон.
+            Если сражаться, у босса будет {formatPower(scaledDragonPower(baseDragonHp, 15))} HP.
           </p>
           <div className="cave-actions">
             <button onClick={() => {
@@ -5039,8 +5073,8 @@ export function HomePage() {
             <button className="secondary" onClick={() => {
               setArailmChoiceOpen(false);
               setArailmKingFightStarted(true);
-              setEnemyHp(Number.MAX_SAFE_INTEGER);
-              setMessage(`Босс Арайлым вышла на бой. HP и урон: ${formatHugeText(arailmBossPowerText)}.`);
+              setEnemyHp(scaledDragonPower(baseDragonHp, 15));
+              setMessage(`Босс Арайлым вышла на бой. HP: ${formatPower(scaledDragonPower(baseDragonHp, 15))}.`);
               navigate('/');
             }} type="button">
               Сражаться
@@ -5146,28 +5180,36 @@ export function HomePage() {
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
               <div className="guide-current-version">
-                <strong>Текущая версия: vWeaponWorld100</strong>
-                <span>Оружие каждого нового мира усиливается в 100 раз и отображается у героя в 3D.</span>
+                <strong>Текущая версия: vCapturedCityMagic</strong>
+                <span>Свободная 3D-карта, захваченные города, мана, много магии и новые анимации героя.</span>
               </div>
-              <p>В каждом городе 1000 монстров. Сначала выбей всех монстров, потом бей босса города. После 10 драконов откроется финальный бой, подземный мир, души финального босса и Король ада.</p>
+              <p>Ходи по захваченному городу, ищи монстров, бей их рядом или магией, собирай золото, покупай улучшения и открывай новых боссов. Когда монстры города побеждены, появляется дракон.</p>
               <div className="guide-columns">
                 <div>
                   <strong>Управление</strong>
-                  <span>WASD: ходить от третьего лица</span>
-                  <span>Стрелки: тоже ходить</span>
+                  <span>WASD: свободно ходить по карте от третьего лица</span>
+                  <span>Мышь или тап по сцене: ударить рядом</span>
                   <span>Пробел: прыгнуть</span>
-                  <span>F: ударить рядом</span>
-                  <span>Клик по бою: ударить монстра или босса</span>
-                  <span>На телефоне: джойстик, кнопки движения и Удар</span>
+                  <span>F: быстрый удар</span>
+                  <span>На телефоне: джойстик для движения, тап по сцене для удара</span>
+                  <span>Кнопка Гайд открывает эту подсказку в любой момент</span>
                 </div>
                 <div>
                   <strong>Бой</strong>
-                  <span>Монстры бегут к тебе 10 км/ч</span>
-                  <span>На радиусе 5 метров монстры бьют героя</span>
-                  <span>У монстров 1000 HP</span>
-                  <span>После всех монстров появляется дракон</span>
-                  <span>Магазин качает меч, броню, HP и питомца</span>
+                  <span>Монстры стоят в городе и реагируют, когда герой подходит близко</span>
+                  <span>Обычный радиус ближнего боя: 5 метров</span>
+                  <span>После всех монстров появляется дракон или особый босс</span>
+                  <span>Двуручные мечи бьют тяжелой анимацией с большим замахом</span>
+                  <span>Магазин качает меч, броню, HP, ману и питомца</span>
                   <span>Удар рядом бьет ближайшего монстра</span>
+                </div>
+                <div>
+                  <strong>Магия и мана</strong>
+                  <span>У героя есть мана: 100 в начале игры</span>
+                  <span>Кристалл маны в магазине повышает максимум маны</span>
+                  <span>Заклинания тратят ману и дают 3D-эффекты</span>
+                  <span>Есть огонь, лед, молния, вода, свет, тьма, яд, метеор и другие стихии</span>
+                  <span>Мана постепенно восстанавливается во время игры</span>
                 </div>
                 <div>
                   <strong>Монстры</strong>
@@ -5181,9 +5223,10 @@ export function HomePage() {
                 <div>
                   <strong>Миры</strong>
                   <span>Пылающий мир: карта городов</span>
-                  <span>Каждый город меняет локацию</span>
-                  <span>В игре 40 карт для битв</span>
-                  <span>Есть пещеры, особые миры и секретные боссы</span>
+                  <span>Если монстры живы, город выглядит захваченным</span>
+                  <span>В захваченном городе есть улицы, руины, дым, огни и следы монстров</span>
+                  <span>Герой может спокойно исследовать большую карту</span>
+                  <span>Есть пещеры, особые миры, водный мир и секретные боссы</span>
                   <span>Достижения дают коды и бонусы</span>
                 </div>
                 <div>
@@ -5201,14 +5244,17 @@ export function HomePage() {
                   <span>После городов: Великий дракон</span>
                   <span>После финала может открыться подземный мир</span>
                   <span>После темных монстров появляются души финального босса</span>
-                  <span>После душ выходит Король ада, он сильнее финального босса в 10 раз</span>
-                  <span>Секретные боссы дают концовки и артефакты</span>
+                  <span>После душ выходит Король ада</span>
+                  <span>Дракон стал крупнее, темнее, с аурой, шипами и огненным дыханием</span>
+                  <span>Секретные боссы дают концовки, артефакты и оружие</span>
                 </div>
                 <div>
                   <strong>Предметы</strong>
                   <span>Оружие повышает урон</span>
                   <span>Броня повышает защиту</span>
+                  <span>Огненный питомец дает до 20 урона</span>
                   <span>Артефакты дают урон, деньги, скорость и HP</span>
+                  <span>Магический посох открывает выбор заклинаний</span>
                   <span>Секретные мечи появляются после особых концовок</span>
                   <span>Предмет можно продать в инвентаре</span>
                 </div>
@@ -5216,6 +5262,7 @@ export function HomePage() {
                   <strong>Сохранение</strong>
                   <span>Игра сохраняет HP героя и босса</span>
                   <span>Сохраняются деньги, вещи, броня и оружие</span>
+                  <span>Сохраняется мана и максимум маны</span>
                   <span>Сохраняются города, монстры и секретные миры</span>
                   <span>Сохраняются позиция героя, улучшения и концовки</span>
                   <span>Кнопка Начать повторно очищает сохранение</span>
@@ -5237,6 +5284,11 @@ export function HomePage() {
                   <span>vFlyingArtifact: надетый артефакт летает рядом с героем в 3D</span>
                   <span>vEquippedSword3D: надетый меч виден у героя в 3D-бою</span>
                   <span>vWeaponWorld100: оружие каждого мира сильнее прошлого в 100 раз</span>
+                  <span>vFreeMap: свободное исследование большой карты</span>
+                  <span>vManaMagic: мана, магазин маны и много заклинаний</span>
+                  <span>vThreatDragon: дракон стал угрожающим с аурой и огнем</span>
+                  <span>vHeroMotion: ходьба и атака двуручным мечом стали живее</span>
+                  <span>vCapturedCityMagic: захваченный город и полный гайд</span>
                 </div>
               </div>
             </div>
@@ -5291,16 +5343,21 @@ export function HomePage() {
               heroPosition={heroPosition}
               heroHeight={heroHeight}
               heroDirection={heroDirection}
+              nearestMonster={nearestMonster}
               monstersLeft={currentMonsterTotal > 0 ? Math.min(100, (currentMonsters / currentMonsterTotal) * 100) : 0}
               battlePulse={battlePulse}
               cameraMode="third"
               monsterKind={enemy?.monsterKind ?? 'goblin'}
-              viewDistance={900}
+              viewDistance={1_000}
               sceneKey={mapSceneKey}
               chapter={chapter}
               locationIndex={mapLocationIndex}
               equippedArtifactIcon={equippedArtifact?.icon ?? null}
               equippedWeaponStyle={equippedWeaponStyle}
+              hasArcaneWeapon={hasArcaneWeapon}
+              arcaneSpellKind={selectedArcaneSpell}
+              arcanePulse={arcanePulse}
+              arcaneBurstPulse={arcaneBurstPulse}
             />
           </div>
           {isClickDuelActive && (
@@ -5581,51 +5638,37 @@ export function HomePage() {
           >
             <span style={{ transform: `translate(${joystickThumb.x}px, ${joystickThumb.y}px)` }} />
           </div>
-          <div className="movement-pad" aria-label="Кнопки движения">
-            {[
-              ['w', '↑'],
-              ['a', '←'],
-              ['s', '↓'],
-              ['d', '→'],
-            ].map(([key, label]) => (
+          {hasArcaneWeapon && (
+            <div className="arcane-spell-panel" aria-label="Заклинания">
+              <div className="arcane-spell-grid">
+                {arcaneSpells.map((spell, index) => (
+                  <button
+                    aria-label={spell.name}
+                    className={selectedArcaneSpell === index ? 'selected' : ''}
+                    key={spell.name}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setSelectedArcaneSpell(index);
+                    }}
+                    type="button"
+                  >
+                    {spell.icon}
+                  </button>
+                ))}
+              </div>
               <button
-                aria-label={`Идти ${label}`}
-                className={`movement-pad-button ${key}`}
-                key={key}
-                onPointerDown={(event) => {
-                  event.preventDefault();
+                className={`arcane-skill-button ${arcaneSkillReady ? 'ready' : 'cooldown'}`}
+                disabled={!arcaneSkillReady || heroHp === 0 || currentMonsters > 0}
+                onClick={(event) => {
                   event.stopPropagation();
-                  startTouchMove(key);
+                  castArcaneSkill();
                 }}
-                onPointerUp={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  stopTouchMove(key);
-                }}
-                onPointerCancel={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  stopTouchMove(key);
-                }}
-                onPointerLeave={() => stopTouchMove(key)}
                 type="button"
               >
-                {label}
+                {heroMana < arcaneSkillManaCost ? 'Мана' : arcaneSkillReady ? selectedSpell.name : `${Math.ceil(arcaneSkillRemainingMs / 1000)}с`}
               </button>
-            ))}
-          </div>
-          <button
-            className="mobile-attack"
-            disabled={heroHp === 0}
-            onClick={(event) => {
-              event.stopPropagation();
-              if (currentMonsters > 0) fightMonster();
-              else strike();
-            }}
-            type="button"
-          >
-            Удар
-          </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -5846,11 +5889,9 @@ export function HomePage() {
           <div>
             <strong><span className="admin-nick">{playerName}</span> | {enemy.city}</strong>
             <span>Здоровье {heroHealthText}</span>
+            <span>Мана {Math.floor(heroMana)} / {currentHeroMaxMana}</span>
             <span>{currentEnemyHealthText}</span>
             <span>{isFinalSpiritWorld ? 'Подземные монстры' : isDungeon ? 'Пещера' : 'Монстры'}: {formatPower(currentMonsters)}</span>
-            {currentMonsters > 0 && (
-              <span>Ближний гоблин: {nearestMonsterDistanceMeters.toFixed(1)}м | HP {formatPower(Math.max(0, nearestMonster.hp))} ({Math.ceil(nearestMonsterHealthPercent)}%)</span>
-            )}
             <span>Винстрик x{winStreakState.current} | рекорд {winStreakState.best}</span>
           </div>
           {currentMonsters === 0 && (
