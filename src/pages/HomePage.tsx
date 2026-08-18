@@ -223,17 +223,17 @@ const finalDragonSpirit: CityStage = {
 };
 
 const deathGod: CityStage = {
-  name: 'Аид Сидаш',
+  name: 'Король ада',
   city: 'Адский трон',
   country: 'После подземного мира',
-  lair: 'Черный зал ада, где бог смерти спокойно смотрит на героя',
+  lair: 'Черный зал ада, где король ада ждет героя после смерти душ финального босса',
   monsterKind: 'death-god',
   monsterName: 'души ада',
-  title: 'бог смерти',
+  title: 'король ада',
   power: 999_999_999_999,
   color: '#8b0000',
   attackSpeed: 0.3,
-  reaction: 'спокойно смотрит и ударяет смертью',
+  reaction: 'ударяет адским огнем и давит душу',
 };
 
 const dragonFamily: CityStage = {
@@ -404,9 +404,20 @@ const deathSwordDamageText = '999999999999999999999999999999999999999999999';
 const citySizeMeters = 200;
 const cityHalfSize = (citySizeMeters / 2) * 1_000;
 const heroMoveSpeedPerSecond = (16 / 3.6) * 1_000;
+const meleeRangeMeters = 5;
+const meleeRangeUnits = meleeRangeMeters * 1_000;
+const monsterRunSpeedPerSecond = (10 / 3.6) * 1_000;
+const monsterSpawnDistanceUnits = 18_000;
 const monsterBotAttackDamage = 10;
 const monsterBotAttackCooldownMs = 900;
 const monsterChaseCatchTimeMs = 4_500;
+
+type NearestMonsterState = {
+  x: number;
+  z: number;
+  hp: number;
+  alive: boolean;
+};
 
 type CollisionBox = {
   x: number;
@@ -414,6 +425,102 @@ type CollisionBox = {
   halfX: number;
   halfZ: number;
 };
+
+type GameSaveState = {
+  version: 1;
+  savedAt: number;
+  chapter: number;
+  healthLevel: number;
+  heroHp: number;
+  enemyHp: number;
+  message: string;
+  savedCities: string[];
+  victory: boolean;
+  endingChoice: EndingChoice;
+  secretEnding: SecretEnding;
+  goblinKingReady: boolean;
+  goblinKingFightStarted: boolean;
+  furyGateOpen: boolean;
+  furyDungeonEntered: boolean;
+  furyMonstersLeft: number;
+  furyChoiceOpen: boolean;
+  furyKingFightStarted: boolean;
+  anuarGateOpen: boolean;
+  anuarWorldEntered: boolean;
+  anuarBombsLeft: number;
+  anuarKingFightStarted: boolean;
+  mansurGateOpen: boolean;
+  mansurDungeonEntered: boolean;
+  mansurMonstersLeft: number;
+  mansurKingFightStarted: boolean;
+  arailmGateOpen: boolean;
+  arailmWorldEntered: boolean;
+  arailmMonstersLeft: number;
+  arailmChoiceOpen: boolean;
+  arailmKingFightStarted: boolean;
+  aisGateOpen: boolean;
+  aisWorldEntered: boolean;
+  aisMonstersLeft: number;
+  aisSharkFightStarted: boolean;
+  aisFinalChoiceOpen: boolean;
+  aisGodFightStarted: boolean;
+  adminWorldGateOpen: boolean;
+  adminWorldEntered: boolean;
+  adminWorldMonstersLeft: number;
+  adminWorldBossesStarted: boolean;
+  adminFinalChoiceOpen: boolean;
+  adminBossFightStarted: boolean;
+  bbiGateOpen: boolean;
+  bbiWorldEntered: boolean;
+  bbiMonstersLeft: number;
+  bbiBossStage: BbiBossStage;
+  bbiFinalChoiceOpen: boolean;
+  bbiCityReward: boolean;
+  bbiBadEnding: boolean;
+  impossibleEnding: boolean;
+  nuraliGateOpen: boolean;
+  nuraliWorldEntered: boolean;
+  nuraliMonstersLeft: number;
+  nuraliChoiceOpen: boolean;
+  nuraliBossFightStarted: boolean;
+  monsterAvalancheEntered: boolean;
+  monsterAvalancheLeft: number;
+  monsterAvalancheEnding: boolean;
+  finalSpiritWorldOpen: boolean;
+  finalSpiritMonstersLeft: number;
+  finalSpiritFightStarted: boolean;
+  deathGodFightStarted: boolean;
+  gold: number;
+  goldMultiplier: number;
+  infiniteGold: boolean;
+  dungeon: Dungeon | null;
+  relics: string[];
+  weapons: Weapon[];
+  equippedWeapon: Weapon | null;
+  armors: Armor[];
+  equippedArmor: Armor | null;
+  equippedArtifactId: ArtifactId | null;
+  heroPosition: { x: number; z: number };
+  heroDirection: { x: number; z: number };
+  mapLocationIndex: number;
+  cityMonsters: number[];
+  duelWins: number;
+  items: Record<ShopItem['id'], number>;
+  shopLevels: Record<ShopItem['id'], number>;
+  introSkipped: boolean;
+};
+
+const gameSaveStorageKey = 'dragon-game-save-v1';
+
+function readGameSave() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(gameSaveStorageKey) ?? 'null') as Partial<GameSaveState> | null;
+    return saved?.version === 1 ? saved : null;
+  } catch {
+    return null;
+  }
+}
 
 function collidesWithBox(x: number, z: number, box: CollisionBox, radius = 0.72) {
   return Math.abs(x - box.x) < box.halfX + radius && Math.abs(z - box.z) < box.halfZ + radius;
@@ -1201,87 +1308,94 @@ export function HomePage() {
   const [location, navigate] = useLocation();
   const isWorldPage = location === '/world';
   const isAchievementsPage = location === '/achievements';
+  const savedGameRef = useRef(readGameSave());
   const [tutorialOpen, setTutorialOpen] = useState(true);
-  const [chapter, setChapter] = useState(0);
-  const [healthLevel, setHealthLevel] = useState(0);
-  const [heroHp, setHeroHp] = useState(heroMaxHp);
-  const [enemyHp, setEnemyHp] = useState(baseDragonHp);
-  const [message, setMessage] = useState('Мир горит. Нажимай удар мечом, чтобы очистить первый город.');
-  const [savedCities, setSavedCities] = useState<string[]>([]);
-  const [victory, setVictory] = useState(false);
-  const [endingChoice, setEndingChoice] = useState<EndingChoice>(null);
-  const [secretEnding, setSecretEnding] = useState<SecretEnding>(null);
-  const [goblinKingReady, setGoblinKingReady] = useState(false);
-  const [goblinKingFightStarted, setGoblinKingFightStarted] = useState(false);
-  const [furyGateOpen, setFuryGateOpen] = useState(false);
-  const [furyDungeonEntered, setFuryDungeonEntered] = useState(false);
-  const [furyMonstersLeft, setFuryMonstersLeft] = useState(furyDungeonEnemiesTotal);
-  const [furyChoiceOpen, setFuryChoiceOpen] = useState(false);
-  const [furyKingFightStarted, setFuryKingFightStarted] = useState(false);
-  const [anuarGateOpen, setAnuarGateOpen] = useState(false);
-  const [anuarWorldEntered, setAnuarWorldEntered] = useState(false);
-  const [anuarBombsLeft, setAnuarBombsLeft] = useState(anuarBombEnemiesTotal);
-  const [anuarKingFightStarted, setAnuarKingFightStarted] = useState(false);
-  const [mansurGateOpen, setMansurGateOpen] = useState(false);
-  const [mansurDungeonEntered, setMansurDungeonEntered] = useState(false);
-  const [mansurMonstersLeft, setMansurMonstersLeft] = useState(mansurDungeonEnemiesTotal);
-  const [mansurKingFightStarted, setMansurKingFightStarted] = useState(false);
-  const [arailmGateOpen, setArailmGateOpen] = useState(false);
-  const [arailmWorldEntered, setArailmWorldEntered] = useState(false);
-  const [arailmMonstersLeft, setArailmMonstersLeft] = useState(arailmEnemiesTotal);
-  const [arailmChoiceOpen, setArailmChoiceOpen] = useState(false);
-  const [arailmKingFightStarted, setArailmKingFightStarted] = useState(false);
-  const [aisGateOpen, setAisGateOpen] = useState(false);
-  const [aisWorldEntered, setAisWorldEntered] = useState(false);
-  const [aisMonstersLeft, setAisMonstersLeft] = useState(aisultanMonsterTotal);
-  const [aisSharkFightStarted, setAisSharkFightStarted] = useState(false);
-  const [aisFinalChoiceOpen, setAisFinalChoiceOpen] = useState(false);
-  const [aisGodFightStarted, setAisGodFightStarted] = useState(false);
-  const [adminWorldGateOpen, setAdminWorldGateOpen] = useState(false);
-  const [adminWorldEntered, setAdminWorldEntered] = useState(false);
-  const [adminWorldMonstersLeft, setAdminWorldMonstersLeft] = useState(adminWorldMonsterTotal);
-  const [adminWorldBossesStarted, setAdminWorldBossesStarted] = useState(false);
-  const [adminFinalChoiceOpen, setAdminFinalChoiceOpen] = useState(false);
-  const [adminBossFightStarted, setAdminBossFightStarted] = useState(false);
-  const [bbiGateOpen, setBbiGateOpen] = useState(false);
-  const [bbiWorldEntered, setBbiWorldEntered] = useState(false);
-  const [bbiMonstersLeft, setBbiMonstersLeft] = useState(bbiMonsterTotal);
-  const [bbiBossStage, setBbiBossStage] = useState<BbiBossStage>(null);
-  const [bbiFinalChoiceOpen, setBbiFinalChoiceOpen] = useState(false);
-  const [bbiCityReward, setBbiCityReward] = useState(false);
-  const [bbiBadEnding, setBbiBadEnding] = useState(false);
-  const [impossibleEnding, setImpossibleEnding] = useState(false);
-  const [nuraliGateOpen, setNuraliGateOpen] = useState(false);
-  const [nuraliWorldEntered, setNuraliWorldEntered] = useState(false);
-  const [nuraliMonstersLeft, setNuraliMonstersLeft] = useState(nuraliMonsterTotal);
-  const [nuraliChoiceOpen, setNuraliChoiceOpen] = useState(false);
-  const [nuraliBossFightStarted, setNuraliBossFightStarted] = useState(false);
-  const [monsterAvalancheEntered, setMonsterAvalancheEntered] = useState(false);
-  const [monsterAvalancheLeft, setMonsterAvalancheLeft] = useState(monsterAvalancheTotal);
-  const [monsterAvalancheEnding, setMonsterAvalancheEnding] = useState(false);
-  const [finalSpiritWorldOpen, setFinalSpiritWorldOpen] = useState(false);
-  const [finalSpiritMonstersLeft, setFinalSpiritMonstersLeft] = useState(finalSpiritMonsterTotal);
-  const [finalSpiritFightStarted, setFinalSpiritFightStarted] = useState(false);
-  const [deathGodFightStarted, setDeathGodFightStarted] = useState(false);
+  const [chapter, setChapter] = useState(savedGameRef.current?.chapter ?? 0);
+  const [healthLevel, setHealthLevel] = useState(savedGameRef.current?.healthLevel ?? 0);
+  const [heroHp, setHeroHp] = useState(savedGameRef.current?.heroHp ?? heroMaxHp);
+  const [enemyHp, setEnemyHp] = useState(savedGameRef.current?.enemyHp ?? baseDragonHp);
+  const [message, setMessage] = useState(savedGameRef.current?.message ?? 'Мир горит. Нажимай удар мечом, чтобы очистить первый город.');
+  const [savedCities, setSavedCities] = useState<string[]>(savedGameRef.current?.savedCities ?? []);
+  const [victory, setVictory] = useState(savedGameRef.current?.victory ?? false);
+  const [endingChoice, setEndingChoice] = useState<EndingChoice>(savedGameRef.current?.endingChoice ?? null);
+  const [secretEnding, setSecretEnding] = useState<SecretEnding>(savedGameRef.current?.secretEnding ?? null);
+  const [goblinKingReady, setGoblinKingReady] = useState(savedGameRef.current?.goblinKingReady ?? false);
+  const [goblinKingFightStarted, setGoblinKingFightStarted] = useState(savedGameRef.current?.goblinKingFightStarted ?? false);
+  const [furyGateOpen, setFuryGateOpen] = useState(savedGameRef.current?.furyGateOpen ?? false);
+  const [furyDungeonEntered, setFuryDungeonEntered] = useState(savedGameRef.current?.furyDungeonEntered ?? false);
+  const [furyMonstersLeft, setFuryMonstersLeft] = useState(savedGameRef.current?.furyMonstersLeft ?? furyDungeonEnemiesTotal);
+  const [furyChoiceOpen, setFuryChoiceOpen] = useState(savedGameRef.current?.furyChoiceOpen ?? false);
+  const [furyKingFightStarted, setFuryKingFightStarted] = useState(savedGameRef.current?.furyKingFightStarted ?? false);
+  const [anuarGateOpen, setAnuarGateOpen] = useState(savedGameRef.current?.anuarGateOpen ?? false);
+  const [anuarWorldEntered, setAnuarWorldEntered] = useState(savedGameRef.current?.anuarWorldEntered ?? false);
+  const [anuarBombsLeft, setAnuarBombsLeft] = useState(savedGameRef.current?.anuarBombsLeft ?? anuarBombEnemiesTotal);
+  const [anuarKingFightStarted, setAnuarKingFightStarted] = useState(savedGameRef.current?.anuarKingFightStarted ?? false);
+  const [mansurGateOpen, setMansurGateOpen] = useState(savedGameRef.current?.mansurGateOpen ?? false);
+  const [mansurDungeonEntered, setMansurDungeonEntered] = useState(savedGameRef.current?.mansurDungeonEntered ?? false);
+  const [mansurMonstersLeft, setMansurMonstersLeft] = useState(savedGameRef.current?.mansurMonstersLeft ?? mansurDungeonEnemiesTotal);
+  const [mansurKingFightStarted, setMansurKingFightStarted] = useState(savedGameRef.current?.mansurKingFightStarted ?? false);
+  const [arailmGateOpen, setArailmGateOpen] = useState(savedGameRef.current?.arailmGateOpen ?? false);
+  const [arailmWorldEntered, setArailmWorldEntered] = useState(savedGameRef.current?.arailmWorldEntered ?? false);
+  const [arailmMonstersLeft, setArailmMonstersLeft] = useState(savedGameRef.current?.arailmMonstersLeft ?? arailmEnemiesTotal);
+  const [arailmChoiceOpen, setArailmChoiceOpen] = useState(savedGameRef.current?.arailmChoiceOpen ?? false);
+  const [arailmKingFightStarted, setArailmKingFightStarted] = useState(savedGameRef.current?.arailmKingFightStarted ?? false);
+  const [aisGateOpen, setAisGateOpen] = useState(savedGameRef.current?.aisGateOpen ?? false);
+  const [aisWorldEntered, setAisWorldEntered] = useState(savedGameRef.current?.aisWorldEntered ?? false);
+  const [aisMonstersLeft, setAisMonstersLeft] = useState(savedGameRef.current?.aisMonstersLeft ?? aisultanMonsterTotal);
+  const [aisSharkFightStarted, setAisSharkFightStarted] = useState(savedGameRef.current?.aisSharkFightStarted ?? false);
+  const [aisFinalChoiceOpen, setAisFinalChoiceOpen] = useState(savedGameRef.current?.aisFinalChoiceOpen ?? false);
+  const [aisGodFightStarted, setAisGodFightStarted] = useState(savedGameRef.current?.aisGodFightStarted ?? false);
+  const [adminWorldGateOpen, setAdminWorldGateOpen] = useState(savedGameRef.current?.adminWorldGateOpen ?? false);
+  const [adminWorldEntered, setAdminWorldEntered] = useState(savedGameRef.current?.adminWorldEntered ?? false);
+  const [adminWorldMonstersLeft, setAdminWorldMonstersLeft] = useState(savedGameRef.current?.adminWorldMonstersLeft ?? adminWorldMonsterTotal);
+  const [adminWorldBossesStarted, setAdminWorldBossesStarted] = useState(savedGameRef.current?.adminWorldBossesStarted ?? false);
+  const [adminFinalChoiceOpen, setAdminFinalChoiceOpen] = useState(savedGameRef.current?.adminFinalChoiceOpen ?? false);
+  const [adminBossFightStarted, setAdminBossFightStarted] = useState(savedGameRef.current?.adminBossFightStarted ?? false);
+  const [bbiGateOpen, setBbiGateOpen] = useState(savedGameRef.current?.bbiGateOpen ?? false);
+  const [bbiWorldEntered, setBbiWorldEntered] = useState(savedGameRef.current?.bbiWorldEntered ?? false);
+  const [bbiMonstersLeft, setBbiMonstersLeft] = useState(savedGameRef.current?.bbiMonstersLeft ?? bbiMonsterTotal);
+  const [bbiBossStage, setBbiBossStage] = useState<BbiBossStage>(savedGameRef.current?.bbiBossStage ?? null);
+  const [bbiFinalChoiceOpen, setBbiFinalChoiceOpen] = useState(savedGameRef.current?.bbiFinalChoiceOpen ?? false);
+  const [bbiCityReward, setBbiCityReward] = useState(savedGameRef.current?.bbiCityReward ?? false);
+  const [bbiBadEnding, setBbiBadEnding] = useState(savedGameRef.current?.bbiBadEnding ?? false);
+  const [impossibleEnding, setImpossibleEnding] = useState(savedGameRef.current?.impossibleEnding ?? false);
+  const [nuraliGateOpen, setNuraliGateOpen] = useState(savedGameRef.current?.nuraliGateOpen ?? false);
+  const [nuraliWorldEntered, setNuraliWorldEntered] = useState(savedGameRef.current?.nuraliWorldEntered ?? false);
+  const [nuraliMonstersLeft, setNuraliMonstersLeft] = useState(savedGameRef.current?.nuraliMonstersLeft ?? nuraliMonsterTotal);
+  const [nuraliChoiceOpen, setNuraliChoiceOpen] = useState(savedGameRef.current?.nuraliChoiceOpen ?? false);
+  const [nuraliBossFightStarted, setNuraliBossFightStarted] = useState(savedGameRef.current?.nuraliBossFightStarted ?? false);
+  const [monsterAvalancheEntered, setMonsterAvalancheEntered] = useState(savedGameRef.current?.monsterAvalancheEntered ?? false);
+  const [monsterAvalancheLeft, setMonsterAvalancheLeft] = useState(savedGameRef.current?.monsterAvalancheLeft ?? monsterAvalancheTotal);
+  const [monsterAvalancheEnding, setMonsterAvalancheEnding] = useState(savedGameRef.current?.monsterAvalancheEnding ?? false);
+  const [finalSpiritWorldOpen, setFinalSpiritWorldOpen] = useState(savedGameRef.current?.finalSpiritWorldOpen ?? false);
+  const [finalSpiritMonstersLeft, setFinalSpiritMonstersLeft] = useState(savedGameRef.current?.finalSpiritMonstersLeft ?? finalSpiritMonsterTotal);
+  const [finalSpiritFightStarted, setFinalSpiritFightStarted] = useState(savedGameRef.current?.finalSpiritFightStarted ?? false);
+  const [deathGodFightStarted, setDeathGodFightStarted] = useState(savedGameRef.current?.deathGodFightStarted ?? false);
   const [unlockedAchievements, setUnlockedAchievements] = useState<AchievementId[]>([]);
-  const [gold, setGold] = useState(0);
-  const [goldMultiplier, setGoldMultiplier] = useState(1);
-  const [infiniteGold, setInfiniteGold] = useState(false);
-  const [dungeon, setDungeon] = useState<Dungeon | null>(null);
-  const [relics, setRelics] = useState<string[]>([]);
-  const [weapons, setWeapons] = useState<Weapon[]>([]);
-  const [equippedWeapon, setEquippedWeapon] = useState<Weapon | null>(null);
-  const [armors, setArmors] = useState<Armor[]>([]);
-  const [equippedArmor, setEquippedArmor] = useState<Armor | null>(null);
+  const [gold, setGold] = useState(savedGameRef.current?.gold ?? 0);
+  const [goldMultiplier, setGoldMultiplier] = useState(savedGameRef.current?.goldMultiplier ?? 1);
+  const [infiniteGold, setInfiniteGold] = useState(savedGameRef.current?.infiniteGold ?? false);
+  const [dungeon, setDungeon] = useState<Dungeon | null>(savedGameRef.current?.dungeon ?? null);
+  const [relics, setRelics] = useState<string[]>(savedGameRef.current?.relics ?? []);
+  const [weapons, setWeapons] = useState<Weapon[]>(savedGameRef.current?.weapons ?? []);
+  const [equippedWeapon, setEquippedWeapon] = useState<Weapon | null>(savedGameRef.current?.equippedWeapon ?? null);
+  const [armors, setArmors] = useState<Armor[]>(savedGameRef.current?.armors ?? []);
+  const [equippedArmor, setEquippedArmor] = useState<Armor | null>(savedGameRef.current?.equippedArmor ?? null);
   const [shopTab, setShopTab] = useState<'upgrades' | 'artifacts' | 'code' | 'duel' | 'players' | 'id'>('upgrades');
-  const [equippedArtifactId, setEquippedArtifactId] = useState<ArtifactId | null>(null);
+  const [equippedArtifactId, setEquippedArtifactId] = useState<ArtifactId | null>(savedGameRef.current?.equippedArtifactId ?? null);
   const [showFullInventory, setShowFullInventory] = useState(false);
   const [heroAnimation, setHeroAnimation] = useState<HeroAnimation>('idle');
-  const [heroPosition, setHeroPosition] = useState({ x: -18_000, z: 0 });
+  const [heroPosition, setHeroPosition] = useState(savedGameRef.current?.heroPosition ?? { x: -18_000, z: 0 });
   const [heroHeight, setHeroHeight] = useState(0);
   const [heroMoving, setHeroMoving] = useState(false);
-  const [heroDirection, setHeroDirection] = useState({ x: 0, z: -1 });
-  const [mapLocationIndex, setMapLocationIndex] = useState(0);
+  const [heroDirection, setHeroDirection] = useState(savedGameRef.current?.heroDirection ?? { x: 0, z: -1 });
+  const [nearestMonster, setNearestMonster] = useState<NearestMonsterState>({
+    x: -18_000,
+    z: -monsterSpawnDistanceUnits,
+    hp: baseMonsterHp,
+    alive: true,
+  });
+  const [mapLocationIndex, setMapLocationIndex] = useState(savedGameRef.current?.mapLocationIndex ?? 0);
   const [joystickThumb, setJoystickThumb] = useState({ x: 0, y: 0 });
   const verticalVelocity = useRef(0);
   const heroAnimationTimer = useRef<number | null>(null);
@@ -1291,6 +1405,12 @@ export function HomePage() {
   const lastMoveAt = useRef<number | null>(null);
   const clickTimesRef = useRef<number[]>([]);
   const monsterChaseStartedAt = useRef(Date.now());
+  const nearestMonsterRef = useRef<NearestMonsterState>({
+    x: -18_000,
+    z: -monsterSpawnDistanceUnits,
+    hp: baseMonsterHp,
+    alive: true,
+  });
   const monsterBotRef = useRef({
     chapter: 0,
     currentMonsters: 0,
@@ -1300,8 +1420,9 @@ export function HomePage() {
     heroHp: heroMaxHp,
     heroPosition: { x: -18_000, z: 0 },
     isFinalReveal: false,
+    nearestMonsterInRange: false,
   });
-  const [cityMonsters, setCityMonsters] = useState(() => dragonSons.map(() => monstersPerCity));
+  const [cityMonsters, setCityMonsters] = useState(() => savedGameRef.current?.cityMonsters ?? dragonSons.map(() => monstersPerCity));
   const [, setMonsterAttackCount] = useState(0);
   const [battlePulse, setBattlePulse] = useState(0);
   const [fireWavePulse, setFireWavePulse] = useState(0);
@@ -1312,7 +1433,7 @@ export function HomePage() {
   const [enemyBurning, setEnemyBurning] = useState(false);
   const [duelStatus, setDuelStatus] = useState<DuelStatus>('idle');
   const [duelOpponent, setDuelOpponent] = useState<DuelPlayer | null>(null);
-  const [duelWins, setDuelWins] = useState(0);
+  const [duelWins, setDuelWins] = useState(savedGameRef.current?.duelWins ?? 0);
   const [duelHeroHp, setDuelHeroHp] = useState(0);
   const [duelOpponentHp, setDuelOpponentHp] = useState(0);
   const [duelTradeOpen, setDuelTradeOpen] = useState(false);
@@ -1354,7 +1475,7 @@ export function HomePage() {
   const [achievementMessage, setAchievementMessage] = useState('');
   const [gameLoadingProgress, setGameLoadingProgress] = useState(0);
   const [gameLoadingDone, setGameLoadingDone] = useState(false);
-  const [introSkipped, setIntroSkipped] = useState(false);
+  const [introSkipped, setIntroSkipped] = useState(savedGameRef.current?.introSkipped ?? false);
   const [creatorCreditsOpen, setCreatorCreditsOpen] = useState(false);
   const paidQuestIds = useRef<Set<number>>(new Set());
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -1363,8 +1484,10 @@ export function HomePage() {
   const lastMessageVoiceAtRef = useRef(0);
   const onlinePlayerListRef = useRef<HTMLDivElement | null>(null);
   const onlinePlayerScrollTimer = useRef<number | null>(null);
+  const supabaseSaveTimer = useRef<number | null>(null);
+  const supabaseSaveLoadedRef = useRef(false);
   const dailyRewardCheckedRef = useRef(false);
-  const [items, setItems] = useState<Record<ShopItem['id'], number>>({
+  const [items, setItems] = useState<Record<ShopItem['id'], number>>(savedGameRef.current?.items ?? {
     sword: 0,
     pet: 0,
     clothes: 0,
@@ -1374,7 +1497,7 @@ export function HomePage() {
     health: 0,
     doubleStrike: 0,
   });
-  const [shopLevels, setShopLevels] = useState<Record<ShopItem['id'], number>>({
+  const [shopLevels, setShopLevels] = useState<Record<ShopItem['id'], number>>(savedGameRef.current?.shopLevels ?? {
     sword: 0,
     pet: 0,
     clothes: 0,
@@ -1483,9 +1606,13 @@ export function HomePage() {
       ? 'dungeon'
       : 'world';
   const currentMonsterHp = isFinalSpiritWorld ? finalSpiritMonsterHp : isMonsterAvalancheWorld ? monsterAvalancheHp : isAdminWorld ? adminWorldMonsterHp : isAisWorld ? aisultanMonsterHp : isNuraliWorld ? nuraliMonsterHp : isBbiWorld ? bbiMonsterHp : baseMonsterHp;
+  const nearestMonsterDistanceUnits = nearestMonster.alive ? Math.hypot(heroPosition.x - nearestMonster.x, heroPosition.z - nearestMonster.z) : Number.POSITIVE_INFINITY;
+  const nearestMonsterDistanceMeters = nearestMonsterDistanceUnits / 1_000;
+  const nearestMonsterInRange = currentMonsters > 0 && nearestMonster.alive && nearestMonsterDistanceUnits <= meleeRangeUnits;
+  const nearestMonsterHealthPercent = nearestMonster.alive ? Math.max(0, Math.min(100, (nearestMonster.hp / currentMonsterHp) * 100)) : 0;
   const kingDragonHp = scaledDragonPower(baseDragonHp, dragonSons.length + 2);
   const finalSpiritDragonHp = Math.max(1, Math.floor((kingDragonHp * 2) / 100));
-  const deathGodHp = kingDragonHp * 100;
+  const deathGodHp = kingDragonHp * 10;
   const currentDragonHp = isDeathGodBoss ? deathGodHp : isFinalSpiritBoss ? finalSpiritDragonHp : isAdminBoss ? adminFinalBossHp : isAdminWorldBosses ? adminWorldBossesHp : isAisGodBoss ? aisultanSeaGodHp : isAisSharkBoss ? aisultanSharkHp : isNuraliKingBoss ? nuraliBossHp : isBbiBoss ? bbiBosses[bbiBossStage].power : isArailmKingBoss ? Number.MAX_SAFE_INTEGER : isMansurKingBoss ? scaledDragonPower(baseDragonHp, chapter + 7) : isAnuarKingBoss ? scaledDragonPower(baseDragonHp, chapter + 6) : isFuryKingBoss ? Number.MAX_SAFE_INTEGER : isGoblinKingBoss ? scaledDragonPower(baseDragonHp, chapter + 4) : isFamilyBoss ? kingDragonHp * 100 : isFinalBoss ? kingDragonHp : scaledDragonPower(baseDragonHp, chapter);
   const bbiLegendaryDamage = Math.min(Number.MAX_SAFE_INTEGER, strongestNonBbiWeaponDamage * 100);
   const deathSwordMultiplier = equippedArtifactId === 'godHead' && equippedWeapon?.id.startsWith('death-sword-') ? 7.66 : 1;
@@ -2123,6 +2250,249 @@ export function HomePage() {
     window.localStorage.setItem('dragon-game-achievements', JSON.stringify(unlockedAchievements));
   }, [unlockedAchievements]);
 
+  function applyGameSave(save: Partial<GameSaveState>) {
+    setChapter(save.chapter ?? 0);
+    setHealthLevel(save.healthLevel ?? 0);
+    setHeroHp(save.heroHp ?? heroMaxHp);
+    setEnemyHp(save.enemyHp ?? baseDragonHp);
+    setMessage(save.message ?? 'Сейв загружен из Supabase.');
+    setSavedCities(save.savedCities ?? []);
+    setVictory(save.victory ?? false);
+    setEndingChoice(save.endingChoice ?? null);
+    setSecretEnding(save.secretEnding ?? null);
+    setGoblinKingReady(save.goblinKingReady ?? false);
+    setGoblinKingFightStarted(save.goblinKingFightStarted ?? false);
+    setFuryGateOpen(save.furyGateOpen ?? false);
+    setFuryDungeonEntered(save.furyDungeonEntered ?? false);
+    setFuryMonstersLeft(save.furyMonstersLeft ?? furyDungeonEnemiesTotal);
+    setFuryChoiceOpen(save.furyChoiceOpen ?? false);
+    setFuryKingFightStarted(save.furyKingFightStarted ?? false);
+    setAnuarGateOpen(save.anuarGateOpen ?? false);
+    setAnuarWorldEntered(save.anuarWorldEntered ?? false);
+    setAnuarBombsLeft(save.anuarBombsLeft ?? anuarBombEnemiesTotal);
+    setAnuarKingFightStarted(save.anuarKingFightStarted ?? false);
+    setMansurGateOpen(save.mansurGateOpen ?? false);
+    setMansurDungeonEntered(save.mansurDungeonEntered ?? false);
+    setMansurMonstersLeft(save.mansurMonstersLeft ?? mansurDungeonEnemiesTotal);
+    setMansurKingFightStarted(save.mansurKingFightStarted ?? false);
+    setArailmGateOpen(save.arailmGateOpen ?? false);
+    setArailmWorldEntered(save.arailmWorldEntered ?? false);
+    setArailmMonstersLeft(save.arailmMonstersLeft ?? arailmEnemiesTotal);
+    setArailmChoiceOpen(save.arailmChoiceOpen ?? false);
+    setArailmKingFightStarted(save.arailmKingFightStarted ?? false);
+    setAisGateOpen(save.aisGateOpen ?? false);
+    setAisWorldEntered(save.aisWorldEntered ?? false);
+    setAisMonstersLeft(save.aisMonstersLeft ?? aisultanMonsterTotal);
+    setAisSharkFightStarted(save.aisSharkFightStarted ?? false);
+    setAisFinalChoiceOpen(save.aisFinalChoiceOpen ?? false);
+    setAisGodFightStarted(save.aisGodFightStarted ?? false);
+    setAdminWorldGateOpen(save.adminWorldGateOpen ?? false);
+    setAdminWorldEntered(save.adminWorldEntered ?? false);
+    setAdminWorldMonstersLeft(save.adminWorldMonstersLeft ?? adminWorldMonsterTotal);
+    setAdminWorldBossesStarted(save.adminWorldBossesStarted ?? false);
+    setAdminFinalChoiceOpen(save.adminFinalChoiceOpen ?? false);
+    setAdminBossFightStarted(save.adminBossFightStarted ?? false);
+    setBbiGateOpen(save.bbiGateOpen ?? false);
+    setBbiWorldEntered(save.bbiWorldEntered ?? false);
+    setBbiMonstersLeft(save.bbiMonstersLeft ?? bbiMonsterTotal);
+    setBbiBossStage(save.bbiBossStage ?? null);
+    setBbiFinalChoiceOpen(save.bbiFinalChoiceOpen ?? false);
+    setBbiCityReward(save.bbiCityReward ?? false);
+    setBbiBadEnding(save.bbiBadEnding ?? false);
+    setImpossibleEnding(save.impossibleEnding ?? false);
+    setNuraliGateOpen(save.nuraliGateOpen ?? false);
+    setNuraliWorldEntered(save.nuraliWorldEntered ?? false);
+    setNuraliMonstersLeft(save.nuraliMonstersLeft ?? nuraliMonsterTotal);
+    setNuraliChoiceOpen(save.nuraliChoiceOpen ?? false);
+    setNuraliBossFightStarted(save.nuraliBossFightStarted ?? false);
+    setMonsterAvalancheEntered(save.monsterAvalancheEntered ?? false);
+    setMonsterAvalancheLeft(save.monsterAvalancheLeft ?? monsterAvalancheTotal);
+    setMonsterAvalancheEnding(save.monsterAvalancheEnding ?? false);
+    setFinalSpiritWorldOpen(save.finalSpiritWorldOpen ?? false);
+    setFinalSpiritMonstersLeft(save.finalSpiritMonstersLeft ?? finalSpiritMonsterTotal);
+    setFinalSpiritFightStarted(save.finalSpiritFightStarted ?? false);
+    setDeathGodFightStarted(save.deathGodFightStarted ?? false);
+    setGold(save.gold ?? 0);
+    setGoldMultiplier(save.goldMultiplier ?? 1);
+    setInfiniteGold(save.infiniteGold ?? false);
+    setDungeon(save.dungeon ?? null);
+    setRelics(save.relics ?? []);
+    setWeapons(save.weapons ?? []);
+    setEquippedWeapon(save.equippedWeapon ?? null);
+    setArmors(save.armors ?? []);
+    setEquippedArmor(save.equippedArmor ?? null);
+    setEquippedArtifactId(save.equippedArtifactId ?? null);
+    setHeroPosition(save.heroPosition ?? { x: -18_000, z: 0 });
+    setHeroDirection(save.heroDirection ?? { x: 0, z: -1 });
+    setMapLocationIndex(save.mapLocationIndex ?? 0);
+    setCityMonsters(save.cityMonsters ?? dragonSons.map(() => monstersPerCity));
+    setDuelWins(save.duelWins ?? 0);
+    setItems(save.items ?? { sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
+    setShopLevels(save.shopLevels ?? { sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
+    setIntroSkipped(save.introSkipped ?? false);
+  }
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !authUser) {
+      supabaseSaveLoadedRef.current = false;
+      return;
+    }
+
+    let cancelled = false;
+    supabaseSaveLoadedRef.current = false;
+
+    supabase
+      .from('game_saves')
+      .select('save_data, updated_at')
+      .eq('user_id', authUser.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          console.warn('Supabase save load failed', error);
+          return;
+        }
+
+        const remoteSave = data?.save_data as Partial<GameSaveState> | null | undefined;
+        if (!remoteSave || remoteSave.version !== 1) return;
+
+        const remoteSavedAt = remoteSave.savedAt ?? (data?.updated_at ? Date.parse(data.updated_at) : 0);
+        const localSavedAt = savedGameRef.current?.savedAt ?? 0;
+        if (remoteSavedAt <= localSavedAt) return;
+
+        const normalizedSave = { ...remoteSave, savedAt: remoteSavedAt };
+        savedGameRef.current = normalizedSave;
+        window.localStorage.setItem(gameSaveStorageKey, JSON.stringify(normalizedSave));
+        applyGameSave(normalizedSave);
+        setMessage('Сейв загружен из Supabase.');
+      }, (error) => {
+        if (!cancelled) console.warn('Supabase save load failed', error);
+      })
+      .then(() => {
+        if (!cancelled) supabaseSaveLoadedRef.current = true;
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser?.id]);
+
+  useEffect(() => {
+    const saveState: GameSaveState = {
+      version: 1,
+      savedAt: Date.now(),
+      chapter,
+      healthLevel,
+      heroHp,
+      enemyHp,
+      message,
+      savedCities,
+      victory,
+      endingChoice,
+      secretEnding,
+      goblinKingReady,
+      goblinKingFightStarted,
+      furyGateOpen,
+      furyDungeonEntered,
+      furyMonstersLeft,
+      furyChoiceOpen,
+      furyKingFightStarted,
+      anuarGateOpen,
+      anuarWorldEntered,
+      anuarBombsLeft,
+      anuarKingFightStarted,
+      mansurGateOpen,
+      mansurDungeonEntered,
+      mansurMonstersLeft,
+      mansurKingFightStarted,
+      arailmGateOpen,
+      arailmWorldEntered,
+      arailmMonstersLeft,
+      arailmChoiceOpen,
+      arailmKingFightStarted,
+      aisGateOpen,
+      aisWorldEntered,
+      aisMonstersLeft,
+      aisSharkFightStarted,
+      aisFinalChoiceOpen,
+      aisGodFightStarted,
+      adminWorldGateOpen,
+      adminWorldEntered,
+      adminWorldMonstersLeft,
+      adminWorldBossesStarted,
+      adminFinalChoiceOpen,
+      adminBossFightStarted,
+      bbiGateOpen,
+      bbiWorldEntered,
+      bbiMonstersLeft,
+      bbiBossStage,
+      bbiFinalChoiceOpen,
+      bbiCityReward,
+      bbiBadEnding,
+      impossibleEnding,
+      nuraliGateOpen,
+      nuraliWorldEntered,
+      nuraliMonstersLeft,
+      nuraliChoiceOpen,
+      nuraliBossFightStarted,
+      monsterAvalancheEntered,
+      monsterAvalancheLeft,
+      monsterAvalancheEnding,
+      finalSpiritWorldOpen,
+      finalSpiritMonstersLeft,
+      finalSpiritFightStarted,
+      deathGodFightStarted,
+      gold,
+      goldMultiplier,
+      infiniteGold,
+      dungeon,
+      relics,
+      weapons,
+      equippedWeapon,
+      armors,
+      equippedArmor,
+      equippedArtifactId,
+      heroPosition,
+      heroDirection,
+      mapLocationIndex,
+      cityMonsters,
+      duelWins,
+      items,
+      shopLevels,
+      introSkipped,
+    };
+    window.localStorage.setItem(gameSaveStorageKey, JSON.stringify(saveState));
+    savedGameRef.current = saveState;
+
+    if (isSupabaseConfigured && authUser && supabaseSaveLoadedRef.current) {
+      if (supabaseSaveTimer.current !== null) window.clearTimeout(supabaseSaveTimer.current);
+      supabaseSaveTimer.current = window.setTimeout(() => {
+        void supabase
+          .from('game_saves')
+          .upsert({
+            user_id: authUser.id,
+            save_data: saveState,
+            updated_at: new Date(saveState.savedAt).toISOString(),
+          }, { onConflict: 'user_id' })
+          .then(({ error }) => {
+            if (error) console.warn('Supabase save failed', error);
+          });
+        supabaseSaveTimer.current = null;
+      }, 900);
+    }
+  }, [
+    chapter, healthLevel, heroHp, enemyHp, message, savedCities, victory, endingChoice, secretEnding,
+    goblinKingReady, goblinKingFightStarted, furyGateOpen, furyDungeonEntered, furyMonstersLeft, furyChoiceOpen, furyKingFightStarted,
+    anuarGateOpen, anuarWorldEntered, anuarBombsLeft, anuarKingFightStarted, mansurGateOpen, mansurDungeonEntered, mansurMonstersLeft, mansurKingFightStarted,
+    arailmGateOpen, arailmWorldEntered, arailmMonstersLeft, arailmChoiceOpen, arailmKingFightStarted, aisGateOpen, aisWorldEntered, aisMonstersLeft,
+    aisSharkFightStarted, aisFinalChoiceOpen, aisGodFightStarted, adminWorldGateOpen, adminWorldEntered, adminWorldMonstersLeft, adminWorldBossesStarted,
+    adminFinalChoiceOpen, adminBossFightStarted, bbiGateOpen, bbiWorldEntered, bbiMonstersLeft, bbiBossStage, bbiFinalChoiceOpen, bbiCityReward,
+    bbiBadEnding, impossibleEnding, nuraliGateOpen, nuraliWorldEntered, nuraliMonstersLeft, nuraliChoiceOpen, nuraliBossFightStarted,
+    monsterAvalancheEntered, monsterAvalancheLeft, monsterAvalancheEnding, finalSpiritWorldOpen, finalSpiritMonstersLeft, finalSpiritFightStarted,
+    deathGodFightStarted, gold, goldMultiplier, infiniteGold, dungeon, relics, weapons, equippedWeapon, armors, equippedArmor, equippedArtifactId,
+    heroPosition, heroDirection, mapLocationIndex, cityMonsters, duelWins, items, shopLevels, introSkipped, authUser,
+  ]);
+
   useEffect(() => {
     if (!allAchievementsUnlocked || creatorCreditsOpen) return;
     if (window.localStorage.getItem('dragon-game-creator-credits-seen') === 'yes') return;
@@ -2398,6 +2768,20 @@ export function HomePage() {
     return () => window.clearInterval(gravityTimer);
   }, []);
 
+  function makeNearestMonsterSpawn(hp = currentMonsterHp): NearestMonsterState {
+    const directionLength = Math.max(1, Math.hypot(heroDirection.x, heroDirection.z));
+    const forward = {
+      x: heroDirection.x / directionLength,
+      z: heroDirection.z / directionLength,
+    };
+    return {
+      x: heroPosition.x + forward.x * monsterSpawnDistanceUnits,
+      z: heroPosition.z + forward.z * monsterSpawnDistanceUnits,
+      hp,
+      alive: currentMonsters > 0,
+    };
+  }
+
   function fightMonster() {
     if (isFinalReveal || heroHp === 0 || currentMonsters <= 0) {
       setMessage(currentMonsters <= 0 ? `В этом городе все ${formatPower(monstersPerCity)} монстров уже побеждены.` : 'Сначала восстанови героя.');
@@ -2501,8 +2885,22 @@ export function HomePage() {
       return;
     }
 
+    const monsterDistance = Math.hypot(heroPosition.x - nearestMonsterRef.current.x, heroPosition.z - nearestMonsterRef.current.z);
+    if (!nearestMonsterRef.current.alive || monsterDistance > meleeRangeUnits) {
+      setMessage(`Подойди ближе к гоблину: сейчас ${Math.ceil(monsterDistance / 1_000)}м, удар работает в радиусе ${meleeRangeMeters}м.`);
+      return;
+    }
+
     const baseMonstersPerHit = items.doubleStrike > 0 ? 2 + Math.max(0, shopLevels.doubleStrike - 1) : 1;
     const monstersPerHit = Math.max(1, Math.floor(baseMonstersPerHit * artifactAttackSpeedMultiplier));
+    const heroMonsterDamage = Math.max(1, Math.floor((18 + chapter * 5 + attackBonus) * artifactDamageMultiplier));
+    const nextMonsterHp = nearestMonsterRef.current.hp - heroMonsterDamage;
+    if (nextMonsterHp > 0) {
+      setNearestMonster((monster) => ({ ...monster, hp: Math.min(monster.hp, nextMonsterHp), alive: true }));
+      setMessage(`Удар по гоблину: -${formatPower(heroMonsterDamage)} HP. Осталось ${formatPower(nextMonsterHp)} HP. Дистанция ${nearestMonsterDistanceMeters.toFixed(1)}м.`);
+      return;
+    }
+
     const nextMonsters = Math.max(0, currentMonsters - monstersPerHit);
     const monsterWeapon = isAdminWorld ? rollDungeonWeapon((chapter + 30) * artifactLuckMultiplier) : isNuraliWorld ? rollDungeonWeapon(chapter + 18) : isBbiWorld ? rollDungeonWeapon(chapter + 12) : isArailmWorld ? rollDungeonWeapon(chapter + 16) : isMansurDungeon ? rollDungeonWeapon(chapter + 14) : isAnuarWorld ? rollDungeonWeapon(chapter + 12) : isFuryDungeon ? rollDungeonWeapon(chapter + 10) : isDungeon ? rollDungeonWeapon(chapter + 1) : rollWeapon(2 * artifactLuckMultiplier, chapter + 1);
     const monsterArmor = isAdminWorld ? rollArmor((chapter + 30) * artifactLuckMultiplier, chapter + 30) : isNuraliWorld ? rollArmor(18, chapter + 18) : isBbiWorld ? rollArmor(12, chapter + 12) : isArailmWorld ? rollArmor(16, chapter + 16) : isMansurDungeon ? rollArmor(14, chapter + 14) : isAnuarWorld ? rollArmor(12, chapter + 12) : isFuryDungeon ? rollArmor(10, chapter + 10) : isDungeon ? rollArmor(10, chapter + 1) : rollArmor(2 * artifactLuckMultiplier, chapter + 1);
@@ -2533,6 +2931,7 @@ export function HomePage() {
     } else {
       setCityMonsters(nextCityMonsters);
     }
+    setNearestMonster(nextMonsters > 0 ? makeNearestMonsterSpawn(currentMonsterHp) : { ...nearestMonsterRef.current, hp: 0, alive: false });
     addGold(2 + chapter);
     const streakRewardText = addWinStreak('монстр побежден');
 
@@ -2671,7 +3070,7 @@ export function HomePage() {
       setEquippedWeapon(deathSword);
       setEquippedArtifactId('godHead');
       addGold(666_666_666);
-      setMessage('Аид Сидаш побежден. Концовка: победивший смерть. Получены Голова бога и смертельный секретный меч.');
+      setMessage('Король ада побежден. Концовка: победивший смерть. Получены Голова бога и смертельный секретный меч.');
       navigate('/world');
       return;
     }
@@ -2854,7 +3253,7 @@ export function HomePage() {
       setDeathGodFightStarted(true);
       setEnemyHp(deathGodHp);
       setHeroHp(currentHeroMaxHp);
-      setMessage(`Души короля драконов побеждены. Из ада вышел бог смерти Аид Сидаш: ${formatPower(deathGodHp)} HP, в 100 раз больше главного босса.`);
+      setMessage(`Души финального босса умерли. Из ада вышел Король ада: ${formatPower(deathGodHp)} HP, в 10 раз сильнее финального босса.`);
       navigate('/');
       return;
     }
@@ -2983,7 +3382,34 @@ export function HomePage() {
   useEffect(() => {
     setMonsterAttackCount(0);
     monsterChaseStartedAt.current = Date.now();
+    setNearestMonster(currentMonsters > 0 ? makeNearestMonsterSpawn(currentMonsterHp) : { ...nearestMonsterRef.current, hp: 0, alive: false });
   }, [chapter, currentMonsters]);
+
+  useEffect(() => {
+    nearestMonsterRef.current = nearestMonster;
+  }, [nearestMonster]);
+
+  useEffect(() => {
+    const chaseTimer = window.setInterval(() => {
+      setNearestMonster((monster) => {
+        if (!monster.alive || currentMonsters <= 0 || heroHp <= 0 || isFinalReveal) return monster;
+        const dx = heroPosition.x - monster.x;
+        const dz = heroPosition.z - monster.z;
+        const distance = Math.hypot(dx, dz);
+        const stopDistance = meleeRangeUnits * 0.85;
+        if (distance <= stopDistance) return monster;
+        const step = Math.min(distance - stopDistance, monsterRunSpeedPerSecond * 0.04);
+        const length = Math.max(1, distance);
+        return {
+          ...monster,
+          x: monster.x + (dx / length) * step,
+          z: monster.z + (dz / length) * step,
+        };
+      });
+    }, 40);
+
+    return () => window.clearInterval(chaseTimer);
+  }, [currentMonsters, heroHp, heroPosition, isFinalReveal]);
 
   useEffect(() => {
     monsterBotRef.current = {
@@ -2995,14 +3421,16 @@ export function HomePage() {
       heroHp,
       heroPosition,
       isFinalReveal,
+      nearestMonsterInRange,
     };
-  }, [chapter, currentMonsters, currentMonsterTotal, defenseBonus, hasAdminHelmet, heroHp, heroPosition, isFinalReveal]);
+  }, [chapter, currentMonsters, currentMonsterTotal, defenseBonus, hasAdminHelmet, heroHp, heroPosition, isFinalReveal, nearestMonsterInRange]);
 
   useEffect(() => {
     const attackTimer = window.setInterval(() => {
       const state = monsterBotRef.current;
       if (state.isFinalReveal || state.currentMonsters <= 0 || state.heroHp <= 0 || state.hasAdminHelmet) return;
       if (Date.now() - monsterChaseStartedAt.current < monsterChaseCatchTimeMs) return;
+      if (!state.nearestMonsterInRange) return;
 
       const crowdPressure = Math.max(1, Math.ceil(Math.min(state.currentMonsters, state.currentMonsterTotal) / Math.max(1, state.currentMonsterTotal / 6)));
       const rawDamage = monsterBotAttackDamage + state.chapter * 4 + crowdPressure * 2;
@@ -3674,6 +4102,7 @@ export function HomePage() {
   }, [playerId]);
 
   function restart() {
+    window.localStorage.removeItem(gameSaveStorageKey);
     const avalancheCompleted = unlockedAchievements.includes('monsterAvalanche');
     setChapter(avalancheCompleted ? monsterAvalancheStartChapter : 0);
     setHealthLevel(0);
@@ -4657,7 +5086,11 @@ export function HomePage() {
             <p className="eyebrow">Обучение</p>
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
-              <p>В каждом городе 1000 монстров. Сначала выбей всех монстров, потом бей босса города. После 10 драконов откроется финальный бой.</p>
+              <div className="guide-current-version">
+                <strong>Текущая версия: vAllAnimation + vSave</strong>
+                <span>Все основные сущности анимированы, прогресс сохраняется, главный дракон обновлен.</span>
+              </div>
+              <p>В каждом городе 1000 монстров. Сначала выбей всех монстров, потом бей босса города. После 10 драконов откроется финальный бой, подземный мир, души финального босса и Король ада.</p>
               <div className="guide-columns">
                 <div>
                   <strong>Управление</strong>
@@ -4666,6 +5099,7 @@ export function HomePage() {
                   <span>Пробел: прыгнуть</span>
                   <span>F: ударить рядом</span>
                   <span>Клик по бою: ударить монстра или босса</span>
+                  <span>На телефоне: джойстик, кнопки движения и Удар</span>
                 </div>
                 <div>
                   <strong>Бой</strong>
@@ -4674,6 +5108,16 @@ export function HomePage() {
                   <span>У монстров 1000 HP</span>
                   <span>После всех монстров появляется дракон</span>
                   <span>Магазин качает меч, броню, HP и питомца</span>
+                  <span>Удар рядом бьет ближайшего монстра</span>
+                </div>
+                <div>
+                  <strong>Монстры</strong>
+                  <span>Гоблины: прыгают и бьют ножом или дубиной</span>
+                  <span>Пауки: перебирают лапами и кусают</span>
+                  <span>Орки: топают и бьют топором</span>
+                  <span>Каменные и великаны: медленно, но тяжело атакуют</span>
+                  <span>Ящеры: бегут с хвостом и рывком</span>
+                  <span>Сетчатые: пульсируют и светятся</span>
                 </div>
                 <div>
                   <strong>Миры</strong>
@@ -4684,12 +5128,51 @@ export function HomePage() {
                   <span>Достижения дают коды и бонусы</span>
                 </div>
                 <div>
+                  <strong>Коды и секреты</strong>
+                  <span>wwfuri: секретный фури-мир</span>
+                  <span>Anuar: город бомб</span>
+                  <span>mansur: подземелье Мансура</span>
+                  <span>arailm: красная программа</span>
+                  <span>ais228198: водный мир</span>
+                  <span>ADMIN2281: 11 мир админа</span>
+                  <span>nurali2281: новый мир Нурали</span>
+                </div>
+                <div>
+                  <strong>Боссы</strong>
+                  <span>После городов: Великий дракон</span>
+                  <span>После финала может открыться подземный мир</span>
+                  <span>После темных монстров появляются души финального босса</span>
+                  <span>После душ выходит Король ада, он сильнее финального босса в 10 раз</span>
+                  <span>Секретные боссы дают концовки и артефакты</span>
+                </div>
+                <div>
+                  <strong>Предметы</strong>
+                  <span>Оружие повышает урон</span>
+                  <span>Броня повышает защиту</span>
+                  <span>Артефакты дают урон, деньги, скорость и HP</span>
+                  <span>Секретные мечи появляются после особых концовок</span>
+                  <span>Предмет можно продать в инвентаре</span>
+                </div>
+                <div>
+                  <strong>Сохранение</strong>
+                  <span>Игра сохраняет HP героя и босса</span>
+                  <span>Сохраняются деньги, вещи, броня и оружие</span>
+                  <span>Сохраняются города, монстры и секретные миры</span>
+                  <span>Сохраняются позиция героя, улучшения и концовки</span>
+                  <span>Кнопка Начать повторно очищает сохранение</span>
+                </div>
+                <div>
                   <strong>Версии</strong>
-                  <span>v3D: новый рыцарь KayKit</span>
-                  <span>v3D: новая 3D модель гоблина</span>
-                  <span>v3D: камера от третьего лица</span>
-                  <span>v3D: боты монстров бегут, атакуют и отходят</span>
-                  <span>v3D: экран загрузки ждёт модели</span>
+                  <span>v1: города, монстры, магазин и драконы</span>
+                  <span>v2: секретные миры, коды, дуэли и достижения</span>
+                  <span>v3D: камера от третьего лица и 3D герой</span>
+                  <span>v3D+: 3D монстры бегут, атакуют и отходят</span>
+                  <span>vBoss: разные 3D модели для боссов концовок</span>
+                  <span>vDragon: новый дракон с анимациями и огненным дыханием</span>
+                  <span>vSave: автосохранение всего прогресса</span>
+                  <span>vMonster: каждому виду монстра своя анимация</span>
+                  <span>vAllAnimation: боссы, эффекты и окружение двигаются</span>
+                  <span>vGuide: полный гайд и список версий</span>
                 </div>
               </div>
             </div>
@@ -4698,7 +5181,7 @@ export function HomePage() {
           <div className="tutorial-tip tutorial-goblin">
             <span className="tutorial-arrow tutorial-arrow-down" />
             <b>1</b>
-            <p>Иди к гоблину и убей его. Двигайся WASD или стрелками, бей кликом, E или F.</p>
+            <p>Иди к монстру и убей его. Двигайся WASD или стрелками, бей кликом или F.</p>
           </div>
           <div className="tutorial-tip tutorial-world">
             <span className="tutorial-arrow tutorial-arrow-up" />
@@ -5033,7 +5516,7 @@ export function HomePage() {
           >
             <span style={{ transform: `translate(${joystickThumb.x}px, ${joystickThumb.y}px)` }} />
           </div>
-          <div className="move-pad" aria-label="Кнопки движения">
+          <div className="movement-pad" aria-label="Кнопки движения">
             {[
               ['w', '↑'],
               ['a', '←'],
@@ -5042,7 +5525,7 @@ export function HomePage() {
             ].map(([key, label]) => (
               <button
                 aria-label={`Идти ${label}`}
-                className={`move-pad-button ${key}`}
+                className={`movement-pad-button ${key}`}
                 key={key}
                 onPointerDown={(event) => {
                   event.preventDefault();
@@ -5300,6 +5783,9 @@ export function HomePage() {
             <span>Здоровье {heroHealthText}</span>
             <span>{currentEnemyHealthText}</span>
             <span>{isFinalSpiritWorld ? 'Подземные монстры' : isDungeon ? 'Пещера' : 'Монстры'}: {formatPower(currentMonsters)}</span>
+            {currentMonsters > 0 && (
+              <span>Ближний гоблин: {nearestMonsterDistanceMeters.toFixed(1)}м | HP {formatPower(Math.max(0, nearestMonster.hp))} ({Math.ceil(nearestMonsterHealthPercent)}%)</span>
+            )}
             <span>Винстрик x{winStreakState.current} | рекорд {winStreakState.best}</span>
           </div>
           {currentMonsters === 0 && (
@@ -5378,7 +5864,7 @@ export function HomePage() {
             <p className="eyebrow">Адская концовка</p>
             <h2>Ваша душа попала в ад</h2>
             <p>
-              После душ короля драконов герой встретил Аида Сидаша. Бог смерти спокойно смотрел на героя и забрал его душу.
+              После душ финального босса герой встретил Короля ада. Он вышел из черного трона и забрал душу героя.
             </p>
             <p>
               HP героя осталось, но душа уже не вернулась в мир живых.
@@ -5393,7 +5879,7 @@ export function HomePage() {
             <p className="eyebrow">Секретная концовка</p>
             <h2>Победивший смерть</h2>
             <p>
-              Герой победил Аида Сидаша, бога смерти с HP в 100 раз больше главного босса.
+              Герой победил Короля ада с HP в 10 раз больше финального босса.
             </p>
             <p>
               Получены Голова бога: +666% ко всем бафам, и смертельный секретный меч с уроном {formatHugeText(deathSwordDamageText)}.

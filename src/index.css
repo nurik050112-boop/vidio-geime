@@ -828,7 +828,7 @@ button.secondary {
 
 .mobile-joystick,
 .mobile-attack,
-.move-pad {
+.movement-pad {
   display: none;
 }
 
@@ -836,7 +836,7 @@ button.secondary {
   position: absolute;
   left: max(18px, env(safe-area-inset-left));
   bottom: max(22px, env(safe-area-inset-bottom));
-  z-index: 55;
+  z-index: 120;
   width: 156px;
   height: 156px;
   border: 4px solid rgba(255, 248, 232, 0.82);
@@ -892,21 +892,21 @@ button.secondary {
 }
 
 .game.play-page .mobile-joystick,
-.game.play-page .move-pad {
+.game.play-page .movement-pad {
   display: block;
 }
 
-.move-pad {
+.movement-pad {
   position: absolute;
   left: max(194px, calc(env(safe-area-inset-left) + 194px));
   bottom: max(30px, env(safe-area-inset-bottom));
-  z-index: 56;
+  z-index: 121;
   width: 132px;
   height: 132px;
   pointer-events: auto;
 }
 
-.move-pad-button {
+.movement-pad-button {
   position: absolute;
   display: grid;
   place-items: center;
@@ -926,27 +926,27 @@ button.secondary {
   user-select: none;
 }
 
-.move-pad-button:active {
+.movement-pad-button:active {
   transform: translateY(4px);
   box-shadow: 0 2px 0 rgba(16, 16, 20, 0.74), 0 8px 16px rgba(0, 0, 0, 0.24);
 }
 
-.move-pad-button.w {
+.movement-pad-button.w {
   left: 45px;
   top: 0;
 }
 
-.move-pad-button.a {
+.movement-pad-button.a {
   left: 0;
   top: 45px;
 }
 
-.move-pad-button.s {
+.movement-pad-button.s {
   left: 45px;
   top: 90px;
 }
 
-.move-pad-button.d {
+.movement-pad-button.d {
   left: 90px;
   top: 45px;
 }
@@ -1188,8 +1188,8 @@ button.secondary {
 .tutorial-main {
   left: 50%;
   top: 82px;
-  width: min(680px, calc(100vw - 28px));
-  max-height: min(78vh, 620px);
+  width: min(860px, calc(100vw - 28px));
+  max-height: min(82vh, 720px);
   padding: 16px;
   transform: translateX(-50%);
 }
@@ -1217,15 +1217,34 @@ button.secondary {
 .guide-scroll {
   display: grid;
   gap: 12px;
-  max-height: 420px;
+  max-height: min(58vh, 520px);
   overflow: auto;
   padding-right: 6px;
 }
 
 .guide-columns {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+}
+
+.guide-current-version {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 2px solid rgba(115, 210, 222, 0.48);
+  border-radius: 8px;
+  background: rgba(115, 210, 222, 0.12);
+}
+
+.guide-current-version strong {
+  color: #73d2de;
+}
+
+.guide-current-version span {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .guide-columns div {
@@ -1996,14 +2015,42 @@ button.secondary {
   background: #102019;
 }
 
-.battle-3d-loading span {
+.battle-3d-loading .loading-sigil {
+  position: relative;
   justify-self: center;
-  width: 44px;
-  height: 44px;
-  border: 5px solid rgba(255, 248, 232, 0.25);
+  width: 72px;
+  height: 72px;
+  border: 5px solid rgba(255, 248, 232, 0.22);
   border-top-color: #ffe66d;
+  border-right-color: #73d2de;
   border-radius: 50%;
   animation: loading-spin 900ms linear infinite;
+  box-shadow: 0 0 28px rgba(255, 230, 109, 0.22), inset 0 0 18px rgba(115, 210, 222, 0.18);
+}
+
+.battle-3d-loading .loading-sigil::before {
+  content: "";
+  position: absolute;
+  left: 31px;
+  top: 13px;
+  width: 9px;
+  height: 42px;
+  border-radius: 7px 7px 2px 2px;
+  background: linear-gradient(#f8fbff 0 54%, #a7b6b8 54% 100%);
+  box-shadow: 0 0 14px rgba(223, 248, 255, 0.65);
+  transform: rotate(38deg);
+}
+
+.battle-3d-loading .loading-sigil::after {
+  content: "";
+  position: absolute;
+  left: 25px;
+  top: 42px;
+  width: 22px;
+  height: 7px;
+  border-radius: 999px;
+  background: #8a5b38;
+  transform: rotate(38deg);
 }
 
 .battle-3d-loading strong {
@@ -7912,7 +7959,7 @@ button.selected {
 @media (pointer: coarse) {
   .mobile-joystick,
   .mobile-attack,
-  .move-pad {
+  .movement-pad {
     display: block;
   }
 
@@ -7985,34 +8032,34 @@ button.selected {
     height: 132px;
   }
 
-  .move-pad {
+  .movement-pad {
     left: max(152px, calc(env(safe-area-inset-left) + 152px));
     bottom: max(24px, env(safe-area-inset-bottom));
     width: 112px;
     height: 112px;
   }
 
-  .move-pad-button {
+  .movement-pad-button {
     width: 36px;
     height: 36px;
     min-height: 36px;
     font-size: 18px;
   }
 
-  .move-pad-button.w {
+  .movement-pad-button.w {
     left: 38px;
   }
 
-  .move-pad-button.a {
+  .movement-pad-button.a {
     top: 38px;
   }
 
-  .move-pad-button.s {
+  .movement-pad-button.s {
     left: 38px;
     top: 76px;
   }
 
-  .move-pad-button.d {
+  .movement-pad-button.d {
     left: 76px;
     top: 38px;
   }
