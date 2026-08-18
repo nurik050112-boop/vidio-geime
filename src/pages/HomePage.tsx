@@ -82,6 +82,7 @@ type Quest = {
   done: boolean;
   progress: string;
   money: number;
+  reward: string;
 };
 
 type HeroAnimation = 'idle' | 'strike' | 'step' | 'heal';
@@ -508,6 +509,7 @@ type GameSaveState = {
   items: Record<ShopItem['id'], number>;
   shopLevels: Record<ShopItem['id'], number>;
   introSkipped: boolean;
+  paidQuestIds: number[];
 };
 
 const gameSaveStorageKey = 'dragon-game-save-v1';
@@ -1082,6 +1084,16 @@ function getWeaponDisplayName(weapon: Weapon) {
   return `${rarityPrefix}${visualName}`;
 }
 
+function getWeaponModelName(weapon: Weapon) {
+  const styleIndex = getWeaponStyleIndex(weapon);
+  if (styleIndex === 6 || styleIndex === 13) return 'KayKit staff.gltf';
+  if (styleIndex === 10) return 'KayKit crossbow_2handed.gltf';
+  if (styleIndex === 11 || styleIndex === 16) return 'KayKit axe_2handed.gltf';
+  if (styleIndex === 17) return 'KayKit dagger.gltf';
+  if (styleIndex === 3 || styleIndex === 19) return 'KayKit sword_2handed.gltf';
+  return 'KayKit sword_1handed.gltf';
+}
+
 function isBbiLegendaryWeapon(weapon: Weapon | null) {
   return weapon?.id.startsWith('bbi-legendary-sword-') ?? false;
 }
@@ -1477,7 +1489,7 @@ export function HomePage() {
   const [gameLoadingDone, setGameLoadingDone] = useState(false);
   const [introSkipped, setIntroSkipped] = useState(savedGameRef.current?.introSkipped ?? false);
   const [creatorCreditsOpen, setCreatorCreditsOpen] = useState(false);
-  const paidQuestIds = useRef<Set<number>>(new Set());
+  const paidQuestIds = useRef<Set<number>>(new Set(savedGameRef.current?.paidQuestIds ?? []));
   const audioContextRef = useRef<AudioContext | null>(null);
   const bossMusicStopRef = useRef<(() => void) | null>(null);
   const lastSpokenSceneRef = useRef('');
@@ -1767,46 +1779,64 @@ export function HomePage() {
     'разведай окраины', 'найди следы когтей', 'победи первую волну', 'собери золото на припасы', 'проверь старую башню',
     'услышь слухи жителей', 'очисти площадь', 'найди вход в логово', 'добудь новое оружие', 'погаси восточный пожар',
     'разбей огненный тотем', 'победи стражу логова', 'открой ворота дракона', 'сразись с сыном дракона', 'очисти город',
+    'защити ворота', 'найди тайный сундук', 'почини мост', 'спаси караван', 'победи ночной отряд',
+    'собери кристаллы', 'проверь катакомбы', 'сними проклятие', 'открой древний алтарь', 'найди карту босса',
+    'победи элитного монстра', 'усиль меч', 'усиль броню', 'зачисти рынок', 'верни свет маяку',
+    'найди руну', 'разбей цепи ада', 'победи огненную стражу', 'закрой портал', 'собери души врагов',
+    'найди след дракона', 'переживи засаду', 'выбей редкий предмет', 'помоги кузнецу', 'победи капитана',
+    'очисти храм', 'найди древний ключ', 'сними печать', 'победи теней', 'зажги башню',
+    'пройди испытание силы', 'пройди испытание скорости', 'пройди испытание удачи', 'забери трофей', 'укрепи город',
   ];
-  const generatedQuests = dragonSons.flatMap((son, cityIndex) =>
-    cityQuestNames.map((name, stepIndex) => {
-      const questNumber = cityIndex * cityQuestNames.length + stepIndex + 1;
-      const difficulty = cityIndex + 1 + stepIndex / 5;
-      return {
-        id: questNumber,
-        title: `Квест ${questNumber}: ${son.city}`,
-        text: `${name} в городе ${son.city}. Этот шаг ведет героя ближе к логову: ${son.lair}.`,
-        done: storyProgress >= questNumber || savedCities.length > cityIndex,
-        progress: `${Math.min(Math.max(storyProgress - cityIndex * 15, 0), 15)} / 15 шагов города`,
-        money: Math.round(25 * difficulty * difficulty + questNumber * 4),
-      };
-    })
-  );
+  const generatedQuests: Quest[] = Array.from({ length: 497 }, (_, index) => {
+    const questNumber = index + 1;
+    const cityIndex = index % dragonSons.length;
+    const stepIndex = index % cityQuestNames.length;
+    const loop = Math.floor(index / cityQuestNames.length);
+    const son = dragonSons[cityIndex];
+    const difficulty = cityIndex + 1 + loop * 0.7 + stepIndex / 8;
+    const reward =
+      questNumber % 25 === 0 ? 'деньги + секретное оружие'
+      : questNumber % 15 === 0 ? 'деньги + броня'
+      : questNumber % 10 === 0 ? 'деньги + 3D меч'
+      : 'деньги';
+    return {
+      id: questNumber,
+      title: `Квест ${questNumber}: ${son.city}`,
+      text: `${cityQuestNames[stepIndex]} в городе ${son.city}. Серия ${loop + 1} ведет героя ближе к логову: ${son.lair}.`,
+      done: storyProgress >= questNumber || savedCities.length > cityIndex + loop,
+      progress: `${Math.min(Math.max(storyProgress - loop * 50, 0), 50)} / 50 шагов серии`,
+      money: Math.round(35 * difficulty * difficulty + questNumber * 9),
+      reward,
+    };
+  });
   const quests: Quest[] = [
     ...generatedQuests,
     {
-      id: 106,
-      title: 'Квест 106: Семь сыновей',
+      id: 498,
+      title: 'Квест 498: Семь сыновей',
       text: 'Победи всех сыновей дракона. Каждый следующий сильнее прошлого в 1000 раз.',
       done: savedCities.length >= dragonSons.length,
       progress: `${savedCities.length} / ${dragonSons.length} сыновей`,
       money: 12_000,
+      reward: 'деньги + легендарный меч',
     },
     {
-      id: 107,
-      title: 'Квест 107: Правда главного дракона',
+      id: 499,
+      title: 'Квест 499: Правда главного дракона',
       text: 'Дойди до финала и узнай, почему дракон сжег мир.',
       done: isFinalReveal && endingChoice !== null,
       progress: isEndingChoice ? 'сделай последний выбор' : isFinalReveal ? 'правда раскрыта' : 'финал еще впереди',
       money: 50_000,
+      reward: 'деньги + секретное оружие',
     },
     {
-      id: 108,
-      title: 'Секрет: Король гоблинов',
+      id: 500,
+      title: 'Квест 500: Король гоблинов',
       text: 'Очисти пещеру на 10000 врагов и узнай тайну короля гоблинов.',
       done: secretEnding === 'goblinKing',
       progress: secretEnding === 'goblinKing' ? 'секрет раскрыт' : goblinKingReady ? 'король гоблинов ждет' : 'найди пещеру',
       money: 77_777,
+      reward: 'деньги + секретная концовка',
     },
   ];
   const activeQuest = quests.find((quest) => !quest.done) ?? quests[quests.length - 1];
@@ -2330,6 +2360,7 @@ export function HomePage() {
     setItems(save.items ?? { sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
     setShopLevels(save.shopLevels ?? { sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
     setIntroSkipped(save.introSkipped ?? false);
+    paidQuestIds.current = new Set(save.paidQuestIds ?? []);
   }
 
   useEffect(() => {
@@ -2460,6 +2491,7 @@ export function HomePage() {
       items,
       shopLevels,
       introSkipped,
+      paidQuestIds: Array.from(paidQuestIds.current),
     };
     window.localStorage.setItem(gameSaveStorageKey, JSON.stringify(saveState));
     savedGameRef.current = saveState;
@@ -2552,10 +2584,30 @@ export function HomePage() {
     if (completedUnpaid.length === 0) return;
 
     const money = completedUnpaid.reduce((sum, quest) => sum + quest.money, 0);
+    const rewardWeapons = completedUnpaid.flatMap((quest) => {
+      if (quest.id % 25 === 0 || quest.id === 499) return [createSecretWeapon(Math.max(quest.id / 10, chapter + 1))];
+      if (quest.id % 10 === 0 || quest.id === 498) return [createWeapon(quest.id % 50 === 0 ? 'Легендарка' : 'Эпик', Math.max(quest.id / 12, chapter + 1))];
+      return [];
+    });
+    const rewardArmors = completedUnpaid.flatMap((quest) => (
+      quest.id % 15 === 0 ? [createArmor(quest.id % 45 === 0 ? 'Легендарка' : 'Эпик', Math.max(quest.id / 15, chapter + 1))] : []
+    ));
     completedUnpaid.forEach((quest) => paidQuestIds.current.add(quest.id));
     addGold(money);
-    setMessage(`Квест выполнен! Получено денег: ${money}. Чем сложнее задание, тем больше награда.`);
-  }, [storyProgress, savedCities.length, isFinalReveal]);
+    if (rewardWeapons.length > 0) {
+      setWeapons((currentWeapons) => [...currentWeapons, ...rewardWeapons]);
+      setEquippedWeapon(rewardWeapons[rewardWeapons.length - 1]);
+    }
+    if (rewardArmors.length > 0) {
+      setArmors((currentArmors) => [...currentArmors, ...rewardArmors]);
+      setEquippedArmor(rewardArmors[rewardArmors.length - 1]);
+    }
+    const itemText = [
+      rewardWeapons.length > 0 ? `${rewardWeapons.length} оружия` : '',
+      rewardArmors.length > 0 ? `${rewardArmors.length} брони` : '',
+    ].filter(Boolean).join(', ');
+    setMessage(`Квест выполнен! Получено денег: ${formatPower(money)}${itemText ? ` и ${itemText}` : ''}. Всего квестов: ${quests.filter((quest) => quest.done).length} / 500.`);
+  }, [storyProgress, savedCities.length, isFinalReveal, endingChoice, secretEnding]);
 
   useEffect(() => {
     if (heroHp > 0 || isFinalReveal || isMonsterAvalancheWorld || isFinalSpiritWorld || isFinalSpiritBoss) return;
@@ -5087,8 +5139,8 @@ export function HomePage() {
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
               <div className="guide-current-version">
-                <strong>Текущая версия: vAllAnimation + vSave</strong>
-                <span>Все основные сущности анимированы, прогресс сохраняется, главный дракон обновлен.</span>
+                <strong>Текущая версия: vQuest500 + v3DInventory</strong>
+                <span>Добавлены 500 квестов с наградами, 3D-фото оружия и облачное сохранение прогресса.</span>
               </div>
               <p>В каждом городе 1000 монстров. Сначала выбей всех монстров, потом бей босса города. После 10 драконов откроется финальный бой, подземный мир, души финального босса и Король ада.</p>
               <div className="guide-columns">
@@ -5173,6 +5225,8 @@ export function HomePage() {
                   <span>vMonster: каждому виду монстра своя анимация</span>
                   <span>vAllAnimation: боссы, эффекты и окружение двигаются</span>
                   <span>vGuide: полный гайд и список версий</span>
+                  <span>vQuest500: 500 квестов с деньгами, мечами и броней</span>
+                  <span>v3DInventory: 3D-фото всех видов оружия в инвентаре</span>
                 </div>
               </div>
             </div>
@@ -6356,6 +6410,7 @@ export function HomePage() {
                   <p>{quest.text}</p>
                   <small>{quest.progress}</small>
                   <small>Деньги за квест: {quest.money}</small>
+                  <small>Награда: {quest.reward}</small>
                 </div>
               </div>
             ))}
@@ -6396,6 +6451,7 @@ export function HomePage() {
                   </span>
                   <span className="weapon-name">{getWeaponDisplayName(weapon)}</span>
                   <small>{weapon.rarity} +{isBbiLegendaryWeapon(weapon) ? `${formatPower(bbiLegendaryDamage)} +10000%` : weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | продажа {formatPower(weaponSellPrice[weapon.rarity])}</small>
+                  <small className="weapon-model-label">3D фото: {getWeaponModelName(weapon)}</small>
                   <span
                     className="sell-button"
                     onClick={(event) => {

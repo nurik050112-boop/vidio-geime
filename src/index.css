@@ -6034,6 +6034,9 @@ button.selected {
   background-size: 8px 8px, 8px 8px, auto, auto;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55), 0 3px 0 rgba(37, 17, 5, 0.28);
   image-rendering: pixelated;
+  overflow: hidden;
+  perspective: 220px;
+  transform-style: preserve-3d;
 }
 
 .weapon-picture::before,
@@ -6248,17 +6251,49 @@ button.selected {
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.88) 0 38%, transparent 39%),
     var(--sword-blade, linear-gradient(180deg, #d7fbff, #73d2de));
-  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg));
+  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg)) rotateY(-34deg) rotateX(12deg);
+  box-shadow:
+    5px 7px 0 rgba(20, 8, 4, 0.22),
+    0 0 12px rgba(115, 210, 222, 0.72),
+    inset -4px 0 0 rgba(20, 8, 4, 0.18),
+    inset 3px 0 0 rgba(255, 255, 255, 0.65);
 }
 
 .weapon-card .weapon-picture::after {
   width: var(--sword-guard, 25px);
   background: var(--sword-guard-color, #ffd166);
-  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg));
+  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg)) rotateY(-26deg);
+  box-shadow: 4px 5px 0 rgba(20, 8, 4, 0.24), inset 0 3px 0 rgba(255, 255, 255, 0.32);
 }
 
 .weapon-card .weapon-picture i {
-  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg));
+  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg)) rotateY(-24deg);
+  box-shadow: 4px 5px 0 rgba(20, 8, 4, 0.2), inset -2px 0 0 rgba(0, 0, 0, 0.24);
+}
+
+.weapon-card .weapon-picture i::after {
+  left: -18px;
+  top: 9px;
+  width: 44px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(37, 17, 5, 0.28), transparent 70%);
+  transform: rotate(calc(var(--sword-tilt, 32deg) * -1)) translateZ(-8px);
+  filter: blur(1px);
+}
+
+.weapon-model-label {
+  color: #164c9a;
+  opacity: 0.86;
+}
+
+.weapon-card:hover .weapon-picture::before,
+.weapon-card.equipped .weapon-picture::before {
+  transform: translateX(-50%) rotate(var(--sword-tilt, 32deg)) rotateY(-18deg) rotateX(18deg) translateZ(8px);
+}
+
+.weapon-card:hover .weapon-picture {
+  filter: saturate(1.08) contrast(1.04);
 }
 
 .weapon-style-18 .weapon-picture::before {
