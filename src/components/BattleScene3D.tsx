@@ -2043,6 +2043,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
           model.rotation.y += (index % 2 ? 0.08 : -0.08);
           current.add(model);
           current.userData.loadedGoblinModel = model;
+          current.userData.loadedGoblinBaseScale = model.scale.x;
           current.userData.loadedGoblinBaseRotationY = model.rotation.y;
           current.userData.baseY = 0.02;
         });
@@ -2776,6 +2777,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
         current.rotation.x -= hitReact * 0.34;
         current.rotation.z += (index % 2 ? 1 : -1) * hitReact * 0.28;
         const loadedMonsterModel = current.userData.loadedGoblinModel as THREE.Object3D | undefined;
+        const loadedMonsterBaseScale =
+          typeof current.userData.loadedGoblinBaseScale === 'number' ? current.userData.loadedGoblinBaseScale : 1;
         const loadedMonsterBaseRotationY = typeof current.userData.loadedGoblinBaseRotationY === 'number' ? current.userData.loadedGoblinBaseRotationY : Math.PI;
         const chaseWalkPower = distance > attackRange ? 1 : 0.45;
         if (loadedMonsterModel) {
@@ -2785,7 +2788,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
           loadedMonsterModel.rotation.x = -0.08 - monsterSwing * 0.34 + loadedLift * 0.08 - hitReact * 0.55;
           loadedMonsterModel.rotation.y = loadedMonsterBaseRotationY + Math.sin(walk * 0.6 + index) * 0.11;
           loadedMonsterModel.rotation.z = loadedStep * 0.1 + monsterHit * attack * 0.22 + (index % 2 ? 1 : -1) * hitReact * 0.42;
-          loadedMonsterModel.scale.setScalar(1 + loadedLift * 0.045 + monsterWindup * attack * 0.05 + pressureIntensity * 0.025 + hitReact * 0.06);
+          loadedMonsterModel.scale.setScalar(loadedMonsterBaseScale);
         }
         const attackTrail = current.userData.attackTrail as THREE.Mesh | undefined;
         if (attackTrail) {
@@ -2917,13 +2920,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         if (current.userData.backSpikes instanceof THREE.Group) {
           current.userData.backSpikes.rotation.x = Math.sin(walk * 0.35 + index) * 0.06;
         }
-        const aliveScale = current.scale.x;
-        if (aliveScale > 0.03) {
-          current.scale.set(
-            aliveScale * (1 + pressureIntensity * 0.018),
-            aliveScale * (1 + breathing + pressureIntensity * 0.028 + monsterWindup * attack * 0.018),
-            aliveScale * (1 - pressureIntensity * 0.01)
-          );
+        if (current.scale.x > 0.03) {
           current.rotation.x -= stalkLean * (distance > attackRange ? 0.65 : 0.25);
           current.rotation.z += Math.sin(walk * 0.45 + index) * (wantsToKillHero ? 0.028 : 0.012);
         }
