@@ -2012,6 +2012,14 @@ button.secondary {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.52);
 }
 
+.trade-request-box {
+  width: min(620px, 100%);
+  gap: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 209, 102, 0.16), rgba(47, 128, 237, 0.14)),
+    linear-gradient(135deg, rgba(24, 20, 31, 0.96), rgba(72, 22, 42, 0.92));
+}
+
 .duel-request-box h2 {
   margin: 0;
   font-size: clamp(34px, 8vw, 62px);
@@ -2023,6 +2031,55 @@ button.secondary {
   margin: 0;
   color: #fff8e8;
   font-weight: 900;
+}
+
+.trade-request-nick {
+  display: inline-grid;
+  justify-self: center;
+  min-width: min(360px, 100%);
+  padding: 12px 18px;
+  border: 2px solid rgba(255, 242, 117, 0.84);
+  border-radius: 8px;
+  color: #251105;
+  font-size: clamp(24px, 6vw, 42px);
+  background: linear-gradient(180deg, #fff8e8, #ffd166);
+  box-shadow: 0 7px 0 #9b3d16;
+}
+
+.trade-request-abilities {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  text-align: left;
+}
+
+.trade-request-abilities div {
+  min-height: 82px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 12px;
+  border: 2px solid rgba(255, 248, 232, 0.42);
+  border-radius: 8px;
+  background: rgba(255, 248, 232, 0.12);
+}
+
+.trade-request-abilities span {
+  color: #fff275;
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.trade-request-abilities b {
+  color: #fff8e8;
+  font-size: 16px;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.trade-request-box .duel-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .duel-scanner,
@@ -8544,6 +8601,11 @@ button.selected {
 
   .duel-request-box {
     padding: 16px;
+  }
+
+  .trade-request-abilities,
+  .trade-request-box .duel-actions {
+    grid-template-columns: 1fr;
   }
 
   .hud {

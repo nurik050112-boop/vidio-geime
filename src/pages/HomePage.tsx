@@ -132,30 +132,30 @@ type DuelTradeOffer =
   | null;
 
 const arcaneSpells = [
-  { name: 'Огненный вихрь', icon: 'O', power: 20, mana: 32, cooldown: 5_400, targets: 28, radius: 70, speed: 40 },
-  { name: 'Рассекающий ветер', icon: 'V', power: 17, mana: 24, cooldown: 4_200, targets: 24, radius: 70, speed: 40 },
-  { name: 'Ледяной дождь', icon: 'I', power: 18, mana: 28, cooldown: 4_800, targets: 26, radius: 70, speed: 40 },
-  { name: 'Окаменение', icon: 'K', power: 16, mana: 26, cooldown: 5_200, targets: 22, radius: 70, speed: 40 },
-  { name: 'Громовой разлом', icon: 'G', power: 22, mana: 36, cooldown: 6_200, targets: 34, radius: 70, speed: 40 },
-  { name: 'Теневая коса', icon: 'Q', power: 19, mana: 30, cooldown: 5_600, targets: 30, radius: 70, speed: 40 },
-  { name: 'Огонь', icon: 'F', power: 8, mana: 14, cooldown: 4_200, targets: 3 },
-  { name: 'Лед', icon: 'I', power: 7, mana: 12, cooldown: 3_800, targets: 4 },
-  { name: 'Молния', icon: 'L', power: 10, mana: 18, cooldown: 4_800, targets: 5 },
-  { name: 'Вода', icon: 'W', power: 7, mana: 12, cooldown: 3_600, targets: 4 },
-  { name: 'Свет', icon: 'S', power: 9, mana: 16, cooldown: 4_400, targets: 6 },
-  { name: 'Тьма', icon: 'D', power: 11, mana: 20, cooldown: 5_200, targets: 7 },
-  { name: 'Луч', icon: 'B', power: 12, mana: 22, cooldown: 5_600, targets: 8 },
-  { name: 'Яд', icon: 'P', power: 8, mana: 14, cooldown: 4_200, targets: 6 },
-  { name: 'Звезда', icon: '*', power: 13, mana: 24, cooldown: 6_000, targets: 10 },
-  { name: 'Портал', icon: 'O', power: 9, mana: 18, cooldown: 4_900, targets: 9 },
-  { name: 'Метеор', icon: 'M', power: 15, mana: 30, cooldown: 7_200, targets: 14 },
-  { name: 'Кристалл', icon: 'C', power: 10, mana: 18, cooldown: 4_800, targets: 8 },
-  { name: 'Ветер', icon: 'V', power: 8, mana: 13, cooldown: 3_500, targets: 7 },
-  { name: 'Земля', icon: 'E', power: 11, mana: 21, cooldown: 5_400, targets: 9 },
-  { name: 'Руна', icon: 'R', power: 12, mana: 22, cooldown: 5_800, targets: 11 },
-  { name: 'Комета', icon: 'K', power: 18, mana: 38, cooldown: 8_500, targets: 20 },
-  { name: 'Шторм', icon: 'T', power: 14, mana: 28, cooldown: 6_800, targets: 16 },
-  { name: 'Солнце', icon: 'U', power: 16, mana: 34, cooldown: 8_000, targets: 18 },
+  { name: 'Огненный вихрь', icon: 'O', power: 20, mana: 32, cooldown: 3_000, targets: 28, radius: 70, speed: 100 },
+  { name: 'Рассекающий ветер', icon: 'V', power: 17, mana: 24, cooldown: 3_000, targets: 24, radius: 70, speed: 100 },
+  { name: 'Ледяной дождь', icon: 'I', power: 18, mana: 28, cooldown: 3_000, targets: 26, radius: 70, speed: 100 },
+  { name: 'Окаменение', icon: 'K', power: 16, mana: 26, cooldown: 3_000, targets: 22, radius: 70, speed: 100 },
+  { name: 'Громовой разлом', icon: 'G', power: 22, mana: 36, cooldown: 3_000, targets: 34, radius: 70, speed: 100 },
+  { name: 'Теневая коса', icon: 'Q', power: 19, mana: 30, cooldown: 3_000, targets: 30, radius: 70, speed: 100 },
+  { name: 'Огонь', icon: 'F', power: 8, mana: 14, cooldown: 3_000, targets: 3 },
+  { name: 'Лед', icon: 'I', power: 7, mana: 12, cooldown: 3_000, targets: 4 },
+  { name: 'Молния', icon: 'L', power: 10, mana: 18, cooldown: 3_000, targets: 5 },
+  { name: 'Вода', icon: 'W', power: 7, mana: 12, cooldown: 3_000, targets: 4 },
+  { name: 'Свет', icon: 'S', power: 9, mana: 16, cooldown: 3_000, targets: 6 },
+  { name: 'Тьма', icon: 'D', power: 11, mana: 20, cooldown: 3_000, targets: 7 },
+  { name: 'Луч', icon: 'B', power: 12, mana: 22, cooldown: 3_000, targets: 8 },
+  { name: 'Яд', icon: 'P', power: 8, mana: 14, cooldown: 3_000, targets: 6 },
+  { name: 'Звезда', icon: '*', power: 13, mana: 24, cooldown: 3_000, targets: 10 },
+  { name: 'Портал', icon: 'O', power: 9, mana: 18, cooldown: 3_000, targets: 9 },
+  { name: 'Метеор', icon: 'M', power: 15, mana: 30, cooldown: 3_000, targets: 14 },
+  { name: 'Кристалл', icon: 'C', power: 10, mana: 18, cooldown: 3_000, targets: 8 },
+  { name: 'Ветер', icon: 'V', power: 8, mana: 13, cooldown: 3_000, targets: 7 },
+  { name: 'Земля', icon: 'E', power: 11, mana: 21, cooldown: 3_000, targets: 9 },
+  { name: 'Руна', icon: 'R', power: 12, mana: 22, cooldown: 3_000, targets: 11 },
+  { name: 'Комета', icon: 'K', power: 18, mana: 38, cooldown: 3_000, targets: 20 },
+  { name: 'Шторм', icon: 'T', power: 14, mana: 28, cooldown: 3_000, targets: 16 },
+  { name: 'Солнце', icon: 'U', power: 16, mana: 34, cooldown: 3_000, targets: 18 },
 ] as const;
 
 const firstDragonCities: CityStage[] = [
@@ -167,6 +167,9 @@ const firstDragonCities: CityStage[] = [
   { name: 'Аурокс', city: 'Проволочный Разлом', country: 'Мир пустой кожи', lair: 'Темный зал прозрачных сетчатых монстров', monsterKind: 'wire', monsterName: 'сетчатые твари', title: 'сын раскаленного ветра', power: 1_000_000_000_000_000_000, color: '#3a86ff', attackSpeed: 1.1, reaction: 'держит ровный темп' },
   { name: 'Ноктар', city: 'Белый Слизень', country: 'Холодные болота', lair: 'Скользкая тропа бледных пузатых существ', monsterKind: 'pale', monsterName: 'бледные ходоки', title: 'последний сын дракона', power: 1_000_000_000_000_000_000_000, color: '#06d6a0', attackSpeed: 1.9, reaction: 'медленно готовит ледяной удар' },
 ];
+const arcaneSpellCooldownMs = 3_000;
+const arcaneSpellRadiusMeters = 70;
+const arcaneSpellSpeedKmh = 100;
 
 const extraDragonCities = [
   'Astana', 'Bishkek', 'Tashkent', 'Dubai', 'Cairo', 'Athens', 'Berlin', 'Madrid', 'Prague', 'Seoul',
@@ -431,7 +434,8 @@ const finalSpiritMonsterHp = 1_000;
 const deathSwordDamageText = '999999999999999999999999999999999999999999999';
 const citySizeMeters = 5_000;
 const cityHalfSize = (citySizeMeters / 2) * 1_000;
-const heroMoveSpeedPerSecond = (10 / 3.6) * 1_000;
+const heroMoveSpeedPerSecond = (22 / 3.6) * 1_000;
+const heroRunSpeedPerSecond = (34 / 3.6) * 1_000;
 const meleeRangeMeters = 5;
 const meleeRangeUnits = meleeRangeMeters * 1_000;
 const monsterPressureRangeUnits = 12_000;
@@ -559,23 +563,35 @@ function collidesWithBox(x: number, z: number, box: CollisionBox, radius = 0.72)
   return Math.abs(x - box.x) < box.halfX + radius && Math.abs(z - box.z) < box.halfZ + radius;
 }
 
-function getWorldCollisionBoxes(chapter: number, locationIndex: number) {
+function hashSceneKey(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) % 997;
+  }
+  return hash;
+}
+
+function getLocationStyle(chapter: number, locationIndex: number, sceneKey: string) {
+  return Math.abs(chapter * 3 + locationIndex * 5 + hashSceneKey(sceneKey)) % 14;
+}
+
+function getWorldCollisionBoxes(chapter: number, locationIndex: number, sceneKey: string) {
   const boxes: CollisionBox[] = [];
 
-  for (let i = 0; i < 42; i += 1) {
-    boxes.push({
-      x: -24 + (i % 14) * 3.6,
-      z: -11 - Math.floor(i / 10) * 3.1,
-      halfX: 0.95,
-      halfZ: 0.9,
-    });
+  const isEnding = sceneKey.startsWith('ending') || sceneKey.includes('final') || sceneKey.includes('death') || sceneKey.includes('admin');
+  const captured = sceneKey.startsWith('captured');
+  const locationStyle = getLocationStyle(chapter, locationIndex, sceneKey);
+
+  if (captured) {
+    for (let i = 0; i < 46; i += 1) {
+      const lane = i % 4;
+      const row = Math.floor(i / 4);
+      const x = lane < 2 ? -28 - lane * 16 + Math.sin(i) * 1.2 : 28 + (lane - 2) * 16 + Math.sin(i) * 1.2;
+      const z = -58 + row * 10.4 + Math.cos(i * 0.7) * 1.6;
+      boxes.push({ x, z, halfX: 3.2, halfZ: 2.8 });
+    }
   }
 
-  [-24, -16, -8, 0, 8, 16, 24].forEach((x) => {
-    boxes.push({ x, z: -25.8, halfX: 0.72, halfZ: 0.34 });
-  });
-
-  const locationStyle = Math.abs(chapter) % 10;
   if (locationStyle === 0) {
     for (let i = 0; i < 28; i += 1) {
       boxes.push({
@@ -595,6 +611,15 @@ function getWorldCollisionBoxes(chapter: number, locationIndex: number) {
       });
     }
     boxes.push({ x: 0, z: -18, halfX: 6.8, halfZ: 6.8 });
+  } else if (locationStyle === 2) {
+    for (let i = 0; i < 46; i += 1) {
+      boxes.push({
+        x: -50 + (i % 12) * 9.2 + Math.sin(i) * 1.4,
+        z: -34 + Math.floor(i / 12) * 18 + Math.cos(i) * 1.8,
+        halfX: 0.7,
+        halfZ: 0.7,
+      });
+    }
   } else if (locationStyle === 3) {
     for (let i = 0; i < 24; i += 1) {
       const x = -42 + (i % 8) * 12;
@@ -616,7 +641,61 @@ function getWorldCollisionBoxes(chapter: number, locationIndex: number) {
       boxes.push({ x, z, halfX: 1.15 + (i % 3) * 0.45, halfZ: 0.75 });
       boxes.push({ x: x + 2.2, z: z + 1.4, halfX: 0.7, halfZ: 0.7 });
     }
-  } else if (locationStyle === 9) {
+  } else if (locationStyle === 7) {
+    for (let i = 0; i < 34; i += 1) {
+      boxes.push({
+        x: -46 + (i % 9) * 11.5,
+        z: -34 + Math.floor(i / 9) * 22,
+        halfX: 1.35,
+        halfZ: 1.35,
+      });
+    }
+  } else if (locationStyle === 8) {
+    for (let i = 0; i < 20; i += 1) {
+      boxes.push({
+        x: -44 + (i % 5) * 21,
+        z: -31 + Math.floor(i / 5) * 19,
+        halfX: 1.05,
+        halfZ: 1.05,
+      });
+    }
+  } else if (locationStyle === 10) {
+    for (let i = 0; i < 32; i += 1) {
+      boxes.push({
+        x: -48 + (i % 8) * 13.6,
+        z: -34 + Math.floor(i / 8) * 22,
+        halfX: 0.8,
+        halfZ: 0.8,
+      });
+    }
+  } else if (locationStyle === 11) {
+    for (let i = 0; i < 22; i += 1) {
+      boxes.push({
+        x: -42 + (i % 7) * 14,
+        z: -30 + Math.floor(i / 7) * 22,
+        halfX: 2.2,
+        halfZ: 2.2,
+      });
+    }
+  } else if (locationStyle === 12) {
+    for (let i = 0; i < 30; i += 1) {
+      boxes.push({
+        x: -48 + (i % 10) * 10.5,
+        z: -34 + Math.floor(i / 10) * 26,
+        halfX: 1.1,
+        halfZ: 1.1,
+      });
+    }
+  } else if (locationStyle === 13) {
+    for (let i = 0; i < 34; i += 1) {
+      boxes.push({
+        x: -50 + (i % 9) * 12.3,
+        z: -34 + Math.floor(i / 9) * 23,
+        halfX: 1.15,
+        halfZ: 1.15,
+      });
+    }
+  } else {
     for (let i = 0; i < 24; i += 1) {
       boxes.push({
         x: -46 + (i % 8) * 12.8,
@@ -627,17 +706,22 @@ function getWorldCollisionBoxes(chapter: number, locationIndex: number) {
     }
   }
 
+  if (isEnding) {
+    for (let i = 0; i < 7; i += 1) {
+      boxes.push({ x: -30 + i * 10, z: -34 + Math.sin(i) * 7, halfX: 1.05, halfZ: 1.05 });
+    }
+  }
+
   return boxes.map((box) => ({
     ...box,
     x: box.x + Math.sin(locationIndex + box.z) * 0,
   }));
 }
 
-function isHeroBlockedAt(position: { x: number; z: number }, chapter: number, locationIndex: number) {
-  return false;
-  const heroWorldX = -3.4 + position.x / 1000;
-  const heroWorldZ = 1.2 + position.z / 1000;
-  return getWorldCollisionBoxes(chapter, locationIndex).some((box) => collidesWithBox(heroWorldX, heroWorldZ, box));
+function isWorldBlockedAt(position: { x: number; z: number }, chapter: number, locationIndex: number, sceneKey: string, radius = 0.72) {
+  const worldX = -3.4 + position.x / 1000;
+  const worldZ = 1.2 + position.z / 1000;
+  return getWorldCollisionBoxes(chapter, locationIndex, sceneKey).some((box) => collidesWithBox(worldX, worldZ, box, radius));
 }
 
 const monsterAvalancheWorld: CityStage = {
@@ -1469,6 +1553,7 @@ export function HomePage() {
   const [heroHeight, setHeroHeight] = useState(0);
   const [heroMoving, setHeroMoving] = useState(false);
   const [heroDirection, setHeroDirection] = useState(savedGameRef.current?.heroDirection ?? { x: 0, z: -1 });
+  const [cameraYaw, setCameraYaw] = useState(Math.atan2(savedGameRef.current?.heroDirection?.x ?? 0, savedGameRef.current?.heroDirection?.z ?? -1));
   const [nearestMonster, setNearestMonster] = useState<NearestMonsterState>({
     x: -18_000,
     z: -monsterSpawnDistanceUnits,
@@ -1483,6 +1568,9 @@ export function HomePage() {
   const joystickVector = useRef({ x: 0, z: 0 });
   const movementVelocity = useRef({ x: 0, z: 0 });
   const joystickPointerId = useRef<number | null>(null);
+  const cameraYawRef = useRef(cameraYaw);
+  const cameraPointer = useRef<{ id: number; x: number; y: number; moved: boolean } | null>(null);
+  const blockNextStageClick = useRef(false);
   const lastMoveAt = useRef<number | null>(null);
   const clickTimesRef = useRef<number[]>([]);
   const monsterChaseStartedAt = useRef(Date.now());
@@ -1773,11 +1861,11 @@ export function HomePage() {
                     ? `dungeon-${chapter}`
                     : `city-${chapter}`;
   const useCityGoblinModel = mapSceneKey.startsWith('city-') && !isDungeon;
-  const collisionContextRef = useRef({ chapter, mapLocationIndex });
+  const collisionContextRef = useRef({ chapter, mapLocationIndex, mapSceneKey });
 
   useEffect(() => {
-    collisionContextRef.current = { chapter, mapLocationIndex };
-  }, [chapter, mapLocationIndex]);
+    collisionContextRef.current = { chapter, mapLocationIndex, mapSceneKey };
+  }, [chapter, mapLocationIndex, mapSceneKey]);
 
   useEffect(() => {
     if (forcedCenterLocation) setMapLocationIndex(1);
@@ -1920,9 +2008,9 @@ export function HomePage() {
   const currentPlayerPower = Math.max(1_000, attackBonus + defenseBonus + currentHeroMaxHp);
   const hasArcaneWeapon = isArcaneWeapon(equippedWeapon);
   const selectedSpell = arcaneSpells[selectedArcaneSpell % arcaneSpells.length];
-  const selectedSpellRadiusMeters = 'radius' in selectedSpell ? selectedSpell.radius : 70;
-  const selectedSpellSpeedMeters = 'speed' in selectedSpell ? selectedSpell.speed : 40;
-  const arcaneSkillCooldownMs = selectedSpell.cooldown;
+  const selectedSpellRadiusMeters = arcaneSpellRadiusMeters;
+  const selectedSpellSpeedKmh = arcaneSpellSpeedKmh;
+  const arcaneSkillCooldownMs = arcaneSpellCooldownMs;
   const arcaneSkillManaCost = selectedSpell.mana;
   const arcaneSkillRemainingMs = Math.max(0, arcaneSkillReadyAt - arcaneCooldownNow);
   const arcaneSkillReady = hasArcaneWeapon && arcaneSkillRemainingMs === 0 && heroMana >= arcaneSkillManaCost;
@@ -2841,16 +2929,50 @@ export function HomePage() {
       });
       const collisionContext = collisionContextRef.current;
       const nextPosition = clampPosition({ x: position.x + dx, z: position.z + dz });
-      if (!isHeroBlockedAt(nextPosition, collisionContext.chapter, collisionContext.mapLocationIndex)) return nextPosition;
+      if (!isWorldBlockedAt(nextPosition, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.62)) return nextPosition;
 
       const slideX = clampPosition({ x: position.x + dx, z: position.z });
-      if (!isHeroBlockedAt(slideX, collisionContext.chapter, collisionContext.mapLocationIndex)) return slideX;
+      if (!isWorldBlockedAt(slideX, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.62)) return slideX;
 
       const slideZ = clampPosition({ x: position.x, z: position.z + dz });
-      if (!isHeroBlockedAt(slideZ, collisionContext.chapter, collisionContext.mapLocationIndex)) return slideZ;
+      if (!isWorldBlockedAt(slideZ, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.62)) return slideZ;
 
       return position;
     });
+  }
+
+  function moveMonsterAroundObjects(monster: NearestMonsterState, dx: number, dz: number) {
+    const clampPosition = (nextPosition: { x: number; z: number }) => ({
+      x: Math.max(-cityHalfSize, Math.min(cityHalfSize, nextPosition.x)),
+      z: Math.max(-cityHalfSize, Math.min(cityHalfSize, nextPosition.z)),
+    });
+    const collisionContext = collisionContextRef.current;
+    const canStand = (position: { x: number; z: number }) =>
+      !isWorldBlockedAt(position, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.74);
+    const nextPosition = clampPosition({ x: monster.x + dx, z: monster.z + dz });
+    if (canStand(nextPosition)) return { ...monster, ...nextPosition };
+
+    const slideX = clampPosition({ x: monster.x + dx, z: monster.z });
+    if (canStand(slideX)) return { ...monster, ...slideX };
+
+    const slideZ = clampPosition({ x: monster.x, z: monster.z + dz });
+    if (canStand(slideZ)) return { ...monster, ...slideZ };
+
+    const sidestepLength = Math.max(1, Math.hypot(dx, dz));
+    const sideStep = {
+      x: monster.x - (dz / sidestepLength) * sidestepLength * 0.75,
+      z: monster.z + (dx / sidestepLength) * sidestepLength * 0.75,
+    };
+    const sidePosition = clampPosition(sideStep);
+    if (canStand(sidePosition)) return { ...monster, ...sidePosition };
+
+    const otherSidePosition = clampPosition({
+      x: monster.x + (dz / sidestepLength) * sidestepLength * 0.75,
+      z: monster.z - (dx / sidestepLength) * sidestepLength * 0.75,
+    });
+    if (canStand(otherSidePosition)) return { ...monster, ...otherSidePosition };
+
+    return monster;
   }
 
   function updateJoystick(event: ReactPointerEvent<HTMLDivElement>) {
@@ -2895,6 +3017,46 @@ export function HomePage() {
     setHeroMoving(false);
   }
 
+  function updateCameraYaw(nextYaw: number) {
+    cameraYawRef.current = nextYaw;
+    setCameraYaw(nextYaw);
+  }
+
+  function startCameraDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    const target = event.target;
+    if (target instanceof HTMLElement && target.closest('button, a, input, textarea, select, .mobile-joystick, .arcane-spell-panel')) return;
+    cameraPointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function moveCameraDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    const pointer = cameraPointer.current;
+    if (!pointer || pointer.id !== event.pointerId) return;
+    const dx = event.clientX - pointer.x;
+    const dy = event.clientY - pointer.y;
+    if (Math.hypot(dx, dy) > 3) pointer.moved = true;
+    pointer.x = event.clientX;
+    pointer.y = event.clientY;
+    updateCameraYaw(cameraYawRef.current - dx * 0.006);
+    event.preventDefault();
+  }
+
+  function stopCameraDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    const pointer = cameraPointer.current;
+    if (!pointer || pointer.id !== event.pointerId) return;
+    blockNextStageClick.current = pointer.moved;
+    cameraPointer.current = null;
+  }
+
+  function attackFromStageClick() {
+    if (blockNextStageClick.current) {
+      blockNextStageClick.current = false;
+      return;
+    }
+    if (currentMonsters > 0) fightMonster();
+    else strike();
+  }
+
   useEffect(() => {
     let frame = 0;
     const tickMovement = () => {
@@ -2912,8 +3074,17 @@ export function HomePage() {
       dz += joystickVector.current.z;
       const inputLength = Math.hypot(dx, dz);
       const hasInput = inputLength > 0.05;
-      const targetDirection = hasInput ? { x: dx / inputLength, z: dz / inputLength } : { x: 0, z: 0 };
-      const targetSpeed = hasInput ? heroMoveSpeedPerSecond : 0;
+      const localX = hasInput ? dx / inputLength : 0;
+      const localZ = hasInput ? dz / inputLength : 0;
+      const yaw = cameraYawRef.current;
+      const targetDirection = hasInput
+        ? {
+          x: Math.cos(yaw) * localX + Math.sin(yaw) * localZ,
+          z: -Math.sin(yaw) * localX + Math.cos(yaw) * localZ,
+        }
+        : { x: 0, z: 0 };
+      const isSprinting = keys.has('shift') || keys.has('shiftleft') || keys.has('shiftright');
+      const targetSpeed = hasInput ? (isSprinting ? heroRunSpeedPerSecond : heroMoveSpeedPerSecond) : 0;
       const currentVelocity = movementVelocity.current;
       const acceleration = hasInput ? 9.5 : 12.5;
       const blend = 1 - Math.exp(-deltaSeconds * acceleration);
@@ -2970,6 +3141,23 @@ export function HomePage() {
       x: heroDirection.x / directionLength,
       z: heroDirection.z / directionLength,
     };
+    const collisionContext = collisionContextRef.current;
+    const baseAngle = Math.atan2(forward.x, forward.z);
+    for (let attempt = 0; attempt < 16; attempt += 1) {
+      const angle = baseAngle + (attempt % 2 ? -1 : 1) * Math.ceil(attempt / 2) * 0.42;
+      const distance = monsterSpawnDistanceUnits + Math.floor(attempt / 4) * 5_000;
+      const position = {
+        x: Math.max(-cityHalfSize, Math.min(cityHalfSize, heroPosition.x + Math.sin(angle) * distance)),
+        z: Math.max(-cityHalfSize, Math.min(cityHalfSize, heroPosition.z + Math.cos(angle) * distance)),
+      };
+      if (!isWorldBlockedAt(position, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.74)) {
+        return {
+          ...position,
+          hp,
+          alive: currentMonsters > 0,
+        };
+      }
+    }
     return {
       x: heroPosition.x + forward.x * monsterSpawnDistanceUnits,
       z: heroPosition.z + forward.z * monsterSpawnDistanceUnits,
@@ -3534,7 +3722,7 @@ export function HomePage() {
       if (isTyping) return;
       const key = event.key.toLowerCase();
       const code = event.code.toLowerCase();
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key) || ['keyw', 'keya', 'keys', 'keyd'].includes(code)) {
+      if (['w', 'a', 's', 'd', 'shift', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key) || ['keyw', 'keya', 'keys', 'keyd', 'shiftleft', 'shiftright'].includes(code)) {
         pressedKeys.current.add(key);
         pressedKeys.current.add(code);
         event.preventDefault();
@@ -3593,15 +3781,11 @@ export function HomePage() {
         const dx = heroPosition.x - monster.x;
         const dz = heroPosition.z - monster.z;
         const distance = Math.hypot(dx, dz);
-        const stopDistance = meleeRangeUnits * 1.05;
+        const stopDistance = meleeRangeUnits * 0.92;
         if (distance > monsterAggroDistanceUnits || distance <= stopDistance) return monster;
         const step = Math.min(distance - stopDistance, monsterRunSpeedPerSecond * 0.04);
         const length = Math.max(1, distance);
-        return {
-          ...monster,
-          x: monster.x + (dx / length) * step,
-          z: monster.z + (dz / length) * step,
-        };
+        return moveMonsterAroundObjects(monster, (dx / length) * step, (dz / length) * step);
       });
     }, 40);
 
@@ -3630,18 +3814,17 @@ export function HomePage() {
       if (state.isFinalReveal || state.currentMonsters <= 0 || state.heroHp <= 0 || state.hasAdminHelmet) return;
       if (!state.nearestMonsterInAggro) return;
       if (Date.now() - monsterChaseStartedAt.current < monsterChaseCatchTimeMs) return;
-      if (!state.nearestMonsterInPressure) return;
+      if (!state.nearestMonsterInRange) return;
 
       const hunterBots = Math.max(1, Math.ceil(Math.min(state.currentMonsters, state.currentMonsterTotal) / Math.max(1, state.currentMonsterTotal / 10)));
-      const rangePressure = state.nearestMonsterInRange ? 1 : 0.22;
-      const rawDamage = Math.ceil((monsterBotAttackDamage + state.chapter * 4 + hunterBots * 3) * rangePressure);
+      const rawDamage = Math.ceil(monsterBotAttackDamage + state.chapter * 4 + hunterBots * 3);
       const damage = Math.max(1, rawDamage - Math.floor(state.defenseBonus * 0.08));
       setBattlePulse((pulse) => pulse + 1);
       setMonsterAttackCount((count) => count + 1);
       setHeroHp((hp) => {
         const nextHp = Math.max(0, hp - damage);
         if (nextHp === 0) {
-          setMessage(`${formatPower(hunterBots)} монстров окружили героя и нанесли ${formatPower(damage)} урона. Герой упал, восстанови HP.`);
+          setMessage(`${formatPower(hunterBots)} гоблинов добежали до радиуса ${meleeRangeMeters}м и нанесли ${formatPower(damage)} урона. Герой упал, восстанови HP.`);
         }
         return nextHp;
       });
@@ -3720,7 +3903,7 @@ export function HomePage() {
 
     if (currentMonsters > 0) {
       const radiusBonusKills = Math.floor(selectedSpellRadiusMeters / 10);
-      const speedBonusKills = Math.floor(selectedSpellSpeedMeters / 10);
+      const speedBonusKills = Math.floor(selectedSpellSpeedKmh / 10);
       const spellKills = Math.min(currentMonsters, Math.max(1, selectedSpell.targets + radiusBonusKills + speedBonusKills + Math.floor(arcaneSkillDamage / Math.max(1, currentMonsterHp * 2))));
       const nextMonsters = Math.max(0, currentMonsters - spellKills);
       setCurrentMonsterCount(nextMonsters);
@@ -3732,7 +3915,7 @@ export function HomePage() {
         setMessage(`${selectedSpell.name}: магия уничтожила ${formatPower(spellKills)} монстров. Теперь появился босс: ${formatPower(currentDragonHp)} HP.${streakRewardText ? ` ${streakRewardText}` : ''}`);
         return;
       }
-      setMessage(`${selectedSpell.name}: радиус ${selectedSpellRadiusMeters}м, скорость ${selectedSpellSpeedMeters}м/с, уничтожено ${formatPower(spellKills)} монстров. Осталось ${formatPower(nextMonsters)}. Мана -${arcaneSkillManaCost}.${streakRewardText ? ` ${streakRewardText}` : ''}`);
+      setMessage(`${selectedSpell.name}: радиус ${selectedSpellRadiusMeters}м, скорость ${selectedSpellSpeedKmh} км/ч, уничтожено ${formatPower(spellKills)} монстров. Осталось ${formatPower(nextMonsters)}. Мана -${arcaneSkillManaCost}.${streakRewardText ? ` ${streakRewardText}` : ''}`);
       return;
     }
 
@@ -3744,7 +3927,7 @@ export function HomePage() {
       clearCity();
       return;
     }
-    setMessage(`${selectedSpell.name}: радиус ${selectedSpellRadiusMeters}м, скорость ${selectedSpellSpeedMeters}м/с, удар -${formatPower(arcaneSkillDamage)} HP. Мана -${arcaneSkillManaCost}, перезарядка ${Math.ceil(arcaneSkillCooldownMs / 1000)} сек.`);
+    setMessage(`${selectedSpell.name}: радиус ${selectedSpellRadiusMeters}м, скорость ${selectedSpellSpeedKmh} км/ч, удар -${formatPower(arcaneSkillDamage)} HP. Мана -${arcaneSkillManaCost}, перезарядка ${Math.ceil(arcaneSkillCooldownMs / 1000)} сек.`);
   }
 
   function strike() {
@@ -4677,6 +4860,17 @@ export function HomePage() {
     );
   }
 
+  const incomingRequestPlayer = incomingDuelRequest
+    ? onlinePlayers.find((player) => player.id === incomingDuelRequest.fromId) ?? {
+      id: incomingDuelRequest.fromId,
+      name: incomingDuelRequest.fromName,
+      power: Math.max(1_000, currentPlayerPower),
+      title: 'игрок онлайн',
+      weapon: makePresenceFallbackWeapon(currentPlayerPower),
+      armor: makePresenceFallbackArmor(currentPlayerPower),
+    }
+    : null;
+
   if (isAchievementsPage) {
     return (
       <main className="achievements-page">
@@ -5395,7 +5589,7 @@ export function HomePage() {
                   <span>У героя есть мана: 100 в начале игры</span>
                   <span>Кристалл маны в магазине повышает максимум маны</span>
                   <span>Артефакты дают процент к максимуму маны</span>
-                  <span>Заклинания тратят разное количество маны и имеют разную перезарядку</span>
+                  <span>Заклинания бьют в радиусе 70м, летят 100 км/ч и перезаряжаются 3 сек</span>
                   <span>18 заклинаний: огонь, лед, молния, вода, свет, тьма, яд, метеор, комета, шторм, солнце и другие</span>
                   <span>При магии герой делает отдельную каст-анимацию</span>
                   <span>Мана постепенно восстанавливается во время игры</span>
@@ -5494,7 +5688,7 @@ export function HomePage() {
                   <span>vNukeScreenFix: ядерка больше не ломает экран, огромный урон считается безопасно</span>
                   <span>v3DLoadGuard: если модель долго грузится, игра всё равно запускает карту</span>
                   <span>vMagicStaffs70: отдельный раздел магического оружия, посохи и способности снизу</span>
-                  <span>vFastSpells40: огненный вихрь, ветер, ледяной дождь, окаменение и другие летят 40 м/с с радиусом 70 м</span>
+                  <span>vFastSpells100: все заклинания летят 100 км/ч, бьют в радиусе 70 м и перезаряжаются 3 сек</span>
                 </div>
               </div>
             </div>
@@ -5528,13 +5722,17 @@ export function HomePage() {
         <button className="guide-button" onClick={() => setTutorialOpen(true)} type="button">Гайд</button>
         <div
           className={`sky battle-2d ${battleScene} ${battlePulse % 2 ? 'hit' : ''}`}
-          onClick={() => (currentMonsters > 0 ? fightMonster() : strike())}
+          onClick={attackFromStageClick}
           onKeyDown={(event) => {
             if (event.key === 'Enter' || event.key === ' ') {
               if (currentMonsters > 0) fightMonster();
               else strike();
             }
           }}
+          onPointerDown={startCameraDrag}
+          onPointerMove={moveCameraDrag}
+          onPointerUp={stopCameraDrag}
+          onPointerCancel={stopCameraDrag}
           role="button"
           tabIndex={0}
         >
@@ -5549,6 +5747,7 @@ export function HomePage() {
               heroPosition={heroPosition}
               heroHeight={heroHeight}
               heroDirection={heroDirection}
+              cameraYaw={cameraYaw}
               nearestMonster={nearestMonster}
               monstersLeft={currentMonsterTotal > 0 ? Math.min(100, (currentMonsters / currentMonsterTotal) * 100) : 0}
               battlePulse={battlePulse}
@@ -5867,7 +6066,7 @@ export function HomePage() {
               </div>
               <div className="arcane-spell-info">
                 <strong>{selectedSpell.name}</strong>
-                <span>радиус {selectedSpellRadiusMeters}м | скорость {selectedSpellSpeedMeters}м/с</span>
+                <span>радиус {selectedSpellRadiusMeters}м | скорость {selectedSpellSpeedKmh} км/ч | перезарядка 3с</span>
               </div>
               <button
                 className={`arcane-skill-button ${arcaneSkillReady ? 'ready' : 'cooldown'}`}
@@ -6080,18 +6279,38 @@ export function HomePage() {
         </div>
       )}
 
-      {incomingDuelRequest && (
+      {incomingDuelRequest && incomingRequestPlayer && (
         <div className="duel-request-screen" role="dialog" aria-modal="true" aria-live="polite" aria-label="Входящий вызов">
-          <div className="duel-request-box">
+          <div className={`duel-request-box ${incomingDuelRequest.kind === 'trade' ? 'trade-request-box' : ''}`}>
             <p className="eyebrow">{incomingDuelRequest.kind === 'trade' ? 'Входящий обмен' : 'Входящая дуэль'}</p>
-            <h2>{incomingDuelRequest.kind === 'trade' ? 'Игрок хочет обмен' : 'Игрок хочет драться'}</h2>
-            <strong>{incomingDuelRequest.fromName}</strong>
-            <p>{incomingDuelRequest.kind === 'trade' ? 'Обмен или нет?' : 'Принять бой на арене или отказаться?'}</p>
+            <h2>{incomingDuelRequest.kind === 'trade' ? 'Трейд кинул' : 'Игрок хочет драться'}</h2>
+            <strong className="trade-request-nick">{incomingRequestPlayer.name}</strong>
+            <p>{incomingDuelRequest.kind === 'trade' ? 'Принять трейд или нет?' : 'Принять бой на арене или отказаться?'}</p>
+            {incomingDuelRequest.kind === 'trade' && (
+              <div className="trade-request-abilities" aria-label="Способности игрока">
+                <div>
+                  <span>Сила</span>
+                  <b>{formatPower(incomingRequestPlayer.power)}</b>
+                </div>
+                <div>
+                  <span>Титул</span>
+                  <b>{incomingRequestPlayer.title}</b>
+                </div>
+                <div>
+                  <span>Меч</span>
+                  <b>{getWeaponDisplayName(incomingRequestPlayer.weapon)} +{formatPower(incomingRequestPlayer.weapon.damage)}</b>
+                </div>
+                <div>
+                  <span>Броня</span>
+                  <b>{incomingRequestPlayer.armor.name} +{formatPower(incomingRequestPlayer.armor.defense)}</b>
+                </div>
+              </div>
+            )}
             <div className="duel-actions">
               <button onClick={acceptIncomingDuelRequest} type="button">
-                {incomingDuelRequest.kind === 'trade' ? 'Обменяться' : 'Принять'}
+                Принять
               </button>
-              <button className="secondary" onClick={rejectIncomingDuelRequest} type="button">Отказаться</button>
+              <button className="secondary" onClick={rejectIncomingDuelRequest} type="button">Нет</button>
             </div>
           </div>
         </div>
@@ -6724,7 +6943,7 @@ export function HomePage() {
                 </span>
                 <span className="weapon-name">{weapon.name}</span>
                 <small>{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | способности снизу</small>
-                <small className="weapon-model-label">70м радиус | 40м/с полёт</small>
+                <small className="weapon-model-label">70м радиус | 100 км/ч | 3с перезарядка</small>
               </button>
             ))}
             {visibleMagicWeapons.length === 0 && (

@@ -11,6 +11,7 @@ type BattleScene3DProps = {
   heroPosition: { x: number; z: number };
   heroHeight: number;
   heroDirection: { x: number; z: number };
+  cameraYaw: number;
   nearestMonster: { x: number; z: number; alive: boolean };
   monstersLeft: number;
   battlePulse: number;
@@ -33,6 +34,8 @@ const monsterRunSpeedMetersPerSecond = 18 / 3.6;
 const monsterHitRangeMeters = 5;
 const monsterPressureRangeMeters = 12;
 const monsterAggroRangeMeters = 100;
+const arcaneProjectileSpeedMetersPerSecond = 100 / 3.6;
+const arcaneAttackRadiusMeters = 70;
 const worldRadiusMeters = 5_000;
 const worldDiameterMeters = worldRadiusMeters * 2;
 
@@ -1976,7 +1979,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       );
     };
 
-    loadSpecialBossModel('goblin', '/models/goblin-model/scene.gltf', 6.2, Math.PI, '#65a832');
+    loadSpecialBossModel('goblin', '/models/custom-goblin-upload/scene.gltf', 6.2, Math.PI, '#65a832');
     loadSpecialBossModel('fury', '/models/latest-monster/scene.gltf', 7.4, Math.PI, '#111111');
     loadSpecialBossModel('anuar', '/models/monster-replacement/scene.gltf', 7.2, Math.PI, '#ff5a3d');
     loadSpecialBossModel('mansur', '/models/custom-hero/scene.gltf', 6.4, Math.PI, '#9cff00');
@@ -2020,7 +2023,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
 
     if (refs.current.useCityGoblinModel) {
       gltfLoader.load(
-        '/models/goblin-model/scene.gltf',
+        '/models/custom-goblin-upload/scene.gltf',
         (gltf) => {
           const template = gltf.scene;
           template.traverse((object) => {
@@ -2077,6 +2080,27 @@ export function BattleScene3D(props: BattleScene3DProps) {
     slashTrail.visible = false;
     scene.add(slashTrail);
 
+    const castAura = new THREE.Group();
+    const castAuraMaterials = ['#75e6da', '#b56cff', '#ffe66d'].map(
+      (color) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide })
+    );
+    for (let index = 0; index < 3; index += 1) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.7 + index * 0.26, 0.018, 8, 72), castAuraMaterials[index]);
+      ring.rotation.x = Math.PI / 2 + index * 0.42;
+      ring.userData.phase = index * 0.7;
+      castAura.add(ring);
+    }
+    for (let index = 0; index < 9; index += 1) {
+      const rune = new THREE.Mesh(
+        new THREE.TetrahedronGeometry(0.055 + (index % 3) * 0.012, 0),
+        castAuraMaterials[index % castAuraMaterials.length]
+      );
+      rune.userData.phase = (index / 9) * Math.PI * 2;
+      castAura.add(rune);
+    }
+    castAura.visible = false;
+    scene.add(castAura);
+
     const footDustMaterial = new THREE.MeshBasicMaterial({ color: '#d9c6a3', transparent: true, opacity: 0, depthWrite: false });
     const footDust = new THREE.Group();
     for (let i = 0; i < 8; i += 1) {
@@ -2089,11 +2113,21 @@ export function BattleScene3D(props: BattleScene3DProps) {
     const arcaneBolts = new THREE.Group();
     const arcaneBoltMaterial = new THREE.MeshBasicMaterial({ color: '#b56cff', transparent: true, opacity: 0, depthWrite: false });
     for (let index = 0; index < 18; index += 1) {
-      const bolt = new THREE.Mesh(new THREE.SphereGeometry(0.11 + (index % 3) * 0.025, 12, 8), arcaneBoltMaterial.clone());
+      const bolt = new THREE.Group();
+      const core = new THREE.Mesh(new THREE.SphereGeometry(0.11 + (index % 3) * 0.025, 12, 8), arcaneBoltMaterial.clone());
+      const trail = new THREE.Mesh(
+        new THREE.ConeGeometry(0.11 + (index % 3) * 0.018, 0.9, 12, 1, true),
+        new THREE.MeshBasicMaterial({ color: '#b56cff', transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide })
+      );
+      trail.rotation.x = Math.PI / 2;
+      trail.position.z = -0.45;
+      bolt.add(core, trail);
       bolt.visible = false;
       bolt.userData.seed = index * 0.53;
       bolt.userData.life = 0;
       bolt.userData.duration = 0.85;
+      bolt.userData.core = core;
+      bolt.userData.trail = trail;
       arcaneBolts.add(bolt);
     }
     scene.add(arcaneBolts);
@@ -2165,9 +2199,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
         bolt.visible = true;
         bolt.position.set(originX + Math.sin(facing + spread) * 0.5, originY + 0.12 + launched * 0.035, originZ + Math.cos(facing + spread) * 0.5);
         bolt.userData.life = 0.001;
-        bolt.userData.duration = count > 6 ? 1.05 : 0.78;
+        bolt.userData.duration = arcaneAttackRadiusMeters / arcaneProjectileSpeedMetersPerSecond;
         bolt.userData.facing = facing + spread;
-        bolt.userData.speed = effectKind < 6 ? 40 : count > 6 ? 10.5 + launched * 0.25 : 8.4 + launched * 0.2;
+        bolt.userData.speed = arcaneProjectileSpeedMetersPerSecond;
         bolt.userData.lane = launched;
         bolt.userData.kind = effectKind;
         launched += 1;
@@ -2191,9 +2225,10 @@ export function BattleScene3D(props: BattleScene3DProps) {
     let pulse = 0;
     let lastHeroX = refs.current.heroPosition.x / 1000;
     let lastHeroZ = refs.current.heroPosition.z / 1000;
-    const initialFacing = Math.atan2(refs.current.heroDirection.x, refs.current.heroDirection.z);
+    const initialFacing = refs.current.cameraYaw;
     let heroFacing = initialFacing;
     let renderFacing = initialFacing;
+    let cameraYaw = initialFacing;
     const smoothHeroPosition = new THREE.Vector3(-3.4 + lastHeroX, 0, 1.2 + lastHeroZ);
     const targetHeroPosition = new THREE.Vector3(-3.4 + lastHeroX, 0, 1.2 + lastHeroZ);
     const cameraTarget = new THREE.Vector3(0, 3, 10);
@@ -2293,11 +2328,17 @@ export function BattleScene3D(props: BattleScene3DProps) {
         heroFacing = Math.atan2(moveDX, moveDZ);
       }
       renderFacing = smoothAngle(renderFacing, heroFacing, delta, data.isHeroMoving ? 4.6 : 3.2);
+      cameraYaw = smoothAngle(cameraYaw, data.cameraYaw, delta, data.isHeroMoving ? 5.8 : 7.4);
       lastHeroX = heroX;
       lastHeroZ = heroZ;
       if (hasNewArcanePulse || hasNewArcaneBurst) {
         const effectKind = data.arcaneSpellKind % elementalMeshes.length;
         launchArcaneBolts(hasNewArcaneBurst ? 12 : 3, hero.position.x, hero.position.y + 1.34, hero.position.z, renderFacing, effectKind);
+        monsters.children.forEach((monster, index) => {
+          if (index > (hasNewArcaneBurst ? 10 : 4)) return;
+          const current = monster as THREE.Group;
+          current.userData.hitReact = 0.75 - index * 0.035;
+        });
       }
 
       const walkCycle = data.isHeroMoving ? time * 12.5 : time * 4;
@@ -2353,6 +2394,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       }
       if (data.heroAnimation === 'cast') {
         const castWave = Math.sin(time * 8);
+        const castPower = 0.55 + Math.max(0, castWave) * 0.45;
         hero.position.y += 0.05 + Math.max(0, castWave) * 0.08;
         hero.rotation.x = -0.08 + castWave * 0.025;
         hero.rotation.z = Math.sin(time * 5.2) * 0.035;
@@ -2376,7 +2418,26 @@ export function BattleScene3D(props: BattleScene3DProps) {
         slashTrail.rotation.set(Math.PI / 2, 0, time * 4.6);
         slashTrail.scale.setScalar(0.7 + Math.max(0, castWave) * 0.55);
         (slashTrail.material as THREE.MeshBasicMaterial).opacity = 0.32 + Math.max(0, castWave) * 0.3;
+        castAura.visible = true;
+        castAura.position.set(hero.position.x, hero.position.y + 1.18, hero.position.z);
+        castAura.rotation.y = renderFacing;
+        castAura.children.forEach((part, index) => {
+          const phase = typeof part.userData.phase === 'number' ? part.userData.phase : index;
+          if (part instanceof THREE.Mesh && part.material instanceof THREE.MeshBasicMaterial) {
+            part.material.opacity = (index < 3 ? 0.42 : 0.78) * castPower;
+          }
+          if (index < 3) {
+            part.rotation.z = time * (2.8 + index * 0.8) + phase;
+            part.scale.setScalar(1 + Math.sin(time * 5 + phase) * 0.08 + castPower * 0.28);
+          } else {
+            const orbit = time * (3.4 + index * 0.08) + phase;
+            part.position.set(Math.cos(orbit) * (0.75 + index * 0.025), Math.sin(time * 4.5 + phase) * 0.22, Math.sin(orbit) * (0.75 + index * 0.025));
+            part.rotation.set(time * 2 + phase, time * 3.2 + phase, time * 1.6);
+            part.scale.setScalar(1 + castPower * 0.75);
+          }
+        });
       } else if (data.heroAnimation === 'strike' || attackSwing > 0) {
+        castAura.visible = false;
         const attackPhase = THREE.MathUtils.clamp(1 - attackSwing, 0, 1);
         const windup = THREE.MathUtils.smoothstep(attackPhase, 0, isTwoHandedWeapon ? 0.34 : 0.24);
         const slash = Math.sin(THREE.MathUtils.clamp((attackPhase - (isTwoHandedWeapon ? 0.24 : 0.16)) / (isTwoHandedWeapon ? 0.32 : 0.34), 0, 1) * Math.PI);
@@ -2442,9 +2503,11 @@ export function BattleScene3D(props: BattleScene3DProps) {
           hero.rotation.x -= stepLift * 0.035;
         }
       } else if (data.heroAnimation === 'heal') {
+        castAura.visible = false;
         hero.scale.setScalar(1 + Math.sin(time * 10) * 0.045);
         hero.rotation.y += Math.sin(time * 8) * 0.035;
       } else {
+        castAura.visible = false;
         hero.rotation.x = 0;
         hero.rotation.z = 0;
       }
@@ -2504,10 +2567,21 @@ export function BattleScene3D(props: BattleScene3DProps) {
         bolt.rotation.y += delta * (6.2 + lane * 0.18);
         bolt.rotation.z += delta * (7.6 + kind * 0.12);
         bolt.scale.setScalar(1 + Math.sin(progress * Math.PI) * (kind >= 15 ? 2.2 : 1.6));
-        const boltMaterial = bolt instanceof THREE.Mesh ? bolt.material : null;
-        if (boltMaterial instanceof THREE.MeshBasicMaterial) {
-          boltMaterial.opacity = (1 - progress) * 0.9;
-          boltMaterial.color.set(elementalColors[(kind + lane) % elementalColors.length]);
+        const core = bolt.userData.core as THREE.Mesh | undefined;
+        const trail = bolt.userData.trail as THREE.Mesh | undefined;
+        bolt.lookAt(
+          bolt.position.x + Math.sin(facing),
+          bolt.position.y,
+          bolt.position.z + Math.cos(facing)
+        );
+        if (core?.material instanceof THREE.MeshBasicMaterial) {
+          core.material.opacity = (1 - progress) * 0.95;
+          core.material.color.set(elementalColors[(kind + lane) % elementalColors.length]);
+        }
+        if (trail?.material instanceof THREE.MeshBasicMaterial) {
+          trail.material.opacity = (1 - progress) * 0.52;
+          trail.material.color.set(elementalColors[(kind + lane + 1) % elementalColors.length]);
+          trail.scale.set(1 + Math.sin(time * 12 + lane) * 0.18, 1 + progress * 1.8, 1);
         }
         bolt.visible = progress < 1;
       });
@@ -2644,7 +2718,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const botOrbit = current.userData.botOrbit as number;
         const homeX = typeof current.userData.homeX === 'number' ? current.userData.homeX : current.position.x;
         const homeZ = typeof current.userData.homeZ === 'number' ? current.userData.homeZ : current.position.z;
-        const targetRadius = distance > attackRange ? Math.max(0.2, attackRange - 0.7 + botOrbit * 0.35) : attackRange + botOrbit;
+        const targetRadius = distance > attackRange ? Math.max(0.2, attackRange - 0.85 + botOrbit * 0.18) : Math.max(2.8, attackRange - 0.45 + botOrbit * 0.12);
         const targetX = wantsToKillHero
           ? hero.position.x - (toHeroX / distance) * targetRadius + Math.cos(botAngle) * botOrbit
           : homeX + Math.cos(time * 0.35 + index) * (1.8 + botOrbit);
@@ -2654,7 +2728,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const moveX = targetX - current.position.x;
         const moveZ = targetZ - current.position.z;
         const moveDistance = Math.max(0.001, Math.hypot(moveX, moveZ));
-        const speed = (current.userData.speed as number) * (wantsToKillHero && distance > monsterPressureRangeMeters ? 1.08 : isPressuringHero && distance > attackRange ? 1.28 : wantsToKillHero ? 0.72 : 0.45);
+        const speed = (current.userData.speed as number) * (wantsToKillHero && distance > monsterPressureRangeMeters ? 1.35 : isPressuringHero && distance > attackRange ? 1.55 : wantsToKillHero ? 0.82 : 0.45);
 
         if (!wantsToKillHero) {
           const stepDistance = Math.min(moveDistance, speed * delta * 0.58);
@@ -2700,17 +2774,22 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const monsterHit = Math.sin(THREE.MathUtils.clamp((attackCycle - 0.28) / 0.36, 0, 1) * Math.PI);
         const monsterRecover = THREE.MathUtils.smoothstep(attackCycle, 0.62, 0.98);
         const monsterSwing = attack * Math.max(monsterHit, monsterWindup * (1 - monsterRecover));
+        const hitReact = Math.max(0, (current.userData.hitReact as number) || 0);
+        current.userData.hitReact = Math.max(0, hitReact - delta * 1.9);
+        current.position.y += Math.sin(hitReact * Math.PI) * 0.42;
+        current.rotation.x -= hitReact * 0.34;
+        current.rotation.z += (index % 2 ? 1 : -1) * hitReact * 0.28;
         const loadedMonsterModel = current.userData.loadedGoblinModel as THREE.Object3D | undefined;
         const loadedMonsterBaseRotationY = typeof current.userData.loadedGoblinBaseRotationY === 'number' ? current.userData.loadedGoblinBaseRotationY : Math.PI;
         const chaseWalkPower = distance > attackRange ? 1 : 0.45;
         if (loadedMonsterModel) {
           const loadedStep = Math.sin(walk * 1.28);
           const loadedLift = Math.abs(loadedStep) * chaseWalkPower;
-          loadedMonsterModel.position.y = loadedLift * 0.085 + monsterHit * attack * 0.12;
-          loadedMonsterModel.rotation.x = -0.08 - monsterSwing * 0.34 + loadedLift * 0.08;
+          loadedMonsterModel.position.y = loadedLift * 0.085 + monsterHit * attack * 0.12 + Math.sin(hitReact * Math.PI) * 0.22;
+          loadedMonsterModel.rotation.x = -0.08 - monsterSwing * 0.34 + loadedLift * 0.08 - hitReact * 0.55;
           loadedMonsterModel.rotation.y = loadedMonsterBaseRotationY + Math.sin(walk * 0.6 + index) * 0.11;
-          loadedMonsterModel.rotation.z = loadedStep * 0.1 + monsterHit * attack * 0.22;
-          loadedMonsterModel.scale.setScalar(1 + loadedLift * 0.045 + monsterWindup * attack * 0.05 + pressureIntensity * 0.025);
+          loadedMonsterModel.rotation.z = loadedStep * 0.1 + monsterHit * attack * 0.22 + (index % 2 ? 1 : -1) * hitReact * 0.42;
+          loadedMonsterModel.scale.setScalar(1 + loadedLift * 0.045 + monsterWindup * attack * 0.05 + pressureIntensity * 0.025 + hitReact * 0.06);
         }
         const attackTrail = current.userData.attackTrail as THREE.Mesh | undefined;
         if (attackTrail) {
@@ -3060,14 +3139,14 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const lookAhead = data.isHeroMoving ? 8.4 : 6.2;
       const lookHeight = 1.75;
       cameraTarget.set(
-        hero.position.x - Math.sin(renderFacing) * backDistance + Math.cos(renderFacing) * sideOffset + shake * 0.45,
+        hero.position.x - Math.sin(cameraYaw) * backDistance + Math.cos(cameraYaw) * sideOffset + shake * 0.45,
         hero.position.y + cameraHeight + Math.sin(time * 0.6) * 0.04,
-        hero.position.z - Math.cos(renderFacing) * backDistance - Math.sin(renderFacing) * sideOffset
+        hero.position.z - Math.cos(cameraYaw) * backDistance - Math.sin(cameraYaw) * sideOffset
       );
       lookTarget.set(
-        hero.position.x + Math.sin(renderFacing) * lookAhead,
+        hero.position.x + Math.sin(cameraYaw) * lookAhead,
         hero.position.y + lookHeight,
-        hero.position.z + Math.cos(renderFacing) * lookAhead
+        hero.position.z + Math.cos(cameraYaw) * lookAhead
       );
       const followSpeed = data.isHeroMoving ? 3.7 : 6.1;
       if (!cameraReady) {
