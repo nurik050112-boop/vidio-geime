@@ -1608,6 +1608,195 @@ button.secondary {
   font-size: 14px;
 }
 
+.compact-game-hud {
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  top: max(12px, env(safe-area-inset-top));
+  bottom: auto;
+  grid-template-columns: minmax(150px, 0.7fr) minmax(190px, 1fr) minmax(112px, 0.42fr) minmax(150px, 0.65fr) auto;
+  gap: 8px;
+  align-items: stretch;
+  padding: 8px;
+  border: 2px solid rgba(248, 251, 255, 0.5);
+  background: rgba(12, 15, 24, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.compact-game-hud > div {
+  min-width: 0;
+}
+
+.hud-player-card,
+.hud-bars,
+.hud-money,
+.hud-target {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 7px 9px;
+  border: 1px solid rgba(248, 251, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(248, 251, 255, 0.1);
+}
+
+.hud-player-card strong,
+.hud-money strong,
+.hud-target strong {
+  overflow: hidden;
+  color: #fff8e8;
+  font-size: 13px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud-player-card span,
+.hud-bars span,
+.hud-money span,
+.hud-target span {
+  overflow: hidden;
+  color: rgba(248, 251, 255, 0.82);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud-player-card i,
+.hud-bars i {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(248, 251, 255, 0.16);
+}
+
+.hud-player-card i b,
+.hud-bars i b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffd166, #2fbf71);
+}
+
+.hud-bars {
+  grid-template-columns: auto minmax(54px, 1fr);
+  gap: 4px 7px;
+}
+
+.hud-hp b {
+  background: linear-gradient(90deg, #ef4444, #ff9f1c) !important;
+}
+
+.hud-mana b {
+  background: linear-gradient(90deg, #2f80ed, #75e6da) !important;
+}
+
+.hud-money {
+  text-align: center;
+  background: linear-gradient(180deg, rgba(255, 209, 102, 0.22), rgba(255, 159, 28, 0.12));
+}
+
+.hud-money strong {
+  color: #ffe66d;
+  font-size: 17px;
+}
+
+.hud-actions-mini {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.hud-actions-mini button,
+.hud-icon-button {
+  min-height: 34px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  color: #251105;
+  font-size: 12px;
+  font-weight: 1000;
+  text-decoration: none;
+  background: linear-gradient(180deg, #fff8e8, #ffd166);
+  box-shadow: 0 3px 0 #9b3d16, 0 10px 18px rgba(20, 8, 4, 0.22);
+}
+
+.game-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 115;
+  display: grid;
+  place-items: center;
+  padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  background: rgba(7, 10, 16, 0.62);
+  backdrop-filter: blur(6px);
+}
+
+.game-modal-panel {
+  display: grid;
+  gap: 10px;
+  width: min(900px, 100%);
+  max-height: min(720px, calc(100svh - 28px));
+  overflow: hidden;
+  padding: 12px;
+  border: 2px solid rgba(255, 248, 232, 0.72);
+  border-radius: 8px;
+  color: #251105;
+  background: rgba(255, 253, 244, 0.96);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46);
+}
+
+.game-modal-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.game-modal-head button,
+.modal-head-actions button {
+  min-height: 34px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.modal-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.compact-quest-list,
+.unified-inventory-list {
+  max-height: min(590px, calc(100svh - 128px));
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.unified-inventory-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.unified-relic {
+  display: grid;
+  align-content: center;
+  min-height: 76px;
+  padding: 10px;
+  border: 2px solid #251105;
+  border-radius: 8px;
+  color: #251105;
+  background: linear-gradient(180deg, #fdf0ff, #d9b8ff);
+  box-shadow: 0 4px 0 rgba(37, 17, 5, 0.22);
+}
+
+.unified-relic small {
+  color: #5b3d38;
+  font-weight: 900;
+}
+
 .duel-button {
   color: #fffdf4;
   background: linear-gradient(180deg, #2f80ed, #1d4ed8 55%, #251105);
@@ -8272,6 +8461,11 @@ button.selected {
     bottom: max(148px, calc(env(safe-area-inset-bottom) + 142px));
   }
 
+  .game.play-page .compact-game-hud {
+    top: max(8px, env(safe-area-inset-top));
+    bottom: auto;
+  }
+
   .click-duel {
     bottom: max(154px, calc(env(safe-area-inset-bottom) + 148px));
   }
@@ -8482,6 +8676,58 @@ button.selected {
     width: 100%;
     min-height: 46px;
     font-size: 15px;
+  }
+
+  .compact-game-hud {
+    top: max(6px, env(safe-area-inset-top));
+    left: 6px;
+    right: 6px;
+    bottom: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 168px;
+    padding: 6px;
+  }
+
+  .compact-game-hud div {
+    display: grid;
+  }
+
+  .hud-actions-mini {
+    grid-column: 1 / -1;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .hud-actions-mini button,
+  .hud-icon-button {
+    min-height: 32px;
+    padding: 6px 5px;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .hud-target,
+  .hud-money {
+    min-height: 48px;
+  }
+
+  .game-modal-panel {
+    max-height: calc(100svh - 18px);
+    padding: 9px;
+  }
+
+  .game-modal-head {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-head-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .unified-inventory-list {
+    grid-template-columns: 1fr;
   }
 
   .battle-2d {

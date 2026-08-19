@@ -1263,7 +1263,7 @@ function fitLocationModel(model: THREE.Object3D) {
   model.rotation.y = Math.PI;
 }
 
-function fitMapPropModel(model: THREE.Object3D, targetSize = 2.4) {
+function fitMapPropModel(model: THREE.Object3D, targetSize = 1) {
   model.position.set(0, 0, 0);
   model.rotation.set(0, 0, 0);
   model.scale.setScalar(1);
@@ -1729,22 +1729,22 @@ export function BattleScene3D(props: BattleScene3DProps) {
       ];
       const presetIndex = Math.abs(data.chapter * 7 + data.locationIndex * 13 + hashSceneKey(data.sceneKey)) % mapPresets.length;
       const positions: Array<[number, number, number]> = [
-        [-18, 0, -24],
-        [17, 0, -25],
-        [-28, 0, -6],
-        [27, 0, -5],
-        [-14, 0, 16],
-        [16, 0, 17],
-        [0, 0, -30],
-        [0, 0, 24],
-        [-34, 0, 22],
-        [34, 0, 22],
+        [-42, 0, -42],
+        [42, 0, -42],
+        [-52, 0, -14],
+        [52, 0, -14],
+        [-42, 0, 34],
+        [42, 0, 34],
+        [-18, 0, -50],
+        [18, 0, 48],
+        [-58, 0, 44],
+        [58, 0, 44],
       ];
       const selectedPack = mapPresets[presetIndex];
       positions.forEach((position, index) => {
         const path = selectedPack[index % selectedPack.length];
         const family = Math.floor(presetIndex / 10);
-        const size = family === 0 ? 2.1 + (index % 3) * 0.55 : family === 1 ? 3.1 : 4.25;
+        const size = family === 0 ? 0.62 + (index % 3) * 0.12 : family === 1 ? 0.82 : 0.95;
         loadMapProp(path, locationKey, position, size, Math.sin(index + data.chapter) * 0.9);
       });
     };
@@ -1998,6 +1998,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const monster = makeMonster(refs.current.monsterKind, i);
       const attackTrail = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.03, 8, 28, Math.PI * 1.12), monsterSlashMaterial.clone());
       attackTrail.visible = false;
+      attackTrail.userData.attackTrail = true;
       attackTrail.position.set(0, 1.08, -0.62);
       attackTrail.rotation.set(-0.55, 0, 0.92);
       monster.add(attackTrail);
@@ -2021,47 +2022,42 @@ export function BattleScene3D(props: BattleScene3DProps) {
     }
     scene.add(monsters);
 
-    if (refs.current.useCityGoblinModel) {
-      gltfLoader.load(
-        '/models/custom-goblin-upload/scene.gltf',
-        (gltf) => {
-          const template = gltf.scene;
-          template.traverse((object) => {
-            if (object instanceof THREE.Mesh) {
-              object.castShadow = true;
-              object.receiveShadow = true;
-            }
+    gltfLoader.load(
+      '/models/custom-goblin-upload/scene.gltf',
+      (gltf) => {
+        const template = gltf.scene;
+        template.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+          }
+        });
+        monsters.children.forEach((monster, index) => {
+          const current = monster as THREE.Group;
+          current.children.forEach((child) => {
+            child.visible = child.userData.attackTrail === true;
           });
-          monsters.children.forEach((monster, index) => {
-            const current = monster as THREE.Group;
-            if (!current.userData.isGoblin) return;
-            current.children.forEach((child) => {
-              child.visible = false;
-            });
-            const model = template.clone(true);
-            fitGoblinModel(model);
-            model.name = 'loaded-goblin-model';
-            model.rotation.y += (index % 2 ? 0.08 : -0.08);
-            current.add(model);
-            current.userData.loadedGoblinModel = model;
-            current.userData.loadedGoblinBaseRotationY = model.rotation.y;
-            current.userData.baseY = 0.02;
+          const model = template.clone(true);
+          fitGoblinModel(model);
+          model.name = 'loaded-goblin-model';
+          model.rotation.y += (index % 2 ? 0.08 : -0.08);
+          current.add(model);
+          current.userData.loadedGoblinModel = model;
+          current.userData.loadedGoblinBaseRotationY = model.rotation.y;
+          current.userData.baseY = 0.02;
+        });
+        markModelReady('goblin');
+      },
+      undefined,
+      () => {
+        monsters.children.forEach((monster) => {
+          (monster as THREE.Group).children.forEach((child) => {
+            child.visible = true;
           });
-          markModelReady('goblin');
-        },
-        undefined,
-        () => {
-          monsters.children.forEach((monster) => {
-            (monster as THREE.Group).children.forEach((child) => {
-              child.visible = true;
-            });
-          });
-          markModelReady('goblin');
-        }
-      );
-    } else {
-      markModelReady('goblin');
-    }
+        });
+        markModelReady('goblin');
+      }
+    );
 
     const ashMat = new THREE.MeshBasicMaterial({ color: '#aee9e3', transparent: true, opacity: 0.58 });
     const motes = new THREE.Group();

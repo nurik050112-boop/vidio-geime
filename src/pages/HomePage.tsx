@@ -1548,6 +1548,8 @@ export function HomePage() {
   const [equippedArtifactId, setEquippedArtifactId] = useState<ArtifactId | null>(savedGameRef.current?.equippedArtifactId ?? null);
   const [heroMana, setHeroMana] = useState(savedGameRef.current?.heroMana ?? heroMaxMana);
   const [showFullInventory, setShowFullInventory] = useState(false);
+  const [questPanelOpen, setQuestPanelOpen] = useState(false);
+  const [inventoryPanelOpen, setInventoryPanelOpen] = useState(false);
   const [heroAnimation, setHeroAnimation] = useState<HeroAnimation>('idle');
   const [heroPosition, setHeroPosition] = useState(savedGameRef.current?.heroPosition ?? { x: -18_000, z: 0 });
   const [heroHeight, setHeroHeight] = useState(0);
@@ -2000,11 +2002,15 @@ export function HomePage() {
   ];
   const activeQuest = quests.find((quest) => !quest.done) ?? quests[quests.length - 1];
   const visibleQuests = quests.filter((quest) => quest.done).slice(-3).concat(activeQuest).filter((quest, index, list) => list.findIndex((item) => item.title === quest.title) === index);
+  const completedQuestCount = quests.filter((quest) => quest.done).length;
+  const playerLevel = Math.max(1, savedCities.length + Math.floor(defeatedMonsters / 100) + Math.floor(completedQuestCount / 10) + duelWins);
+  const playerLevelProgress = Math.min(100, Math.floor(((defeatedMonsters % 100) / 100) * 100));
   const inventoryPreviewLimit = 80;
   const visibleWeapons = showFullInventory ? weapons : weapons.slice(-inventoryPreviewLimit);
   const magicWeapons = weapons.filter(isArcaneWeapon);
   const visibleMagicWeapons = showFullInventory ? magicWeapons : magicWeapons.slice(-inventoryPreviewLimit);
   const visibleArmors = showFullInventory ? armors : armors.slice(-inventoryPreviewLimit);
+  const visibleRelics = showFullInventory ? relics : relics.slice(-inventoryPreviewLimit);
   const currentPlayerPower = Math.max(1_000, attackBonus + defenseBonus + currentHeroMaxHp);
   const hasArcaneWeapon = isArcaneWeapon(equippedWeapon);
   const selectedSpell = arcaneSpells[selectedArcaneSpell % arcaneSpells.length];
@@ -2929,13 +2935,14 @@ export function HomePage() {
       });
       const collisionContext = collisionContextRef.current;
       const nextPosition = clampPosition({ x: position.x + dx, z: position.z + dz });
-      if (!isWorldBlockedAt(nextPosition, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.62)) return nextPosition;
+      const isCurrentPositionBlocked = isWorldBlockedAt(position, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.52);
+      if (isCurrentPositionBlocked || !isWorldBlockedAt(nextPosition, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.42)) return nextPosition;
 
       const slideX = clampPosition({ x: position.x + dx, z: position.z });
-      if (!isWorldBlockedAt(slideX, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.62)) return slideX;
+      if (!isWorldBlockedAt(slideX, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.42)) return slideX;
 
       const slideZ = clampPosition({ x: position.x, z: position.z + dz });
-      if (!isWorldBlockedAt(slideZ, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.62)) return slideZ;
+      if (!isWorldBlockedAt(slideZ, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.42)) return slideZ;
 
       return position;
     });
@@ -2948,7 +2955,7 @@ export function HomePage() {
     });
     const collisionContext = collisionContextRef.current;
     const canStand = (position: { x: number; z: number }) =>
-      !isWorldBlockedAt(position, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.74);
+      !isWorldBlockedAt(position, collisionContext.chapter, collisionContext.mapLocationIndex, collisionContext.mapSceneKey, 0.48);
     const nextPosition = clampPosition({ x: monster.x + dx, z: monster.z + dz });
     if (canStand(nextPosition)) return { ...monster, ...nextPosition };
 
@@ -6317,18 +6324,133 @@ export function HomePage() {
       )}
 
       {!isWorldPage && !isFinalReveal && enemy && (
-        <div className="quick-hud" aria-label="Быстрое состояние игры">
-          <div>
-            <strong><span className="admin-nick">{playerName}</span> | {enemy.city}</strong>
-            <span>Здоровье {heroHealthText}</span>
-            <span>Мана {Math.floor(heroMana)} / {currentHeroMaxMana}</span>
-            <span>{currentEnemyHealthText}</span>
-            <span>{isFinalSpiritWorld ? 'Подземные монстры' : isDungeon ? 'Пещера' : 'Монстры'}: {formatPower(currentMonsters)}</span>
-            <span>Винстрик x{winStreakState.current} | рекорд {winStreakState.best}</span>
+        <div className="quick-hud compact-game-hud" aria-label="Быстрое состояние игры">
+          <div className="hud-player-card">
+            <strong><span className="admin-nick">{playerName}</span></strong>
+            <span>Ур. {playerLevel}</span>
+            <i><b style={{ width: `${playerLevelProgress}%` }} /></i>
           </div>
-          {currentMonsters === 0 && (
-            <button onClick={strike} disabled={heroHp === 0}>{isFinalSpiritBoss ? 'Бить души' : 'Бить дракона'}</button>
-          )}
+          <div className="hud-bars">
+            <span>HP {heroHealthText}</span>
+            <i className="hud-hp"><b style={{ width: `${heroHealthPercent}%` }} /></i>
+            <span>MP {Math.floor(heroMana)} / {currentHeroMaxMana}</span>
+            <i className="hud-mana"><b style={{ width: `${Math.max(0, Math.min(100, (heroMana / currentHeroMaxMana) * 100))}%` }} /></i>
+          </div>
+          <div className="hud-money">
+            <strong>{infiniteGold ? '∞' : formatPower(gold)}</strong>
+            <span>деньги</span>
+          </div>
+          <div className="hud-target">
+            <strong>{enemy.city}</strong>
+            <span>{currentMonsters > 0 ? `${formatPower(currentMonsters)} монстров` : currentEnemyHealthText}</span>
+          </div>
+          <div className="hud-actions-mini">
+            <Link className="hud-icon-button" href="/world" aria-label="Мир">Мир</Link>
+            <button onClick={() => setQuestPanelOpen(true)} type="button">Квесты</button>
+            <button onClick={() => setInventoryPanelOpen(true)} type="button">Сумка</button>
+            <button onClick={() => {
+              claimMagicStaffs();
+              setInventoryPanelOpen(true);
+            }} type="button">Магия</button>
+            {currentMonsters === 0 && (
+              <button onClick={strike} disabled={heroHp === 0} type="button">{isFinalSpiritBoss ? 'Души' : 'Босс'}</button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {questPanelOpen && (
+        <div className="game-modal" role="dialog" aria-modal="true" aria-label="Квесты">
+          <div className="game-modal-panel quest-modal-panel">
+            <div className="game-modal-head">
+              <div>
+                <p className="label">Квесты</p>
+                <strong>{completedQuestCount} / {quests.length}</strong>
+              </div>
+              <button onClick={() => setQuestPanelOpen(false)} type="button">Закрыть</button>
+            </div>
+            <div className="quest-list compact-quest-list">
+              {visibleQuests.map((quest) => (
+                <div className={`quest ${quest.done ? 'done' : quest === activeQuest ? 'active' : ''}`} key={quest.title}>
+                  <span>{quest.done ? '✓' : '!'}</span>
+                  <div>
+                    <strong>{quest.title}</strong>
+                    <p>{quest.text}</p>
+                    <small>{quest.progress}</small>
+                    <small>Деньги: {formatPower(quest.money)} | {quest.reward}</small>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {inventoryPanelOpen && (
+        <div className="game-modal" role="dialog" aria-modal="true" aria-label="Инвентарь">
+          <div className="game-modal-panel inventory-modal-panel">
+            <div className="game-modal-head">
+              <div>
+                <p className="label">Один инвентарь</p>
+                <strong>{weapons.length + armors.length + relics.length} вещей</strong>
+              </div>
+              <div className="modal-head-actions">
+                <button onClick={claimMagicStaffs} type="button">Магия</button>
+                <button onClick={() => setShowFullInventory((show) => !show)} type="button">{showFullInventory ? 'Коротко' : 'Все'}</button>
+                <button onClick={() => setInventoryPanelOpen(false)} type="button">Закрыть</button>
+              </div>
+            </div>
+            <div className="inventory-list full unified-inventory-list">
+              {visibleMagicWeapons.map((weapon) => (
+                <button
+                  className={`weapon weapon-card magic-staff ${rarityClass[weapon.rarity]} weapon-style-${getWeaponStyleIndex(weapon)} ${equippedWeapon?.id === weapon.id ? 'equipped' : ''}`}
+                  onClick={() => setEquippedWeapon(weapon)}
+                  key={`magic-${weapon.id}`}
+                  type="button"
+                >
+                  <span className="weapon-picture" aria-hidden="true"><i /></span>
+                  <span className="weapon-name">{weapon.name}</span>
+                  <small>{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | магия</small>
+                </button>
+              ))}
+              {visibleWeapons.filter((weapon) => !isArcaneWeapon(weapon)).map((weapon) => (
+                <button
+                  className={`weapon weapon-card ${rarityClass[weapon.rarity]} weapon-style-${getWeaponStyleIndex(weapon)} ${equippedWeapon?.id === weapon.id ? 'equipped' : ''}`}
+                  onClick={() => setEquippedWeapon(weapon)}
+                  key={`weapon-${weapon.id}`}
+                  type="button"
+                >
+                  <span className="weapon-picture" aria-hidden="true"><i /></span>
+                  <span className="weapon-name">{getWeaponDisplayName(weapon)}</span>
+                  <small>{weapon.rarity} +{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)}</small>
+                </button>
+              ))}
+              {visibleArmors.map((armor) => (
+                <button
+                  className={`weapon armor-card ${rarityClass[armor.rarity]} armor-style-${getArmorStyleIndex(armor)} ${isHelmetArmor(armor) ? 'helmet-card' : 'body-card'} ${equippedArmor?.id === armor.id ? 'equipped' : ''}`}
+                  onClick={() => setEquippedArmor(armor)}
+                  key={`armor-${armor.id}`}
+                  type="button"
+                >
+                  <span className="armor-picture" aria-hidden="true"><i /></span>
+                  <span>{armor.name}</span>
+                  <small>{armor.rarity} +{armor.displayDefense ?? formatPower(armor.defense)} защиты</small>
+                </button>
+              ))}
+              {visibleRelics.map((relic) => (
+                <div className="unified-relic" key={`relic-${relic}`}>
+                  <strong>{relic}</strong>
+                  <small>Редкая вещь</small>
+                </div>
+              ))}
+              {weapons.length === 0 && armors.length === 0 && relics.length === 0 && (
+                <div className="magic-empty">
+                  <strong>Инвентарь пустой</strong>
+                  <span>Бей монстров, открывай сундуки и забирай магию.</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -6338,6 +6460,8 @@ export function HomePage() {
           <Link className="page-switch play-link" href="/">Играть</Link>
           <Link className="page-switch play-link" href="/achievements">Достижения</Link>
           <button className="page-switch play-link guide-world-button" onClick={() => setTutorialOpen(true)} type="button">Гайд</button>
+          <button className="page-switch play-link guide-world-button" onClick={() => setQuestPanelOpen(true)} type="button">Квесты</button>
+          <button className="page-switch play-link guide-world-button" onClick={() => setInventoryPanelOpen(true)} type="button">Сумка</button>
         </div>
         <div className="story">
           <p className="eyebrow">Пылающий мир</p>
