@@ -34,6 +34,7 @@ const monsterRunSpeedMetersPerSecond = 18 / 3.6;
 const monsterHitRangeMeters = 5;
 const monsterPressureRangeMeters = 12;
 const monsterAggroRangeMeters = 100;
+const goblinDisplayScale = 1.25;
 const arcaneProjectileSpeedMetersPerSecond = 100 / 3.6;
 const arcaneAttackRadiusMeters = 70;
 const worldRadiusMeters = 5_000;
@@ -2043,7 +2044,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
           model.rotation.y += (index % 2 ? 0.08 : -0.08);
           current.add(model);
           current.userData.loadedGoblinModel = model;
-          current.userData.loadedGoblinBaseScale = model.scale.x;
+          current.userData.loadedGoblinBaseScale = model.scale.x * goblinDisplayScale;
           current.userData.loadedGoblinBaseRotationY = model.rotation.y;
           current.userData.baseY = 0.02;
         });
