@@ -1694,7 +1694,7 @@ export function HomePage() {
     doubleStrike: 0,
   });
 
-  const isFinalBoss = chapter === dragonSons.length && !victory;
+  const isFinalBoss = chapter >= dragonSons.length && !victory;
   const isFinalSpiritBoss = finalSpiritFightStarted;
   const isFinalSpiritWorld = finalSpiritWorldOpen && !finalSpiritFightStarted;
   const isFamilyBoss = endingChoice === 'family';
@@ -1719,7 +1719,8 @@ export function HomePage() {
   const isBbiWorld = bbiWorldEntered && !isBbiBoss && !bbiFinalChoiceOpen;
   const isMonsterAvalancheWorld = monsterAvalancheEntered && !monsterAvalancheEnding;
   const isDeathGodBoss = deathGodFightStarted;
-  const enemy = isDeathGodBoss ? deathGod : isFinalSpiritBoss || isFinalSpiritWorld ? finalDragonSpirit : isMonsterAvalancheWorld ? monsterAvalancheWorld : isAdminBoss ? adminBoss : isAdminWorldBosses ? adminBoss : isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : dragonSons[chapter];
+  const currentCityStage = dragonSons[Math.max(0, Math.min(chapter, dragonSons.length - 1))] ?? finalDragon;
+  const enemy = isDeathGodBoss ? deathGod : isFinalSpiritBoss || isFinalSpiritWorld ? finalDragonSpirit : isMonsterAvalancheWorld ? monsterAvalancheWorld : isAdminBoss ? adminBoss : isAdminWorldBosses ? adminBoss : isAisGodBoss ? aisultanSeaGod : isAisSharkBoss ? seaShark : isNuraliKingBoss ? nuraliBoss : isBbiBoss ? bbiBosses[bbiBossStage] : isArailmKingBoss ? arailmKing : isMansurKingBoss ? mansurKing : isAnuarKingBoss ? anuarKing : isFuryKingBoss ? furyKing : isGoblinKingBoss ? goblinKing : isFamilyBoss ? dragonFamily : isFinalBoss ? finalDragon : currentCityStage;
   const isFinalReveal = victory && chapter > dragonSons.length && !isFamilyBoss;
   const isEndingChoice = isFinalReveal && endingChoice === null;
   const isDungeon = dungeon?.entered && !dungeon.cleared;
@@ -3734,7 +3735,7 @@ export function HomePage() {
       }
     }
 
-    if (chapter === dragonSons.length - 1) {
+    if (chapter >= dragonSons.length - 1) {
       setChapter(dragonSons.length);
       setEnemyHp(scaledDragonPower(baseDragonHp, dragonSons.length + 2));
       setHeroHp(currentHeroMaxHp);
