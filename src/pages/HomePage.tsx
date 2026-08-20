@@ -436,6 +436,7 @@ const citySizeMeters = 5_000;
 const cityHalfSize = (citySizeMeters / 2) * 1_000;
 const heroMoveSpeedPerSecond = (9 / 3.6) * 1_000;
 const heroRunSpeedPerSecond = (18 / 3.6) * 1_000;
+const worldCollisionEnabled = false;
 const forwardKeys = ['w', 'ц', 'keyw', 'arrowup'];
 const backwardKeys = ['s', 'ы', 'keys', 'arrowdown'];
 const leftKeys = ['a', 'ф', 'keya', 'arrowleft'];
@@ -725,6 +726,8 @@ function getWorldCollisionBoxes(chapter: number, locationIndex: number, sceneKey
 }
 
 function isWorldBlockedAt(position: { x: number; z: number }, chapter: number, locationIndex: number, sceneKey: string, radius = 0.72) {
+  if (!worldCollisionEnabled) return false;
+
   const worldX = -3.4 + position.x / 1000;
   const worldZ = 1.2 + position.z / 1000;
   return getWorldCollisionBoxes(chapter, locationIndex, sceneKey).some((box) => collidesWithBox(worldX, worldZ, box, radius));
