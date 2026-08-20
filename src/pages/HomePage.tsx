@@ -3038,6 +3038,16 @@ export function HomePage() {
     setHeroMoving(false);
   }
 
+  function pressMovementButton(key: string) {
+    pressedKeys.current.add(key);
+    pressedKeys.current.add(`key${key}`);
+  }
+
+  function releaseMovementButton(key: string) {
+    pressedKeys.current.delete(key);
+    pressedKeys.current.delete(`key${key}`);
+  }
+
   function updateCameraYaw(nextYaw: number) {
     cameraYawRef.current = nextYaw;
     setCameraYaw(nextYaw);
@@ -6085,6 +6095,31 @@ export function HomePage() {
             aria-label="Джойстик движения"
           >
             <span style={{ transform: `translate(${joystickThumb.x}px, ${joystickThumb.y}px)` }} />
+          </div>
+          <div className="movement-pad" aria-label="Кнопки движения">
+            {(['w', 'a', 's', 'd'] as const).map((key) => (
+              <button
+                className={`movement-pad-button ${key}`}
+                key={key}
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  pressMovementButton(key);
+                }}
+                onPointerUp={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+                  releaseMovementButton(key);
+                }}
+                onPointerCancel={() => releaseMovementButton(key)}
+                onLostPointerCapture={() => releaseMovementButton(key)}
+                type="button"
+              >
+                {key.toUpperCase()}
+              </button>
+            ))}
           </div>
           {hasArcaneWeapon && (
             <div className="arcane-spell-panel" aria-label="Заклинания">

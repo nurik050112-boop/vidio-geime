@@ -1010,7 +1010,8 @@ button.secondary {
   position: static;
 }
 
-.game.play-page .mobile-joystick {
+.game.play-page .mobile-joystick,
+.game.play-page .movement-pad {
   display: block;
 }
 
@@ -2443,6 +2444,10 @@ button.secondary {
 }
 
 .battle-3d-layer ~ .mobile-joystick {
+  display: block !important;
+}
+
+.battle-3d-layer ~ .movement-pad {
   display: block !important;
 }
 
