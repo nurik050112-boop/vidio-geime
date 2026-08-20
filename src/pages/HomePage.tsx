@@ -434,8 +434,14 @@ const finalSpiritMonsterHp = 1_000;
 const deathSwordDamageText = '999999999999999999999999999999999999999999999';
 const citySizeMeters = 5_000;
 const cityHalfSize = (citySizeMeters / 2) * 1_000;
-const heroMoveSpeedPerSecond = (22 / 3.6) * 1_000;
-const heroRunSpeedPerSecond = (34 / 3.6) * 1_000;
+const heroMoveSpeedPerSecond = (9 / 3.6) * 1_000;
+const heroRunSpeedPerSecond = (18 / 3.6) * 1_000;
+const forwardKeys = ['w', 'ц', 'keyw', 'arrowup'];
+const backwardKeys = ['s', 'ы', 'keys', 'arrowdown'];
+const leftKeys = ['a', 'ф', 'keya', 'arrowleft'];
+const rightKeys = ['d', 'в', 'keyd', 'arrowright'];
+const sprintKeys = ['shift', 'shiftleft', 'shiftright'];
+const movementKeys = [...forwardKeys, ...backwardKeys, ...leftKeys, ...rightKeys, ...sprintKeys];
 const meleeRangeMeters = 5;
 const meleeRangeUnits = meleeRangeMeters * 1_000;
 const monsterPressureRangeUnits = 12_000;
@@ -3018,6 +3024,11 @@ export function HomePage() {
     if (joystickPointerId.current !== event.pointerId) return;
     event.preventDefault();
     event.stopPropagation();
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    resetJoystick();
+  }
+
+  function resetJoystick() {
     joystickPointerId.current = null;
     joystickVector.current = { x: 0, z: 0 };
     setJoystickThumb({ x: 0, y: 0 });
@@ -3071,18 +3082,24 @@ export function HomePage() {
       const deltaSeconds = lastMoveAt.current === null ? 0.016 : Math.min(0.05, (now - lastMoveAt.current) / 1000);
       lastMoveAt.current = now;
       const keys = pressedKeys.current;
-      let dx = 0;
-      let dz = 0;
-      if (keys.has('w') || keys.has('keyw') || keys.has('arrowup')) dz -= 1;
-      if (keys.has('s') || keys.has('keys') || keys.has('arrowdown')) dz += 1;
-      if (keys.has('a') || keys.has('keya') || keys.has('arrowleft')) dx -= 1;
-      if (keys.has('d') || keys.has('keyd') || keys.has('arrowright')) dx += 1;
-      dx += joystickVector.current.x;
-      dz += joystickVector.current.z;
-      const inputLength = Math.hypot(dx, dz);
-      const hasInput = inputLength > 0.05;
-      const localX = hasInput ? dx / inputLength : 0;
-      const localZ = hasInput ? dz / inputLength : 0;
+      let keyboardX = 0;
+      let keyboardZ = 0;
+      if (forwardKeys.some((key) => keys.has(key))) keyboardZ -= 1;
+      if (backwardKeys.some((key) => keys.has(key))) keyboardZ += 1;
+      if (leftKeys.some((key) => keys.has(key))) keyboardX -= 1;
+      if (rightKeys.some((key) => keys.has(key))) keyboardX += 1;
+      const keyboardLength = Math.hypot(keyboardX, keyboardZ);
+      if (keyboardLength > 1) {
+        keyboardX /= keyboardLength;
+        keyboardZ /= keyboardLength;
+      }
+      const rawInputX = keyboardX + joystickVector.current.x;
+      const rawInputZ = keyboardZ + joystickVector.current.z;
+      const rawInputLength = Math.hypot(rawInputX, rawInputZ);
+      const inputStrength = Math.min(1, rawInputLength);
+      const hasInput = inputStrength > 0.05;
+      const localX = hasInput ? rawInputX / rawInputLength : 0;
+      const localZ = hasInput ? rawInputZ / rawInputLength : 0;
       const yaw = cameraYawRef.current;
       const targetDirection = hasInput
         ? {
@@ -3090,10 +3107,10 @@ export function HomePage() {
           z: -Math.sin(yaw) * localX + Math.cos(yaw) * localZ,
         }
         : { x: 0, z: 0 };
-      const isSprinting = keys.has('shift') || keys.has('shiftleft') || keys.has('shiftright');
-      const targetSpeed = hasInput ? (isSprinting ? heroRunSpeedPerSecond : heroMoveSpeedPerSecond) : 0;
+      const isSprinting = sprintKeys.some((key) => keys.has(key));
+      const targetSpeed = hasInput ? (isSprinting ? heroRunSpeedPerSecond : heroMoveSpeedPerSecond) * inputStrength : 0;
       const currentVelocity = movementVelocity.current;
-      const acceleration = hasInput ? 9.5 : 12.5;
+      const acceleration = hasInput ? 7.5 : 10.5;
       const blend = 1 - Math.exp(-deltaSeconds * acceleration);
       const nextVelocity = {
         x: currentVelocity.x + (targetDirection.x * targetSpeed - currentVelocity.x) * blend,
@@ -3729,7 +3746,7 @@ export function HomePage() {
       if (isTyping) return;
       const key = event.key.toLowerCase();
       const code = event.code.toLowerCase();
-      if (['w', 'a', 's', 'd', 'shift', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key) || ['keyw', 'keya', 'keys', 'keyd', 'shiftleft', 'shiftright'].includes(code)) {
+      if (movementKeys.includes(key) || movementKeys.includes(code)) {
         pressedKeys.current.add(key);
         pressedKeys.current.add(code);
         event.preventDefault();
@@ -3745,11 +3762,25 @@ export function HomePage() {
       pressedKeys.current.delete(event.code.toLowerCase());
     }
 
+    function resetMovementInput() {
+      pressedKeys.current.clear();
+      movementVelocity.current = { x: 0, z: 0 };
+      setHeroMoving(false);
+    }
+
+    function onVisibilityChange() {
+      if (document.hidden) resetMovementInput();
+    }
+
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', resetMovementInput);
+    document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', resetMovementInput);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, []);
 
@@ -6046,6 +6077,7 @@ export function HomePage() {
             onPointerMove={moveJoystick}
             onPointerUp={stopJoystick}
             onPointerCancel={stopJoystick}
+            onLostPointerCapture={resetJoystick}
             role="application"
             aria-label="Джойстик движения"
           >
