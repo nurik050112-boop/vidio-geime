@@ -205,6 +205,12 @@ button.secondary {
   line-height: 1.35;
 }
 
+.guest-button {
+  width: 100%;
+  color: #251105;
+  background: #ffe66d;
+}
+
 .intro-page {
   min-height: 100vh;
   display: grid;
@@ -827,8 +833,7 @@ button.secondary {
 }
 
 .mobile-joystick,
-.mobile-attack,
-.movement-pad {
+.mobile-attack {
   display: none;
 }
 
@@ -1010,64 +1015,8 @@ button.secondary {
   position: static;
 }
 
-.game.play-page .mobile-joystick,
-.game.play-page .movement-pad {
+.game.play-page .mobile-joystick {
   display: block;
-}
-
-.movement-pad {
-  position: absolute;
-  left: max(194px, calc(env(safe-area-inset-left) + 194px));
-  bottom: max(30px, env(safe-area-inset-bottom));
-  z-index: 121;
-  width: 132px;
-  height: 132px;
-  pointer-events: auto;
-}
-
-.movement-pad-button {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  min-height: 42px;
-  padding: 0;
-  border: 3px solid rgba(255, 248, 232, 0.88);
-  border-radius: 8px;
-  color: #101014;
-  font-size: 22px;
-  font-weight: 1000;
-  line-height: 1;
-  background: linear-gradient(180deg, #f7fbff, #9ad8ff);
-  box-shadow: 0 6px 0 rgba(16, 16, 20, 0.74), 0 14px 22px rgba(0, 0, 0, 0.28);
-  touch-action: none;
-  user-select: none;
-}
-
-.movement-pad-button:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 rgba(16, 16, 20, 0.74), 0 8px 16px rgba(0, 0, 0, 0.24);
-}
-
-.movement-pad-button.w {
-  left: 45px;
-  top: 0;
-}
-
-.movement-pad-button.a {
-  left: 0;
-  top: 45px;
-}
-
-.movement-pad-button.s {
-  left: 45px;
-  top: 90px;
-}
-
-.movement-pad-button.d {
-  left: 90px;
-  top: 45px;
 }
 
 .click-duel {
@@ -1383,6 +1332,28 @@ button.secondary {
 .guide-columns span {
   font-size: 13px;
   line-height: 1.25;
+}
+
+.guide-reader-reward {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 2px solid #ffe66d;
+  border-radius: 8px;
+  background: rgba(255, 230, 109, 0.14);
+}
+
+.guide-reader-reward strong {
+  color: #ffe66d;
+  font-size: 18px;
+}
+
+.guide-reader-reward code {
+  padding: 3px 7px;
+  border-radius: 6px;
+  color: #251105;
+  background: #ffe66d;
+  font-weight: 900;
 }
 
 .tutorial-tip {
@@ -2444,10 +2415,6 @@ button.secondary {
 }
 
 .battle-3d-layer ~ .mobile-joystick {
-  display: block !important;
-}
-
-.battle-3d-layer ~ .movement-pad {
   display: block !important;
 }
 
@@ -8552,38 +8519,6 @@ button.selected {
   .mobile-joystick span {
     width: 50px;
     height: 50px;
-  }
-
-  .movement-pad {
-    left: max(152px, calc(env(safe-area-inset-left) + 152px));
-    bottom: max(24px, env(safe-area-inset-bottom));
-    width: 112px;
-    height: 112px;
-  }
-
-  .movement-pad-button {
-    width: 36px;
-    height: 36px;
-    min-height: 36px;
-    font-size: 18px;
-  }
-
-  .movement-pad-button.w {
-    left: 38px;
-  }
-
-  .movement-pad-button.a {
-    top: 38px;
-  }
-
-  .movement-pad-button.s {
-    left: 38px;
-    top: 76px;
-  }
-
-  .movement-pad-button.d {
-    left: 76px;
-    top: 38px;
   }
 
   .auth-panel {

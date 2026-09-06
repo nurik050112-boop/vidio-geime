@@ -436,7 +436,7 @@ const citySizeMeters = 5_000;
 const cityHalfSize = (citySizeMeters / 2) * 1_000;
 const heroMoveSpeedPerSecond = (9 / 3.6) * 1_000;
 const heroRunSpeedPerSecond = (18 / 3.6) * 1_000;
-const worldCollisionEnabled = false;
+const worldCollisionEnabled = true;
 const forwardKeys = ['w', 'ц', 'keyw', 'arrowup'];
 const backwardKeys = ['s', 'ы', 'keys', 'arrowdown'];
 const leftKeys = ['a', 'ф', 'keya', 'arrowleft'];
@@ -1033,6 +1033,25 @@ function upgradePower(level: number, base: number) {
 
 function nextUpgradePower(level: number, base: number) {
   return base * (level + 1);
+}
+
+function getPlayerLevelFromKills(defeatedEnemies: number) {
+  let level = 1;
+  let killsOnLevel = Math.max(0, defeatedEnemies);
+  let killsNeeded = 10;
+
+  while (killsOnLevel >= killsNeeded && killsNeeded < Number.MAX_SAFE_INTEGER / 10) {
+    killsOnLevel -= killsNeeded;
+    level += 1;
+    killsNeeded *= 10;
+  }
+
+  return {
+    level,
+    killsOnLevel,
+    killsNeeded,
+    progress: Math.min(100, Math.floor((killsOnLevel / killsNeeded) * 100)),
+  };
 }
 
 function getShopPrice(item: ShopItem, level: number) {
@@ -1635,7 +1654,7 @@ export function HomePage() {
   const [dailyRewardText, setDailyRewardText] = useState('');
   const [winStreakState, setWinStreakState] = useState<WinStreakState>(() => readWinStreakState());
   const [winStreakText, setWinStreakText] = useState('');
-  const [nickname, setNickname] = useState(() => window.localStorage.getItem('hero-nickname') ?? 'BBI герой');
+  const nickname = window.localStorage.getItem('hero-nickname') ?? 'BBI герой';
   const [playerId] = useState(() => {
     const savedId = window.localStorage.getItem('hero-player-id');
     if (savedId) {
@@ -1650,13 +1669,13 @@ export function HomePage() {
     return nextId;
   });
   const [duelTargetId, setDuelTargetId] = useState('');
-  const [authOpen, setAuthOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authBusy, setAuthBusy] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [guestMode, setGuestMode] = useState(() => window.localStorage.getItem('dragon-game-guest-mode') === 'yes');
+  const [levelStatMultiplier, setLevelStatMultiplier] = useState(1);
   const [adminCode, setAdminCode] = useState('');
   const [achievementCode, setAchievementCode] = useState('');
   const [achievementCheatActive, setAchievementCheatActive] = useState(false);
@@ -1728,9 +1747,9 @@ export function HomePage() {
   const unlockedArtifacts = endingArtifacts.filter((artifact) => unlockedAchievements.includes(artifact.ending));
   const equippedArtifact = unlockedArtifacts.find((artifact) => artifact.id === equippedArtifactId) ?? null;
   const artifactHealthMultiplier = equippedArtifact?.healthBonusPercent ? 1 + equippedArtifact.healthBonusPercent / 100 : 1;
-  const currentHeroMaxHp = hasAdminHelmet ? Number.MAX_SAFE_INTEGER : Math.floor((heroMaxHp + upgradePower(healthLevel, shopBasePower.health)) * artifactHealthMultiplier);
+  const currentHeroMaxHp = hasAdminHelmet ? Number.MAX_SAFE_INTEGER : Math.floor((heroMaxHp + upgradePower(healthLevel, shopBasePower.health)) * artifactHealthMultiplier * levelStatMultiplier);
   const artifactManaMultiplier = equippedArtifact?.manaBonusPercent ? 1 + equippedArtifact.manaBonusPercent / 100 : 1;
-  const currentHeroMaxMana = Math.floor((heroMaxMana + upgradePower(shopLevels.mana, shopBasePower.mana)) * artifactManaMultiplier);
+  const currentHeroMaxMana = Math.floor((heroMaxMana + upgradePower(shopLevels.mana, shopBasePower.mana)) * artifactManaMultiplier * levelStatMultiplier);
   const heroHealthText = hasAdminHelmet ? `${adminHelmetHealthText} / ${adminHelmetHealthText}` : `${heroHp} / ${currentHeroMaxHp}`;
   const heroHealthPercent = Math.max(0, Math.min(100, (heroHp / currentHeroMaxHp) * 100));
 
@@ -1742,8 +1761,8 @@ export function HomePage() {
   const equippedIsHelmet = isHelmetArmor(equippedArmor);
   const artifactDefenseMultiplier = equippedArtifact?.defenseBonusPercent ? 1 + equippedArtifact.defenseBonusPercent / 100 : 1;
   const artifactLuckMultiplier = equippedArtifact?.luckBonusPercent ? 1 + equippedArtifact.luckBonusPercent / 100 : 1;
-  const defenseBonus = Math.floor((upgradePower(items.clothes, shopBasePower.clothes) + upgradePower(items.helmet, shopBasePower.helmet) + upgradePower(items.armor, shopBasePower.armor) + armorBonus) * artifactDefenseMultiplier);
-  const artifactDamageMultiplier = equippedArtifact ? 1 + equippedArtifact.bonusPercent / 100 : 1;
+  const defenseBonus = Math.floor((upgradePower(items.clothes, shopBasePower.clothes) + upgradePower(items.helmet, shopBasePower.helmet) + upgradePower(items.armor, shopBasePower.armor) + armorBonus) * artifactDefenseMultiplier * levelStatMultiplier);
+  const artifactDamageMultiplier = (equippedArtifact ? 1 + equippedArtifact.bonusPercent / 100 : 1) * levelStatMultiplier;
   const artifactGoldMultiplier = equippedArtifact ? 1 + equippedArtifact.goldBonusPercent / 100 : 1;
   const artifactAttackSpeedMultiplier = equippedArtifact ? 1 + equippedArtifact.attackSpeedPercent / 100 : 1;
   const waterSwordArtifactMultiplier = equippedArtifactId === 'seaPearl' && isAisultanSword(equippedWeapon) ? 11 : 1;
@@ -2013,8 +2032,10 @@ export function HomePage() {
   const activeQuest = quests.find((quest) => !quest.done) ?? quests[quests.length - 1];
   const visibleQuests = quests.filter((quest) => quest.done).slice(-3).concat(activeQuest).filter((quest, index, list) => list.findIndex((item) => item.title === quest.title) === index);
   const completedQuestCount = quests.filter((quest) => quest.done).length;
-  const playerLevel = Math.max(1, savedCities.length + Math.floor(defeatedMonsters / 100) + Math.floor(completedQuestCount / 10) + duelWins);
-  const playerLevelProgress = Math.min(100, Math.floor(((defeatedMonsters % 100) / 100) * 100));
+  const playerLevelState = getPlayerLevelFromKills(defeatedMonsters);
+  const playerLevel = playerLevelState.level;
+  const playerLevelProgress = playerLevelState.progress;
+  const expectedLevelStatMultiplier = 1.1 ** (playerLevel - 1);
   const inventoryPreviewLimit = 80;
   const visibleWeapons = showFullInventory ? weapons : weapons.slice(-inventoryPreviewLimit);
   const magicWeapons = weapons.filter(isArcaneWeapon);
@@ -2032,6 +2053,10 @@ export function HomePage() {
   const arcaneSkillReady = hasArcaneWeapon && arcaneSkillRemainingMs === 0 && heroMana >= arcaneSkillManaCost;
   const arcaneSkillDamage = Math.max(1, Math.floor((attackBonus + equippedWeaponDamage + 2_500) * artifactDamageMultiplier * selectedSpell.power));
   const allAchievementsUnlocked = achievements.every((achievement) => unlockedAchievements.includes(achievement.id));
+
+  useEffect(() => {
+    setLevelStatMultiplier(expectedLevelStatMultiplier);
+  }, [expectedLevelStatMultiplier]);
 
   function speakText(text: string, sceneKey: string) {
     if (typeof window === 'undefined' || !('speechSynthesis' in window) || lastSpokenSceneRef.current === sceneKey) return;
@@ -2762,7 +2787,7 @@ export function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (!isSupabaseConfigured || guestMode || !authOpen) return;
+    if (!isSupabaseConfigured || guestMode) return;
 
     supabase.auth.getUser().then(({ data }) => {
       setAuthUser(data.user);
@@ -2780,7 +2805,7 @@ export function HomePage() {
     return () => {
       data.subscription.unsubscribe();
     };
-  }, [authOpen, guestMode]);
+  }, [guestMode]);
 
   useEffect(() => {
     const completedUnpaid = quests.filter((quest) => quest.done && !paidQuestIds.current.has(quest.id));
@@ -3039,16 +3064,6 @@ export function HomePage() {
     setHeroMoving(false);
   }
 
-  function pressMovementButton(key: string) {
-    pressedKeys.current.add(key);
-    pressedKeys.current.add(`key${key}`);
-  }
-
-  function releaseMovementButton(key: string) {
-    pressedKeys.current.delete(key);
-    pressedKeys.current.delete(`key${key}`);
-  }
-
   function updateCameraYaw(nextYaw: number) {
     cameraYawRef.current = nextYaw;
     setCameraYaw(nextYaw);
@@ -3098,8 +3113,8 @@ export function HomePage() {
       const keys = pressedKeys.current;
       let keyboardX = 0;
       let keyboardZ = 0;
-      if (forwardKeys.some((key) => keys.has(key))) keyboardZ -= 1;
-      if (backwardKeys.some((key) => keys.has(key))) keyboardZ += 1;
+      if (forwardKeys.some((key) => keys.has(key))) keyboardZ += 1;
+      if (backwardKeys.some((key) => keys.has(key))) keyboardZ -= 1;
       if (leftKeys.some((key) => keys.has(key))) keyboardX -= 1;
       if (rightKeys.some((key) => keys.has(key))) keyboardX += 1;
       const keyboardLength = Math.hypot(keyboardX, keyboardZ);
@@ -4704,6 +4719,13 @@ export function HomePage() {
     setShopLevels({ sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
   }
 
+  function enterAsGuest() {
+    window.localStorage.setItem('dragon-game-guest-mode', 'yes');
+    setGuestMode(true);
+    setAuthMessage('');
+    setMessage('Ты вошел как гость. Прогресс сохранится на этом устройстве.');
+  }
+
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isSupabaseConfigured) {
@@ -4875,6 +4897,10 @@ export function HomePage() {
               </button>
               {authMessage && <p>{authMessage}</p>}
             </form>
+            <div className="auth-divider">или</div>
+            <button className="guest-button" onClick={enterAsGuest} disabled={authBusy} type="button">
+              Войти как гость
+            </button>
           </div>
         </section>
       </main>
@@ -5552,57 +5578,6 @@ export function HomePage() {
 
   return (
     <main className={`game ${isWorldPage ? 'world-page' : 'play-page'}`}>
-      {!isWorldPage && (
-      <div className="auth-panel">
-        <label className="nickname-field">
-          <span>Ник</span>
-          <input
-            aria-label="Ник игрока"
-            className="admin-nick-input"
-            maxLength={18}
-            onChange={(event) => setNickname(event.target.value)}
-            placeholder="Твой ник"
-            value={nickname}
-          />
-        </label>
-        {!authUser && !guestMode && (
-          <>
-            <button onClick={() => setAuthOpen((open) => !open)} type="button">
-              {authOpen ? 'Закрыть' : 'Войти'}
-            </button>
-            {authOpen && (
-              <form className="login-form" onSubmit={submitLogin}>
-                <input
-                  aria-label="Почта"
-                  onChange={(event) => setAuthEmail(event.target.value)}
-                  placeholder="почта"
-                  type="email"
-                  value={authEmail}
-                  required
-                />
-                <input
-                  aria-label="Пароль"
-                  minLength={6}
-                  onChange={(event) => setAuthPassword(event.target.value)}
-                  placeholder="пароль"
-                  type="password"
-                  value={authPassword}
-                  required
-                />
-                <button type="submit" disabled={authBusy}>{authBusy ? '...' : 'Войти'}</button>
-                <button className="secondary" type="button" onClick={createAccount} disabled={authBusy}>
-                  Создать
-                </button>
-                <button className="secondary" type="button" onClick={signInWithGoogle} disabled={authBusy}>
-                  Аккаунт
-                </button>
-              {authMessage && <p>{authMessage}</p>}
-            </form>
-          )}
-        </>
-        )}
-      </div>
-      )}
       {tutorialOpen && (
         <div className="tutorial-overlay" role="dialog" aria-label="Обучение игре">
           <div className="tutorial-card tutorial-main">
@@ -5610,20 +5585,34 @@ export function HomePage() {
             <h2>Гайд и версии</h2>
             <div className="guide-scroll">
               <div className="guide-current-version">
-                <strong>Текущая версия: vMagicStaffs70</strong>
-                <span>Добавлен раздел магического оружия, посохи и быстрые способности радиусом 70 метров.</span>
+                <strong>Текущая версия: vHeroLevels</strong>
+                <span>Добавлены уровни героя, рост характеристик, правильное движение и улучшенные гоблины.</span>
               </div>
               <p>Ходи по захваченному городу, ищи монстров, бей их рядом или магией, собирай золото, покупай улучшения и открывай новых боссов. Монстров можно зачищать мечом или заклинаниями; когда город очищен, появляется дракон.</p>
               <div className="guide-columns">
                 <div>
                   <strong>Управление</strong>
-                  <span>WASD: свободно ходить по карте от третьего лица</span>
+                  <span>W — вперёд, S — назад, A и D — влево и вправо</span>
                   <span>Мышь или тап по сцене: ударить рядом</span>
                   <span>Пробел: прыгнуть</span>
                   <span>F: быстрый удар</span>
                   <span>На телефоне: джойстик для движения, тап по сцене для удара</span>
                   <span>Кнопка Гайд открывает эту подсказку в любой момент</span>
                   <span>Повороты героя, камеры, монстров и боссов стали плавными</span>
+                </div>
+                <div>
+                  <strong>Уровни героя</strong>
+                  <span>Каждый новый игрок начинает с 1-го уровня и прогресса 0 / 10</span>
+                  <span>Для 2-го уровня победи 10 врагов</span>
+                  <span>Затем требуется 100, 1 000, 10 000 врагов — каждый раз в 10 раз больше</span>
+                  <span>Каждый новый уровень навсегда даёт +10% к здоровью, мане, урону и защите</span>
+                  <span>Уровень и прогресс показываются в нижней панели</span>
+                </div>
+                <div>
+                  <strong>Вход и гость</strong>
+                  <span>Можно войти через аккаунт, почту или кнопку «Войти как гость»</span>
+                  <span>Гостевой прогресс хранится только на этом устройстве</span>
+                  <span>Автосохранение запоминает прохождение после изменений</span>
                 </div>
                 <div>
                   <strong>Бой</strong>
@@ -5650,12 +5639,19 @@ export function HomePage() {
                   <strong>Монстры</strong>
                   <span>Боты-охотники бегут к герою, когда он входит в радиус обнаружения</span>
                   <span>Урон больше не идет из воздуха: сначала монстр должен приблизиться</span>
-                  <span>Гоблины: прыгают и бьют ножом или дубиной</span>
+                  <span>Гоблины ходят по земле, обходят здания и бьют ножом или дубиной</span>
                   <span>Пауки: перебирают лапами и кусают</span>
                   <span>Орки: топают и бьют топором</span>
                   <span>Каменные и великаны: медленно, но тяжело атакуют</span>
                   <span>Ящеры: бегут с хвостом и рывком</span>
                   <span>Сетчатые: пульсируют и светятся</span>
+                </div>
+                <div>
+                  <strong>Квесты, дуэли и обмен</strong>
+                  <span>В разделе «Квесты» видно цель, прогресс, деньги и награду</span>
+                  <span>По ID игрока можно отправить приглашение на дуэль</span>
+                  <span>В дуэли учитываются оружие, броня, здоровье и сила героя</span>
+                  <span>Игроки могут предлагать оружие или броню для обмена</span>
                 </div>
                 <div>
                   <strong>Миры</strong>
@@ -5718,8 +5714,7 @@ export function HomePage() {
                   <span>vGuide: полный гайд и список версий</span>
                   <span>vQuest500: 500 квестов с деньгами, мечами и броней</span>
                   <span>v3DInventory: 3D-фото всех видов оружия в инвентаре</span>
-                  <span>vFlyingArtifact: надетый артефакт летает рядом с героем в 3D</span>
-                  <span>vEquippedSword3D: надетый меч виден у героя в 3D-бою</span>
+                  <span>vFlyingArtifact: надетый артефакт виден рядом с героем в 3D</span>
                   <span>vWeaponWorld100: оружие каждого мира сильнее прошлого в 100 раз</span>
                   <span>vFreeMap: свободное исследование большой карты</span>
                   <span>vManaMagic: мана, магазин маны и много заклинаний</span>
@@ -5741,30 +5736,18 @@ export function HomePage() {
                   <span>v3DLoadGuard: если модель долго грузится, игра всё равно запускает карту</span>
                   <span>vMagicStaffs70: отдельный раздел магического оружия, посохи и способности снизу</span>
                   <span>vFastSpells100: все заклинания летят 100 км/ч, бьют в радиусе 70 м и перезаряжаются 3 сек</span>
+                  <span>vGroundGoblins: гоблины стоят на земле и обходят препятствия</span>
+                  <span>vHeroLevels: уровни требуют 10, 100, 1 000 врагов и дают +10% к характеристикам</span>
                 </div>
+              </div>
+              <div className="guide-reader-reward">
+                <strong>Награда тому, кто дочитал до конца</strong>
+                <span><code>magic</code> — даёт магический скипетр и открывает заклинания</span>
+                <span><code>ibb</code> — даёт огненный легендарный меч BBI</span>
+                <small>Введи код в магазине во вкладке «Код».</small>
               </div>
             </div>
             <button className="guide-primary-button" onClick={closeTutorial} type="button">Понял, играть</button>
-          </div>
-          <div className="tutorial-tip tutorial-goblin">
-            <span className="tutorial-arrow tutorial-arrow-down" />
-            <b>1</b>
-            <p>Иди к монстру и убей его. Двигайся WASD, бей кликом, тапом или F.</p>
-          </div>
-          <div className="tutorial-tip tutorial-world">
-            <span className="tutorial-arrow tutorial-arrow-up" />
-            <b>2</b>
-            <p>Нажми “Пылающий мир”, чтобы открыть карту и мир игры.</p>
-          </div>
-          <div className="tutorial-tip tutorial-upgrade">
-            <span className="tutorial-arrow tutorial-arrow-right" />
-            <b>3</b>
-            <p>Улучшай урон в магазине, чтобы быстрее убивать монстров и драконов.</p>
-          </div>
-          <div className="tutorial-tip tutorial-play">
-            <span className="tutorial-arrow tutorial-arrow-up" />
-            <b>4</b>
-            <p>Нажми “Играть”, чтобы вернуться в бой.</p>
           </div>
         </div>
       )}
@@ -5810,6 +5793,7 @@ export function HomePage() {
               useCityGoblinModel={useCityGoblinModel}
               chapter={chapter}
               locationIndex={mapLocationIndex}
+              worldObstacles={getWorldCollisionBoxes(chapter, mapLocationIndex, mapSceneKey)}
               equippedArtifactIcon={equippedArtifact?.icon ?? null}
               equippedWeaponStyle={equippedWeaponStyle}
               hasArcaneWeapon={hasArcaneWeapon}
@@ -6085,43 +6069,20 @@ export function HomePage() {
           {enemyBurning && (isGoblinKingBoss || isFuryKingBoss || isAnuarKingBoss || isMansurKingBoss || isArailmKingBoss) && (
             <div className="enemy-burn-effect special-burn" />
           )}
-          <div
-            className="mobile-joystick"
-            onPointerDown={startJoystick}
-            onPointerMove={moveJoystick}
-            onPointerUp={stopJoystick}
-            onPointerCancel={stopJoystick}
-            onLostPointerCapture={resetJoystick}
-            role="application"
-            aria-label="Джойстик движения"
-          >
-            <span style={{ transform: `translate(${joystickThumb.x}px, ${joystickThumb.y}px)` }} />
-          </div>
-          <div className="movement-pad" aria-label="Кнопки движения">
-            {(['w', 'a', 's', 'd'] as const).map((key) => (
-              <button
-                className={`movement-pad-button ${key}`}
-                key={key}
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  event.currentTarget.setPointerCapture(event.pointerId);
-                  pressMovementButton(key);
-                }}
-                onPointerUp={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-                  releaseMovementButton(key);
-                }}
-                onPointerCancel={() => releaseMovementButton(key)}
-                onLostPointerCapture={() => releaseMovementButton(key)}
-                type="button"
-              >
-                {key.toUpperCase()}
-              </button>
-            ))}
-          </div>
+          {!tutorialOpen && (
+            <div
+              className="mobile-joystick"
+              onPointerDown={startJoystick}
+              onPointerMove={moveJoystick}
+              onPointerUp={stopJoystick}
+              onPointerCancel={stopJoystick}
+              onLostPointerCapture={resetJoystick}
+              role="application"
+              aria-label="Джойстик движения"
+            >
+              <span style={{ transform: `translate(${joystickThumb.x}px, ${joystickThumb.y}px)` }} />
+            </div>
+          )}
           {hasArcaneWeapon && (
             <div className="arcane-spell-panel" aria-label="Заклинания">
               <div className="arcane-spell-grid">
@@ -6398,7 +6359,9 @@ export function HomePage() {
         <div className="quick-hud compact-game-hud" aria-label="Быстрое состояние игры">
           <div className="hud-player-card">
             <strong><span className="admin-nick">{playerName}</span></strong>
-            <span>Ур. {playerLevel}</span>
+            <span>
+              Ур. {playerLevel} · {formatPower(playerLevelState.killsOnLevel)} / {formatPower(playerLevelState.killsNeeded)} врагов
+            </span>
             <i><b style={{ width: `${playerLevelProgress}%` }} /></i>
           </div>
           <div className="hud-bars">
