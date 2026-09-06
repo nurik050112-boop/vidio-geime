@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { clone as cloneSkinnedModel } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 type BattleScene3DProps = {
   dragonColor: string;
@@ -35,7 +36,7 @@ const monsterRunSpeedMetersPerSecond = 18 / 3.6;
 const monsterHitRangeMeters = 5;
 const monsterPressureRangeMeters = 12;
 const monsterAggroRangeMeters = 100;
-const goblinDisplayScale = 1.25;
+const goblinDisplayScale = 0.92;
 const arcaneProjectileSpeedMetersPerSecond = 100 / 3.6;
 const arcaneAttackRadiusMeters = 70;
 const worldRadiusMeters = 5_000;
@@ -1254,17 +1255,6 @@ function fitBossModel(model: THREE.Object3D, targetHeight = 6.8) {
   model.position.y -= groundedBox.min.y;
 }
 
-function fitLocationModel(model: THREE.Object3D) {
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
-  model.position.sub(center);
-  model.position.y += size.y / 2;
-  const widestSide = Math.max(size.x, size.z, 1);
-  model.scale.setScalar(58 / widestSide);
-  model.rotation.y = Math.PI;
-}
-
 function fitMapPropModel(model: THREE.Object3D, targetSize = 1) {
   model.position.set(0, 0, 0);
   model.rotation.set(0, 0, 0);
@@ -1609,7 +1599,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
     const container = mountRef.current;
     if (!container) return;
     setModelsReady(false);
-    const requiredModels = new Set(['hero', 'goblin', 'nightKing', 'recRoomMonster', 'recRoomRun']);
+    const requiredModels = new Set(['hero', 'goblin']);
     let disposed = false;
     const markModelReady = (key: string) => {
       requiredModels.delete(key);
@@ -1627,17 +1617,17 @@ export function BattleScene3D(props: BattleScene3DProps) {
     camera.position.set(0, 4.3, 10);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.18;
+    renderer.toneMappingExposure = 1.34;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.domElement.className = 'battle-canvas';
     container.appendChild(renderer.domElement);
 
-    scene.add(new THREE.HemisphereLight('#c8f4ff', '#21150f', 1.08));
-    const fill = new THREE.DirectionalLight('#7fc8ff', 0.9);
+    scene.add(new THREE.HemisphereLight('#d8f4ff', '#473322', 1.42));
+    const fill = new THREE.DirectionalLight('#9ed8ff', 1.2);
     fill.position.set(6, 5, -4);
     scene.add(fill);
     const key = new THREE.DirectionalLight('#fff0c2', 3.15);
@@ -1657,13 +1647,6 @@ export function BattleScene3D(props: BattleScene3DProps) {
     scene.add(locationRoot);
     const downloadedMapRoot = new THREE.Group();
     scene.add(downloadedMapRoot);
-    const recRoomLocation = new THREE.Group();
-    recRoomLocation.position.set(0, 0, -26);
-    scene.add(recRoomLocation);
-    const recRoomRunLocation = new THREE.Group();
-    recRoomRunLocation.position.set(34, 0, -18);
-    recRoomRunLocation.rotation.y = -0.38;
-    scene.add(recRoomRunLocation);
     const locationLoader = new GLTFLoader();
     const mapPropTemplates = new Map<string, THREE.Object3D>();
     const loadMapProp = (path: string, locationKey: string, position: [number, number, number], scale: number, rotationY = 0) => {
@@ -1763,41 +1746,6 @@ export function BattleScene3D(props: BattleScene3DProps) {
         loadMapProp(path, locationKey, position, size, Math.sin(index + data.chapter) * 0.9);
       });
     };
-    locationLoader.load(
-      '/models/rec-room-monster/scene.gltf',
-      (gltf) => {
-        const model = gltf.scene;
-        model.traverse((object) => {
-          if (object instanceof THREE.Mesh) {
-            object.castShadow = true;
-            object.receiveShadow = true;
-          }
-        });
-        fitLocationModel(model);
-        recRoomLocation.add(model);
-        markModelReady('recRoomMonster');
-      }
-      ,
-      undefined,
-      () => markModelReady('recRoomMonster')
-    );
-    locationLoader.load(
-      '/models/rec-room-run-location/scene.gltf',
-      (gltf) => {
-        const model = gltf.scene;
-        model.traverse((object) => {
-          if (object instanceof THREE.Mesh) {
-            object.castShadow = true;
-            object.receiveShadow = true;
-          }
-        });
-        fitLocationModel(model);
-        recRoomRunLocation.add(model);
-        markModelReady('recRoomRun');
-      },
-      undefined,
-      () => markModelReady('recRoomRun')
-    );
     let activeLocationKey = '';
     const disposeLocationObject = (object: THREE.Object3D) => {
       object.traverse((entry) => {
@@ -1821,12 +1769,6 @@ export function BattleScene3D(props: BattleScene3DProps) {
       downloadedMapRoot.clear();
       add3DLocation(scene, locationRoot, data.sceneKey, data.chapter, data.locationIndex, data.monstersLeft > 0 && !data.isFinalReveal);
       addDownloadedMapDecor(nextLocationKey, data);
-      const downloadedVariant = Math.abs(data.chapter + data.locationIndex + hashSceneKey(data.sceneKey)) % 3;
-      recRoomLocation.visible = downloadedVariant === 1;
-      recRoomRunLocation.visible = downloadedVariant === 2;
-      recRoomLocation.position.set(-30 + (data.locationIndex % 3) * 10, 0, -28);
-      recRoomRunLocation.position.set(28 - (data.locationIndex % 4) * 5, 0, -20);
-      recRoomRunLocation.rotation.y = -0.38 + (data.chapter % 5) * 0.12;
     };
     rebuildLocation();
 
@@ -1875,7 +1817,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       new THREE.MeshBasicMaterial({ color: '#ff5a3d', transparent: true, opacity: 0, depthWrite: false })
     );
     specialBossBlast.visible = false;
-    scene.add(hero, heroArtifact, dragon, dragonBreath, nightKingBoss, specialBosses, specialBossAura, specialBossBlast);
+    scene.add(hero, heroArtifact, heroEquippedWeapon, dragon, dragonBreath, nightKingBoss, specialBosses, specialBossAura, specialBossBlast);
 
     const gltfLoader = new GLTFLoader();
     const heroMixers: THREE.AnimationMixer[] = [];
@@ -1919,6 +1861,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         model.name = 'downloaded-hero-model';
         hero.add(model);
         hero.userData.downloadedModel = model;
+        hero.userData.weaponHand = model.getObjectByName('handslot.r') ?? model.getObjectByName('hand.r');
         if (gltf.animations.length > 0) {
           const mixer = new THREE.AnimationMixer(model);
           gltf.animations.forEach((clip) => {
@@ -1939,44 +1882,6 @@ export function BattleScene3D(props: BattleScene3DProps) {
         markModelReady('hero');
       }
     );
-    gltfLoader.load(
-      '/models/night-king/scene.gltf',
-      (gltf) => {
-        nightKingFallback.visible = false;
-        const model = gltf.scene;
-        model.traverse((object) => {
-          if (object instanceof THREE.Mesh) {
-            object.castShadow = true;
-            object.receiveShadow = true;
-            const objectMaterial = object.material;
-            const tuneMaterial = (item: THREE.Material) => {
-              if (item instanceof THREE.MeshStandardMaterial) {
-                item.roughness = Math.min(0.72, item.roughness + 0.12);
-                item.metalness = Math.max(item.metalness, 0.05);
-              }
-            };
-            if (Array.isArray(objectMaterial)) objectMaterial.forEach(tuneMaterial);
-            else tuneMaterial(objectMaterial);
-          }
-        });
-        model.rotation.y = Math.PI;
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
-        model.position.sub(center);
-        model.position.y += size.y / 2;
-        model.scale.setScalar(size.y > 0 ? 14 / size.y : 4.2);
-        nightKingBoss.add(model);
-        nightKingBoss.userData.loadedModel = model;
-        markModelReady('nightKing');
-      },
-      undefined,
-      () => {
-        nightKingFallback.visible = true;
-        markModelReady('nightKing');
-      }
-    );
-
     const loadSpecialBossModel = (key: string, path: string, targetHeight: number, rotationY = Math.PI, tint?: string) => {
       gltfLoader.load(
         path,
@@ -2021,17 +1926,17 @@ export function BattleScene3D(props: BattleScene3DProps) {
     loadSpecialBossModel('fury', '/models/latest-monster/scene.gltf', 7.4, Math.PI, '#111111');
     loadSpecialBossModel('anuar', '/models/monster-replacement/scene.gltf', 7.2, Math.PI, '#ff5a3d');
     loadSpecialBossModel('mansur', '/models/custom-hero/scene.gltf', 6.4, Math.PI, '#9cff00');
-    loadSpecialBossModel('arailm', '/models/rec-room-monster/scene.gltf', 7.6, Math.PI, '#ff2a1f');
+    loadSpecialBossModel('arailm', '/models/monster-replacement/scene.gltf', 7.6, Math.PI, '#ff2a1f');
     loadSpecialBossModel('ais', '/models/fatalis/scene.gltf', 8.2, -Math.PI / 2, '#2f80ed');
-    loadSpecialBossModel('admin', '/models/night-king/scene.gltf', 8.2, Math.PI, '#ff2a1f');
-    loadSpecialBossModel('death', '/models/night-king/scene.gltf', 8.8, Math.PI, '#8b0000');
+    loadSpecialBossModel('admin', '/models/fatalis/scene.gltf', 8.2, -Math.PI / 2, '#ff2a1f');
+    loadSpecialBossModel('death', '/models/latest-monster/scene.gltf', 8.8, Math.PI, '#8b0000');
     loadSpecialBossModel('spirit', '/models/fatalis/scene.gltf', 7.8, -Math.PI / 2, '#b56cff');
     loadSpecialBossModel('bbi', '/models/latest-monster/scene.gltf', 7.6, Math.PI, '#ffe66d');
     loadSpecialBossModel('nurali', '/models/monster-replacement/scene.gltf', 7.6, Math.PI, '#75e6da');
 
     const monsterSlashMaterial = new THREE.MeshBasicMaterial({ color: '#ff4d2e', transparent: true, opacity: 0, depthWrite: false });
     const monsters = new THREE.Group();
-    const visualMonsterCount = 24;
+    const visualMonsterCount = 12;
     for (let i = 0; i < visualMonsterCount; i += 1) {
       const monster = makeMonster(refs.current.monsterKind, i);
       const attackTrail = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.03, 8, 28, Math.PI * 1.12), monsterSlashMaterial.clone());
@@ -2040,10 +1945,10 @@ export function BattleScene3D(props: BattleScene3DProps) {
       attackTrail.position.set(0, 1.08, -0.62);
       attackTrail.rotation.set(-0.55, 0, 0.92);
       monster.add(attackTrail);
-      const ring = 8 + (i % 6) * 3.7;
+      const ring = 12 + (i % 4) * 6.2;
       const angle = (i / visualMonsterCount) * Math.PI * 2;
-      const homeX = Math.cos(angle) * ring + Math.sin(i * 1.7) * 4;
-      const homeZ = Math.sin(angle) * ring - 5 + Math.cos(i * 1.2) * 4;
+      const homeX = Math.cos(angle) * ring + Math.sin(i * 1.7) * 2.2;
+      const homeZ = Math.sin(angle) * ring - 7 + Math.cos(i * 1.2) * 2.2;
       monster.position.set(homeX, 0, homeZ);
       monster.rotation.y = Math.PI + Math.sin(i) * 0.35;
       monster.userData.homeX = homeX;
@@ -2075,7 +1980,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
           current.children.forEach((child) => {
             child.visible = child.userData.attackTrail === true;
           });
-          const model = template.clone(true);
+          const model = cloneSkinnedModel(template);
           fitGoblinModel(model);
           model.name = 'loaded-goblin-model';
           model.rotation.y += (index % 2 ? 0.08 : -0.08);
@@ -2267,6 +2172,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
     const smoothHeroPosition = new THREE.Vector3(-3.4 + lastHeroX, 0, 1.2 + lastHeroZ);
     const targetHeroPosition = new THREE.Vector3(-3.4 + lastHeroX, 0, 1.2 + lastHeroZ);
     const cameraTarget = new THREE.Vector3(0, 3, 10);
+    const weaponHandPosition = new THREE.Vector3();
+    const weaponHandRotation = new THREE.Quaternion();
+    const weaponGripCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI));
     const lookTarget = new THREE.Vector3(0, 1.5, 0);
     const smoothLookTarget = new THREE.Vector3(0, 1.5, 0);
     let attackSwing = 0;
@@ -2389,6 +2297,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const isTwoHandedWeapon = [3, 11, 14, 16, 18, 19].includes(data.equippedWeaponStyle);
       const downloadedHeroModel = hero.userData.downloadedModel as THREE.Object3D | undefined;
       updateEquippedHeroWeapon(heroEquippedWeapon, data.equippedWeaponStyle, data.hasArcaneWeapon);
+      heroEquippedWeapon.scale.setScalar(0.62);
       hero.scale.set(1 + Math.abs(idleBreath) * 0.018, 1 + idleBreath, 1 - Math.abs(idleBreath) * 0.012);
       hero.position.y =
         jumpHeight +
@@ -2550,6 +2459,15 @@ export function BattleScene3D(props: BattleScene3DProps) {
       if (!(data.heroAnimation === 'strike' || data.heroAnimation === 'cast' || attackSwing > 0)) {
         heroEquippedWeapon.position.set(hero.position.x + 0.64 + Math.sin(walkCycle) * (data.isHeroMoving ? 0.045 : 0.012), hero.position.y + 1.44 + stepLift * 0.04 + idleBreath * 0.8, hero.position.z + 0.22 + Math.cos(time * 1.6) * 0.012);
         heroEquippedWeapon.rotation.set(-0.58 + Math.sin(walkCycle) * (data.isHeroMoving ? 0.1 : 0.03), renderFacing - 0.28 + Math.sin(time * 1.1) * 0.015, -0.78 + Math.sin(walkCycle * 0.7) * (data.isHeroMoving ? 0.08 : 0.03));
+      }
+      const weaponHand = hero.userData.weaponHand as THREE.Object3D | undefined;
+      if (weaponHand) {
+        weaponHand.getWorldPosition(weaponHandPosition);
+        weaponHand.getWorldQuaternion(weaponHandRotation);
+        heroEquippedWeapon.position.copy(weaponHandPosition);
+        heroEquippedWeapon.quaternion.copy(weaponHandRotation).multiply(weaponGripCorrection);
+        const handWeaponScale = data.equippedWeaponStyle === 17 ? 0.42 : isTwoHandedWeapon ? 0.68 : 0.56;
+        heroEquippedWeapon.scale.setScalar(handWeaponScale);
       }
       const weaponData = heroEquippedWeapon.userData as { aura: THREE.Mesh; magicRunes: THREE.Group };
       weaponData.aura.rotation.z = time * 2.4;
@@ -2728,16 +2646,22 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const wasBlocked = isMonsterBlocked(monster.position.x, monster.position.z);
         const nextX = monster.position.x + dx;
         const nextZ = monster.position.z + dz;
-        if (wasBlocked || !isMonsterBlocked(nextX, nextZ)) {
+        const isCrowded = monsters.children.some((other) => {
+          if (other === monster || !other.visible) return false;
+          const distanceX = other.position.x - nextX;
+          const distanceZ = other.position.z - nextZ;
+          return distanceX * distanceX + distanceZ * distanceZ < 2.8 * 2.8;
+        });
+        if (wasBlocked || (!isMonsterBlocked(nextX, nextZ) && !isCrowded)) {
           monster.position.setX(nextX);
           monster.position.setZ(nextZ);
           return;
         }
-        if (!isMonsterBlocked(nextX, monster.position.z)) {
+        if (!isMonsterBlocked(nextX, monster.position.z) && !isCrowded) {
           monster.position.setX(nextX);
           return;
         }
-        if (!isMonsterBlocked(monster.position.x, nextZ)) {
+        if (!isMonsterBlocked(monster.position.x, nextZ) && !isCrowded) {
           monster.position.setZ(nextZ);
           return;
         }

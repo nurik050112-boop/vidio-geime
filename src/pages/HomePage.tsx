@@ -3,6 +3,7 @@ import type { CSSProperties, FormEvent, PointerEvent as ReactPointerEvent } from
 import type { User } from '@supabase/supabase-js';
 import { Link, useLocation } from 'wouter';
 import { BattleScene3D } from '../components/BattleScene3D';
+import { WeaponThumbnail } from '../components/WeaponThumbnail';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 type DragonSon = {
@@ -1230,12 +1231,12 @@ function getWeaponDisplayName(weapon: Weapon) {
 
 function getWeaponModelName(weapon: Weapon) {
   const styleIndex = getWeaponStyleIndex(weapon);
-  if (styleIndex === 6 || styleIndex === 13) return 'KayKit staff.gltf';
-  if (styleIndex === 10) return 'KayKit crossbow_2handed.gltf';
-  if (styleIndex === 11 || styleIndex === 16) return 'KayKit axe_2handed.gltf';
-  if (styleIndex === 17) return 'KayKit dagger.gltf';
-  if (styleIndex === 3 || styleIndex === 19) return 'KayKit sword_2handed.gltf';
-  return 'KayKit sword_1handed.gltf';
+  if (styleIndex === 6 || styleIndex === 13) return 'магический посох с длинной рукоятью';
+  if (styleIndex === 10) return 'боевой арбалет для двух рук';
+  if (styleIndex === 11 || styleIndex === 16) return 'тяжёлый двуручный топор';
+  if (styleIndex === 17) return 'короткий быстрый кинжал';
+  if (styleIndex === 3 || styleIndex === 19) return 'большой двуручный меч';
+  return 'одноручный клинок с гардой';
 }
 
 function isBbiLegendaryWeapon(weapon: Weapon | null) {
@@ -4899,7 +4900,9 @@ export function HomePage() {
             </form>
             <div className="auth-divider">или</div>
             <button className="guest-button" onClick={enterAsGuest} disabled={authBusy} type="button">
-              Войти как гость
+              <span aria-hidden="true">🎮</span>
+              <strong>Войти как гость</strong>
+              <small>Играть сразу без регистрации</small>
             </button>
           </div>
         </section>
@@ -6193,7 +6196,7 @@ export function HomePage() {
                 <div className="duel-trade-label">У него есть</div>
                 <div className="duel-trade-target">
                   <div className="weapon weapon-card rare">
-                    <span className="weapon-picture" aria-hidden="true"><i /></span>
+                    <WeaponThumbnail name={getWeaponDisplayName(duelOpponent.weapon)} styleIndex={getWeaponStyleIndex(duelOpponent.weapon)} />
                     <span className="weapon-name">{getWeaponDisplayName(duelOpponent.weapon)}</span>
                     <small>Получишь меч соперника +{formatPower(duelOpponent.weapon.damage)}</small>
                   </div>
@@ -6216,7 +6219,7 @@ export function HomePage() {
                           onClick={() => setDuelTradeOffer({ kind: 'weapon', item: weapon })}
                           type="button"
                         >
-                          <span className="weapon-picture" aria-hidden="true"><i /></span>
+                          <WeaponThumbnail name={getWeaponDisplayName(weapon)} styleIndex={getWeaponStyleIndex(weapon)} />
                           <span className="weapon-name">{getWeaponDisplayName(weapon)}</span>
                           <small>{weapon.rarity} +{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)}</small>
                         </button>
@@ -6442,7 +6445,7 @@ export function HomePage() {
                   key={`magic-${weapon.id}`}
                   type="button"
                 >
-                  <span className="weapon-picture" aria-hidden="true"><i /></span>
+                  <WeaponThumbnail name={weapon.name} styleIndex={getWeaponStyleIndex(weapon)} />
                   <span className="weapon-name">{weapon.name}</span>
                   <small>{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | магия</small>
                 </button>
@@ -6454,7 +6457,7 @@ export function HomePage() {
                   key={`weapon-${weapon.id}`}
                   type="button"
                 >
-                  <span className="weapon-picture" aria-hidden="true"><i /></span>
+                  <WeaponThumbnail name={getWeaponDisplayName(weapon)} styleIndex={getWeaponStyleIndex(weapon)} />
                   <span className="weapon-name">{getWeaponDisplayName(weapon)}</span>
                   <small>{weapon.rarity} +{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)}</small>
                 </button>
@@ -7096,9 +7099,7 @@ export function HomePage() {
                 onClick={() => setEquippedWeapon(weapon)}
                 key={weapon.id}
               >
-                <span className="weapon-picture" aria-hidden="true">
-                  <i />
-                </span>
+                <WeaponThumbnail name={weapon.name} styleIndex={getWeaponStyleIndex(weapon)} />
                 <span className="weapon-name">{weapon.name}</span>
                 <small>{weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | способности снизу</small>
                 <small className="weapon-model-label">70м радиус | 100 км/ч | 3с перезарядка</small>
@@ -7131,12 +7132,10 @@ export function HomePage() {
                   onClick={() => setEquippedWeapon(weapon)}
                   key={weapon.id}
                 >
-                  <span className="weapon-picture" aria-hidden="true">
-                    <i />
-                  </span>
+                  <WeaponThumbnail name={getWeaponDisplayName(weapon)} styleIndex={getWeaponStyleIndex(weapon)} />
                   <span className="weapon-name">{getWeaponDisplayName(weapon)}</span>
                   <small>{weapon.rarity} +{isBbiLegendaryWeapon(weapon) ? `${formatPower(bbiLegendaryDamage)} +10000%` : weapon.displayDamage ? formatHugeText(weapon.displayDamage) : formatPower(weapon.damage)} | продажа {formatPower(weaponSellPrice[weapon.rarity])}</small>
-                  <small className="weapon-model-label">3D фото: {getWeaponModelName(weapon)}</small>
+                  <small className="weapon-model-label">Вид оружия: {getWeaponModelName(weapon)}</small>
                   <span
                     className="sell-button"
                     onClick={(event) => {
