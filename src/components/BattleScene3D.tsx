@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { clone as cloneSkinnedModel } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 type BattleScene3DProps = {
   dragonColor: string;
@@ -36,11 +35,11 @@ const monsterRunSpeedMetersPerSecond = 18 / 3.6;
 const monsterHitRangeMeters = 5;
 const monsterPressureRangeMeters = 12;
 const monsterAggroRangeMeters = 100;
-const goblinDisplayScale = 0.92;
 const arcaneProjectileSpeedMetersPerSecond = 100 / 3.6;
 const arcaneAttackRadiusMeters = 70;
 const worldRadiusMeters = 5_000;
 const worldDiameterMeters = worldRadiusMeters * 2;
+const loadDetailedMapProps = false;
 
 function material(color: string, options: Partial<THREE.MeshStandardMaterialParameters> = {}) {
   return new THREE.MeshStandardMaterial({ color, roughness: 0.78, metalness: 0.02, ...options });
@@ -1219,42 +1218,6 @@ function tuneDownloadedCharacter(model: THREE.Object3D) {
   });
 }
 
-function fitGoblinModel(model: THREE.Object3D) {
-  model.position.set(0, 0, 0);
-  model.rotation.set(0, Math.PI, 0);
-  model.scale.setScalar(1);
-  model.updateMatrixWorld(true);
-
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
-  const scale = size.y > 0 ? 1.45 / size.y : 1;
-  model.scale.setScalar(scale);
-  model.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
-  model.updateMatrixWorld(true);
-
-  const groundedBox = new THREE.Box3().setFromObject(model);
-  model.position.y -= groundedBox.min.y;
-}
-
-function fitBossModel(model: THREE.Object3D, targetHeight = 6.8) {
-  model.position.set(0, 0, 0);
-  model.rotation.set(0, 0, 0);
-  model.scale.setScalar(1);
-  model.updateMatrixWorld(true);
-
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
-  const scale = size.y > 0 ? targetHeight / size.y : 1;
-  model.scale.setScalar(scale);
-  model.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
-  model.updateMatrixWorld(true);
-
-  const groundedBox = new THREE.Box3().setFromObject(model);
-  model.position.y -= groundedBox.min.y;
-}
-
 function fitMapPropModel(model: THREE.Object3D, targetSize = 1) {
   model.position.set(0, 0, 0);
   model.rotation.set(0, 0, 0);
@@ -1599,7 +1562,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
     const container = mountRef.current;
     if (!container) return;
     setModelsReady(false);
-    const requiredModels = new Set(['hero', 'goblin']);
+    const requiredModels = new Set(['hero']);
     let disposed = false;
     const markModelReady = (key: string) => {
       requiredModels.delete(key);
@@ -1739,7 +1702,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         [58, 0, 44],
       ];
       const selectedPack = mapPresets[presetIndex];
-      positions.forEach((position, index) => {
+      positions.slice(0, 3).forEach((position, index) => {
         const path = selectedPack[index % selectedPack.length];
         const family = Math.floor(presetIndex / 10);
         const size = family === 0 ? 0.62 + (index % 3) * 0.12 : family === 1 ? 0.82 : 0.95;
@@ -1768,7 +1731,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       }
       downloadedMapRoot.clear();
       add3DLocation(scene, locationRoot, data.sceneKey, data.chapter, data.locationIndex, data.monstersLeft > 0 && !data.isFinalReveal);
-      addDownloadedMapDecor(nextLocationKey, data);
+      if (loadDetailedMapProps) addDownloadedMapDecor(nextLocationKey, data);
     };
     rebuildLocation();
 
@@ -1882,61 +1845,40 @@ export function BattleScene3D(props: BattleScene3DProps) {
         markModelReady('hero');
       }
     );
-    const loadSpecialBossModel = (key: string, path: string, targetHeight: number, rotationY = Math.PI, tint?: string) => {
-      gltfLoader.load(
-        path,
-        (gltf) => {
-          const model = gltf.scene;
-          model.traverse((object) => {
-            if (object instanceof THREE.Mesh) {
-              object.castShadow = true;
-              object.receiveShadow = true;
-              const objectMaterial = object.material;
-              const tuneMaterial = (item: THREE.Material) => {
-                if (item instanceof THREE.MeshStandardMaterial) {
-                  item.roughness = Math.min(0.88, item.roughness + 0.08);
-                  item.metalness = Math.max(item.metalness, 0.04);
-                  if (tint) {
-                    item.color.lerp(new THREE.Color(tint), 0.32);
-                    item.emissive.set(tint);
-                    item.emissiveIntensity = Math.max(item.emissiveIntensity, 0.08);
-                  }
-                }
-              };
-              if (Array.isArray(objectMaterial)) objectMaterial.forEach(tuneMaterial);
-              else tuneMaterial(objectMaterial);
-            }
-          });
-          fitBossModel(model, targetHeight);
-          model.userData.baseScale = model.scale.x;
-          model.userData.baseRotationY = rotationY;
-          model.userData.phase = Math.random() * Math.PI * 2;
-          model.userData.tint = tint ?? '#ff2a1f';
-          model.rotation.y = rotationY;
-          model.visible = false;
-          specialBosses.add(model);
-          specialBossModels[key] = model;
-        },
-        undefined,
-        () => undefined
-      );
-    };
-
-    loadSpecialBossModel('goblin', '/models/custom-goblin-upload/scene.gltf', 6.2, Math.PI, '#65a832');
-    loadSpecialBossModel('fury', '/models/latest-monster/scene.gltf', 7.4, Math.PI, '#111111');
-    loadSpecialBossModel('anuar', '/models/monster-replacement/scene.gltf', 7.2, Math.PI, '#ff5a3d');
-    loadSpecialBossModel('mansur', '/models/custom-hero/scene.gltf', 6.4, Math.PI, '#9cff00');
-    loadSpecialBossModel('arailm', '/models/monster-replacement/scene.gltf', 7.6, Math.PI, '#ff2a1f');
-    loadSpecialBossModel('ais', '/models/fatalis/scene.gltf', 8.2, -Math.PI / 2, '#2f80ed');
-    loadSpecialBossModel('admin', '/models/fatalis/scene.gltf', 8.2, -Math.PI / 2, '#ff2a1f');
-    loadSpecialBossModel('death', '/models/latest-monster/scene.gltf', 8.8, Math.PI, '#8b0000');
-    loadSpecialBossModel('spirit', '/models/fatalis/scene.gltf', 7.8, -Math.PI / 2, '#b56cff');
-    loadSpecialBossModel('bbi', '/models/latest-monster/scene.gltf', 7.6, Math.PI, '#ffe66d');
-    loadSpecialBossModel('nurali', '/models/monster-replacement/scene.gltf', 7.6, Math.PI, '#75e6da');
+    const specialBossStyles = [
+      ['goblin', '#65a832', 1.34], ['fury', '#111111', 1.48], ['anuar', '#ff5a3d', 1.42],
+      ['mansur', '#9cff00', 1.3], ['arailm', '#ff2a1f', 1.5], ['ais', '#2f80ed', 1.58],
+      ['admin', '#ff2a1f', 1.68], ['death', '#8b0000', 1.76], ['spirit', '#b56cff', 1.55],
+      ['bbi', '#ffe66d', 1.52], ['nurali', '#75e6da', 1.46],
+    ] as const;
+    specialBossStyles.forEach(([bossKey, tint, bossScale], index) => {
+      const boss = makeNightKingFallback();
+      boss.traverse((object) => {
+        if (!(object instanceof THREE.Mesh)) return;
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        const clonedMaterials = materials.map((item) => {
+          const cloned = item.clone();
+          if (cloned instanceof THREE.MeshStandardMaterial) {
+            cloned.color.lerp(new THREE.Color(tint), 0.55);
+            cloned.emissive.set(tint);
+            cloned.emissiveIntensity = 0.12;
+          }
+          return cloned;
+        });
+        object.material = clonedMaterials.length === 1 ? clonedMaterials[0] : clonedMaterials;
+      });
+      boss.scale.setScalar(bossScale);
+      boss.userData.baseScale = bossScale;
+      boss.userData.phase = index * 0.57;
+      boss.userData.tint = tint;
+      boss.visible = false;
+      specialBosses.add(boss);
+      specialBossModels[bossKey] = boss;
+    });
 
     const monsterSlashMaterial = new THREE.MeshBasicMaterial({ color: '#ff4d2e', transparent: true, opacity: 0, depthWrite: false });
     const monsters = new THREE.Group();
-    const visualMonsterCount = 12;
+    const visualMonsterCount = 6;
     for (let i = 0; i < visualMonsterCount; i += 1) {
       const monster = makeMonster(refs.current.monsterKind, i);
       const attackTrail = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.03, 8, 28, Math.PI * 1.12), monsterSlashMaterial.clone());
@@ -1965,47 +1907,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
     }
     scene.add(monsters);
 
-    gltfLoader.load(
-      '/models/custom-goblin-upload/scene.gltf',
-      (gltf) => {
-        const template = gltf.scene;
-        template.traverse((object) => {
-          if (object instanceof THREE.Mesh) {
-            object.castShadow = true;
-            object.receiveShadow = true;
-          }
-        });
-        monsters.children.forEach((monster, index) => {
-          const current = monster as THREE.Group;
-          current.children.forEach((child) => {
-            child.visible = child.userData.attackTrail === true;
-          });
-          const model = cloneSkinnedModel(template);
-          fitGoblinModel(model);
-          model.name = 'loaded-goblin-model';
-          model.rotation.y += (index % 2 ? 0.08 : -0.08);
-          current.add(model);
-          current.userData.loadedGoblinModel = model;
-          current.userData.loadedGoblinBaseScale = model.scale.x * goblinDisplayScale;
-          current.userData.loadedGoblinBaseRotationY = model.rotation.y;
-          current.userData.baseY = 0.02;
-        });
-        markModelReady('goblin');
-      },
-      undefined,
-      () => {
-        monsters.children.forEach((monster) => {
-          (monster as THREE.Group).children.forEach((child) => {
-            child.visible = true;
-          });
-        });
-        markModelReady('goblin');
-      }
-    );
-
     const ashMat = new THREE.MeshBasicMaterial({ color: '#aee9e3', transparent: true, opacity: 0.58 });
     const motes = new THREE.Group();
-    for (let i = 0; i < 180; i += 1) {
+    for (let i = 0; i < 48; i += 1) {
       const mote = new THREE.Mesh(new THREE.SphereGeometry(0.025 + (i % 3) * 0.01, 8, 6), ashMat);
       mote.position.set(-80 + Math.random() * 160, 0.6 + Math.random() * 12, -86 + Math.random() * 170);
       mote.userData.seed = Math.random() * 10;
@@ -2174,7 +2078,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
     const cameraTarget = new THREE.Vector3(0, 3, 10);
     const weaponHandPosition = new THREE.Vector3();
     const weaponHandRotation = new THREE.Quaternion();
-    const weaponGripCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI));
+    const weaponGripOffset = new THREE.Vector3();
+    const weaponGripCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI / 2));
     const lookTarget = new THREE.Vector3(0, 1.5, 0);
     const smoothLookTarget = new THREE.Vector3(0, 1.5, 0);
     let attackSwing = 0;
@@ -2464,10 +2369,11 @@ export function BattleScene3D(props: BattleScene3DProps) {
       if (weaponHand) {
         weaponHand.getWorldPosition(weaponHandPosition);
         weaponHand.getWorldQuaternion(weaponHandRotation);
-        heroEquippedWeapon.position.copy(weaponHandPosition);
         heroEquippedWeapon.quaternion.copy(weaponHandRotation).multiply(weaponGripCorrection);
         const handWeaponScale = data.equippedWeaponStyle === 17 ? 0.42 : isTwoHandedWeapon ? 0.68 : 0.56;
         heroEquippedWeapon.scale.setScalar(handWeaponScale);
+        weaponGripOffset.set(0, 0.66 * handWeaponScale, 0).applyQuaternion(heroEquippedWeapon.quaternion);
+        heroEquippedWeapon.position.copy(weaponHandPosition).add(weaponGripOffset);
       }
       const weaponData = heroEquippedWeapon.userData as { aura: THREE.Mesh; magicRunes: THREE.Group };
       weaponData.aura.rotation.z = time * 2.4;
