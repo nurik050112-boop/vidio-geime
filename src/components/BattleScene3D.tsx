@@ -1317,7 +1317,7 @@ function makeDragon(color: string) {
     new THREE.ConeGeometry(0.62, 4.8, 22),
     new THREE.MeshBasicMaterial({ color: '#ff2d00', transparent: true, opacity: 0, depthWrite: false })
   );
-  loadedFire.position.set(-2.8, 3.5, 0);
+  loadedFire.position.set(2.8, 3.5, 0);
   loadedFire.rotation.z = Math.PI / 2;
   loadedFire.visible = false;
   dragon.add(loadedFire);
@@ -1353,7 +1353,9 @@ function makeDragon(color: string) {
           }
         }
       });
-      model.rotation.y = Math.PI;
+      // The dragon's snout is on its local +X side. Keep the downloaded
+      // model aligned with the fallback dragon, so both face the target.
+      model.rotation.y = 0;
       const box = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
@@ -3007,7 +3009,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
           4.5 + (index % 4) * 1.25 + Math.sin(time * 2 + phase) * 0.7 - attackPulse * 2.1,
           targetZ,
         );
-        avalancheDragon.rotation.y = Math.atan2(heroWorldX - targetX, heroWorldZ - targetZ);
+        // Avalanche dragons are built with their heads on local +X.
+        avalancheDragon.rotation.y = Math.atan2(targetZ - heroWorldZ, heroWorldX - targetX);
         avalancheDragon.rotation.x = -0.08 - attackPulse * 0.32;
         avalancheDragon.rotation.z = Math.sin(time * 3.4 + phase) * 0.12;
         const baseScale = 0.32 + (index % 4) * 0.035;
@@ -3202,7 +3205,12 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const flameFlicker = 0.85 + Math.max(0, Math.sin(time * 17.5)) * 0.28 + Math.sin(time * 31) * 0.08;
       dragon.position.y = Math.sin(time * 2.1) * 0.18 + threat * 0.08 + wingSnap * 0.045;
       dragon.position.x = 4.75 + shake * 1.45 - threat * 0.25 - headSnap * threat * 0.08;
-      const dragonTargetAngle = Math.atan2(heroWorldX - dragon.position.x, heroWorldZ - dragon.position.z);
+      // The main dragon also faces local +X. Using the usual +Z angle made
+      // it turn its tail toward the hero while attacking.
+      const dragonTargetAngle = Math.atan2(
+        dragon.position.z - heroWorldZ,
+        heroWorldX - dragon.position.x
+      );
       dragon.rotation.y = smoothAngle(dragon.rotation.y, dragonTargetAngle, delta, 2.4);
       dragon.rotation.x = -threat * 0.035 + dragonBreathing * 0.012;
       dragonData.body.scale.set(
@@ -3256,7 +3264,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
           1 + burn * 0.68 + breathPower * 0.72 + Math.sin(time * 18) * 0.14,
           (1.2 + breathPower * 1.35) * (0.95 + Math.sin(time * 23) * 0.08)
         );
-        dragonData.loadedFire.position.set(-2.75 - breathPower * 1.18 - headSnap * 0.12, 3.45 + Math.sin(time * 8) * 0.08 - threat * 0.08, Math.sin(time * 11) * 0.035);
+        dragonData.loadedFire.position.set(2.75 + breathPower * 1.18 + headSnap * 0.12, 3.45 + Math.sin(time * 8) * 0.08 - threat * 0.08, Math.sin(time * 11) * 0.035);
       }
 
       const breathCycle = time % 6;
