@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 type BattleScene3DProps = {
@@ -29,6 +30,7 @@ type BattleScene3DProps = {
   arcaneSpellKind: number;
   arcanePulse: number;
   arcaneBurstPulse: number;
+  onBossMagicHit: (spell: string) => void;
 };
 
 const monsterRunSpeedMetersPerSecond = 18 / 3.6;
@@ -1201,6 +1203,16 @@ function fitHeroModel(model: THREE.Object3D) {
   model.rotation.y = Math.PI;
 }
 
+function fitMonsterModel(model: THREE.Object3D) {
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  model.position.sub(center);
+  model.position.y += size.y / 2;
+  model.scale.setScalar(size.y > 0 ? 2.2 / size.y : 1);
+  model.rotation.y = Math.PI;
+}
+
 function tuneDownloadedCharacter(model: THREE.Object3D) {
   model.traverse((object) => {
     if (!(object instanceof THREE.Mesh)) return;
@@ -1501,6 +1513,36 @@ function makeDragon(color: string) {
   return dragon;
 }
 
+function makeAvalancheDragon(index: number) {
+  const dragon = new THREE.Group();
+  const colors = ['#dc2626', '#f97316', '#7c3aed', '#0f766e', '#334155'];
+  const color = colors[index % colors.length];
+  const dragonMaterial = material(color, { roughness: 0.5, metalness: 0.12 });
+  const body = mesh(new THREE.SphereGeometry(0.72, 10, 7), color, [0, 0, 0]);
+  body.material = dragonMaterial;
+  body.scale.set(1.7, 0.72, 0.82);
+  const head = mesh(new THREE.SphereGeometry(0.42, 10, 7), color, [1.22, 0.18, 0]);
+  head.material = dragonMaterial;
+  const snout = mesh(new THREE.ConeGeometry(0.3, 0.68, 8), color, [1.72, 0.08, 0]);
+  snout.material = dragonMaterial;
+  snout.rotation.z = -Math.PI / 2;
+  const wingMaterial = material(color, { emissive: color, emissiveIntensity: 0.16, side: THREE.DoubleSide });
+  const wingGeometry = new THREE.ConeGeometry(0.72, 2.3, 3);
+  const wingLeft = new THREE.Mesh(wingGeometry, wingMaterial);
+  wingLeft.position.set(-0.1, 0.5, 0.72);
+  wingLeft.rotation.set(Math.PI / 2, 0, -0.55);
+  const wingRight = wingLeft.clone();
+  wingRight.position.z = -0.72;
+  wingRight.rotation.x = -Math.PI / 2;
+  const tail = mesh(new THREE.ConeGeometry(0.3, 2.4, 8), color, [-1.85, 0, 0]);
+  tail.material = dragonMaterial;
+  tail.rotation.z = Math.PI / 2;
+  const fire = mesh(new THREE.ConeGeometry(0.22, 1.2, 8), '#ffb703', [2.35, 0.06, 0]);
+  fire.rotation.z = -Math.PI / 2;
+  dragon.add(body, head, snout, wingLeft, wingRight, tail, fire);
+  return dragon;
+}
+
 function makeNightKingFallback() {
   const boss = new THREE.Group();
   const iceSkin = material('#b8c5c9', { roughness: 0.48, metalness: 0.08 });
@@ -1688,7 +1730,18 @@ export function BattleScene3D(props: BattleScene3DProps) {
         [`${dungeonBase}/room-large.glb`, `${dungeonBase}/gate.glb`, `${dungeonBase}/corridor.glb`, `${dungeonBase}/template-wall-stairs.glb`],
         [`${dungeonBase}/room-wide.glb`, `${dungeonBase}/gate-door.glb`, `${dungeonBase}/corridor-corner.glb`, `${dungeonBase}/stairs.glb`],
       ];
-      const presetIndex = Math.abs(data.chapter * 7 + data.locationIndex * 13 + hashSceneKey(data.sceneKey)) % mapPresets.length;
+      const randomPresetIndex = Math.abs(data.chapter * 7 + data.locationIndex * 13 + hashSceneKey(data.sceneKey)) % mapPresets.length;
+      const presetIndex = data.monsterKind === 'avalanche'
+        ? 8
+        : data.sceneKey.includes('sea')
+          ? 0
+          : data.sceneKey.includes('admin')
+            ? 16
+            : data.sceneKey.includes('spirit') || data.sceneKey.includes('death')
+              ? 37
+              : data.sceneKey.includes('dungeon')
+                ? 24 + (data.chapter % 6)
+                : randomPresetIndex;
       const positions: Array<[number, number, number]> = [
         [-42, 0, -42],
         [42, 0, -42],
@@ -1739,6 +1792,16 @@ export function BattleScene3D(props: BattleScene3DProps) {
     const heroArtifact = makeHeroArtifact();
     const heroEquippedWeapon = makeEquippedHeroWeapon();
     const dragon = makeDragon(refs.current.dragonColor);
+    const avalancheDragons = new THREE.Group();
+    for (let index = 0; index < 10; index += 1) {
+      const avalancheDragon = makeAvalancheDragon(index);
+      avalancheDragon.userData.phase = (index / 10) * Math.PI * 2;
+      avalancheDragon.userData.radius = 14 + (index % 3) * 5;
+      avalancheDragon.scale.setScalar(0.32 + (index % 4) * 0.035);
+      avalancheDragon.visible = false;
+      avalancheDragons.add(avalancheDragon);
+    }
+    scene.add(avalancheDragons);
     const dragonBreath = new THREE.Group();
     const breathCore = new THREE.Mesh(
       new THREE.CylinderGeometry(0.18, 1.15, 1, 18, 1, true),
@@ -1780,7 +1843,28 @@ export function BattleScene3D(props: BattleScene3DProps) {
       new THREE.MeshBasicMaterial({ color: '#ff5a3d', transparent: true, opacity: 0, depthWrite: false })
     );
     specialBossBlast.visible = false;
-    scene.add(hero, heroArtifact, heroEquippedWeapon, dragon, dragonBreath, nightKingBoss, specialBosses, specialBossAura, specialBossBlast);
+    const bossMagicProjectiles = new THREE.Group();
+    const bossMagicColors: Record<string, string> = {
+      goblin: '#a6ff00', fury: '#7c3aed', anuar: '#ff5a1f', mansur: '#9cff00', arailm: '#ff2a1f',
+      ais: '#2f80ed', admin: '#ff004c', death: '#ff3b1f', spirit: '#b56cff', bbi: '#ffd166', nurali: '#75e6da',
+    };
+    const bossMagicNames: Record<string, string> = {
+      goblin: 'кислотный сгусток', fury: 'тёмный шар', anuar: 'огненный шар', mansur: 'зелёный шип', arailm: 'красный код-болт',
+      ais: 'водяной шар', admin: 'админ-плазму', death: 'адское пламя', spirit: 'шар души', bbi: 'солнечный удар', nurali: 'ледяной шип',
+    };
+    for (let index = 0; index < 4; index += 1) {
+      const projectile = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.24, 1),
+        new THREE.MeshBasicMaterial({ color: '#ff5a1f', transparent: true, opacity: 0.95, depthWrite: false })
+      );
+      projectile.visible = false;
+      projectile.userData.velocity = new THREE.Vector3();
+      projectile.userData.life = 0;
+      projectile.userData.spell = '';
+      bossMagicProjectiles.add(projectile);
+    }
+    let bossMagicCooldown = 1.2;
+    scene.add(hero, heroArtifact, heroEquippedWeapon, dragon, dragonBreath, nightKingBoss, specialBosses, specialBossAura, specialBossBlast, bossMagicProjectiles);
 
     const gltfLoader = new GLTFLoader();
     const heroMixers: THREE.AnimationMixer[] = [];
@@ -1878,7 +1962,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
 
     const monsterSlashMaterial = new THREE.MeshBasicMaterial({ color: '#ff4d2e', transparent: true, opacity: 0, depthWrite: false });
     const monsters = new THREE.Group();
-    const visualMonsterCount = 6;
+    const visualMonsterCount = refs.current.monsterKind === 'avalanche' ? 10 : 6;
     for (let i = 0; i < visualMonsterCount; i += 1) {
       const monster = makeMonster(refs.current.monsterKind, i);
       const attackTrail = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.03, 8, 28, Math.PI * 1.12), monsterSlashMaterial.clone());
@@ -1906,6 +1990,74 @@ export function BattleScene3D(props: BattleScene3DProps) {
       monsters.add(monster);
     }
     scene.add(monsters);
+
+    const monsterModelPath = refs.current.monsterKind === 'spider'
+      ? '/models/quaternius-monsters/bat.fbx'
+      : refs.current.monsterKind === 'avalanche'
+        ? '/models/quaternius-monsters/dragon.fbx'
+        : refs.current.monsterKind === 'pale' || refs.current.monsterKind === 'wire'
+          ? '/models/quaternius-monsters/slime.fbx'
+          : '/models/quaternius-monsters/skeleton.fbx';
+    const monsterLoader = new FBXLoader();
+    monsterLoader.load(monsterModelPath, (template) => {
+      template.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.castShadow = true;
+          object.receiveShadow = true;
+        }
+      });
+      fitMonsterModel(template);
+
+      monsters.children.forEach((monster, index) => {
+        const current = monster as THREE.Group;
+        const attackTrail = current.userData.attackTrail as THREE.Mesh | undefined;
+        current.children.forEach((child) => {
+          if (child !== attackTrail) child.visible = false;
+        });
+        const model = template.clone(true);
+        model.name = 'downloaded-animated-monster';
+        model.rotation.y += index % 2 ? 0.12 : -0.12;
+        if (current.userData.kind === 'goblin') {
+          model.traverse((object) => {
+            if (!(object instanceof THREE.Mesh)) return;
+            const materials = Array.isArray(object.material) ? object.material : [object.material];
+            materials.forEach((entry) => {
+              if (entry instanceof THREE.MeshStandardMaterial) entry.color.lerp(new THREE.Color('#4d9b45'), 0.6);
+            });
+          });
+          const club = new THREE.Group();
+          const handle = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.07, 0.1, 1.15, 8),
+            material('#5c3518', { roughness: 0.82 })
+          );
+          handle.rotation.z = Math.PI / 2;
+          const head = new THREE.Mesh(
+            new THREE.SphereGeometry(0.22, 10, 8),
+            material('#3b2413', { roughness: 0.9 })
+          );
+          head.position.x = 0.56;
+          club.add(handle, head);
+          club.position.set(0.45, 1.05, 0.15);
+          club.rotation.z = -0.8;
+          model.add(club);
+          current.userData.downloadedClub = club;
+        }
+        current.add(model);
+        current.userData.loadedMonsterModel = model;
+        current.userData.loadedMonsterBaseScale = model.scale.x;
+        current.userData.loadedMonsterBaseRotationY = model.rotation.y;
+        if (template.animations.length > 0) {
+          const mixer = new THREE.AnimationMixer(model);
+          const actions = template.animations.map((clip) => mixer.clipAction(clip));
+          const idleAction = actions.find((action) => /idle/i.test(action.getClip().name)) ?? actions[0];
+          const attackAction = actions.find((action) => /attack|punch|hit/i.test(action.getClip().name)) ?? actions[0];
+          idleAction.play();
+          current.userData.loadedMonsterMixer = mixer;
+          current.userData.loadedMonsterAttack = attackAction;
+          current.userData.loadedMonsterAttacking = false;
+        }
+      });
+    });
 
     const ashMat = new THREE.MeshBasicMaterial({ color: '#aee9e3', transparent: true, opacity: 0.58 });
     const motes = new THREE.Group();
@@ -2674,10 +2826,10 @@ export function BattleScene3D(props: BattleScene3DProps) {
         current.position.y += Math.sin(hitReact * Math.PI) * 0.42;
         current.rotation.x -= hitReact * 0.34;
         current.rotation.z += (index % 2 ? 1 : -1) * hitReact * 0.28;
-        const loadedMonsterModel = current.userData.loadedGoblinModel as THREE.Object3D | undefined;
+        const loadedMonsterModel = current.userData.loadedMonsterModel as THREE.Object3D | undefined;
         const loadedMonsterBaseScale =
-          typeof current.userData.loadedGoblinBaseScale === 'number' ? current.userData.loadedGoblinBaseScale : 1;
-        const loadedMonsterBaseRotationY = typeof current.userData.loadedGoblinBaseRotationY === 'number' ? current.userData.loadedGoblinBaseRotationY : Math.PI;
+          typeof current.userData.loadedMonsterBaseScale === 'number' ? current.userData.loadedMonsterBaseScale : 1;
+        const loadedMonsterBaseRotationY = typeof current.userData.loadedMonsterBaseRotationY === 'number' ? current.userData.loadedMonsterBaseRotationY : Math.PI;
         const chaseWalkPower = distance > attackRange ? 1 : 0.45;
         if (loadedMonsterModel) {
           const loadedStep = Math.sin(walk * 1.28);
@@ -2687,6 +2839,21 @@ export function BattleScene3D(props: BattleScene3DProps) {
           loadedMonsterModel.rotation.y = loadedMonsterBaseRotationY + Math.sin(walk * 0.6 + index) * 0.11;
           loadedMonsterModel.rotation.z = loadedStep * 0.1 + monsterHit * attack * 0.22 + (index % 2 ? 1 : -1) * hitReact * 0.42;
           loadedMonsterModel.scale.setScalar(loadedMonsterBaseScale);
+          const loadedMixer = current.userData.loadedMonsterMixer as THREE.AnimationMixer | undefined;
+          const attackAction = current.userData.loadedMonsterAttack as THREE.AnimationAction | undefined;
+          const isAttacking = Boolean(current.userData.loadedMonsterAttacking);
+          if (attackAction && monsterSwing > 0.45 && !isAttacking) {
+            attackAction.reset().setLoop(THREE.LoopOnce, 1).clampWhenFinished = true;
+            attackAction.play();
+            current.userData.loadedMonsterAttacking = true;
+          }
+          if (monsterSwing < 0.08) current.userData.loadedMonsterAttacking = false;
+          loadedMixer?.update(delta);
+          const downloadedClub = current.userData.downloadedClub as THREE.Group | undefined;
+          if (downloadedClub) {
+            downloadedClub.rotation.z = -0.8 - monsterWindup * 1.1 - monsterHit * 1.8 + monsterRecover * 0.9;
+            downloadedClub.rotation.y = Math.sin(walk + index) * 0.14;
+          }
         }
         const attackTrail = current.userData.attackTrail as THREE.Mesh | undefined;
         if (attackTrail) {
@@ -2824,6 +2991,28 @@ export function BattleScene3D(props: BattleScene3DProps) {
       });
 
       const bossSceneKey = data.sceneKey.toLowerCase();
+      const avalancheActive = data.monsterKind === 'avalanche' && data.monstersLeft > 0;
+      avalancheDragons.children.forEach((avalancheDragon, index) => {
+        avalancheDragon.visible = avalancheActive;
+        if (!avalancheActive) return;
+
+        const phase = avalancheDragon.userData.phase as number;
+        const radius = avalancheDragon.userData.radius as number;
+        const flightAngle = time * (0.18 + (index % 3) * 0.035) + phase;
+        const attackPulse = Math.max(0, Math.sin(time * 2.4 + phase));
+        const targetX = heroWorldX + Math.cos(flightAngle) * radius * (1 - attackPulse * 0.34);
+        const targetZ = heroWorldZ + Math.sin(flightAngle) * radius - 8 * attackPulse;
+        avalancheDragon.position.set(
+          targetX,
+          4.5 + (index % 4) * 1.25 + Math.sin(time * 2 + phase) * 0.7 - attackPulse * 2.1,
+          targetZ,
+        );
+        avalancheDragon.rotation.y = Math.atan2(heroWorldX - targetX, heroWorldZ - targetZ);
+        avalancheDragon.rotation.x = -0.08 - attackPulse * 0.32;
+        avalancheDragon.rotation.z = Math.sin(time * 3.4 + phase) * 0.12;
+        const baseScale = 0.32 + (index % 4) * 0.035;
+        avalancheDragon.scale.setScalar(baseScale * (1 + attackPulse * 0.14));
+      });
       const specialBossKey =
         data.isFinalReveal || data.monstersLeft > 0
           ? ''
@@ -2915,6 +3104,40 @@ export function BattleScene3D(props: BattleScene3DProps) {
         specialBossAura.visible = false;
         specialBossBlast.visible = false;
       }
+
+      const magicCaster = activeSpecialBoss ?? (dragon.visible && data.monstersLeft <= 0 ? dragon : null);
+      const magicKey = activeSpecialBoss ? specialBossKey : 'anuar';
+      bossMagicCooldown = Math.max(0, bossMagicCooldown - delta);
+      if (magicCaster && bossMagicCooldown === 0) {
+        const projectile = bossMagicProjectiles.children.find((item) => !item.visible) as THREE.Mesh | undefined;
+        if (projectile) {
+          const spellColor = bossMagicColors[magicKey] ?? '#ff5a1f';
+          const spellName = bossMagicNames[magicKey] ?? 'магический снаряд';
+          const isSpike = magicKey === 'mansur' || magicKey === 'nurali' || magicKey === 'arailm';
+          projectile.visible = true;
+          projectile.position.copy(magicCaster.position).add(new THREE.Vector3(0, 1.6, 0));
+          projectile.scale.set(isSpike ? 0.72 : 1, isSpike ? 1.8 : 1, isSpike ? 0.72 : 1);
+          (projectile.material as THREE.MeshBasicMaterial).color.set(spellColor);
+          projectile.userData.spell = spellName;
+          projectile.userData.life = 0;
+          const target = new THREE.Vector3(heroWorldX, 1.1, heroWorldZ);
+          projectile.userData.velocity.copy(target.sub(projectile.position).normalize().multiplyScalar(isSpike ? 7.5 : 6.2));
+          bossMagicCooldown = 2.6 + (magicKey === 'admin' || magicKey === 'death' ? 0.5 : 0);
+        }
+      }
+      bossMagicProjectiles.children.forEach((item) => {
+        const projectile = item as THREE.Mesh;
+        if (!projectile.visible) return;
+        projectile.userData.life = (projectile.userData.life as number) + delta;
+        projectile.position.addScaledVector(projectile.userData.velocity as THREE.Vector3, delta);
+        projectile.rotation.x += delta * 8;
+        projectile.rotation.y += delta * 10;
+        const distanceToHero = Math.hypot(projectile.position.x - heroWorldX, projectile.position.z - heroWorldZ);
+        if (distanceToHero < 0.65 || (projectile.userData.life as number) > 4) {
+          if (distanceToHero < 0.65) refs.current.onBossMagicHit(projectile.userData.spell as string);
+          projectile.visible = false;
+        }
+      });
       const dragonData = dragon.userData as {
         bodyMat: THREE.MeshStandardMaterial;
         body: THREE.Mesh;

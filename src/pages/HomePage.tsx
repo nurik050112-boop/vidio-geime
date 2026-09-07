@@ -427,7 +427,7 @@ const bbiFinalBossHp = bbiDirectorHp * 3;
 const nuraliMonsterTotal = 100;
 const nuraliMonsterHp = 1_000;
 const nuraliBossHp = 25_000_000;
-const monsterAvalancheTotal = 1_000;
+const monsterAvalancheTotal = 10_000_000_000;
 const monsterAvalancheHp = 1_000;
 const monsterAvalancheDamage = 100_000;
 const monsterAvalancheStartChapter = 7;
@@ -1950,6 +1950,14 @@ export function HomePage() {
             ? 'scene-boss-final'
             : `scene-boss-${chapter % 10}`
         : cityScene;
+
+  function takeBossMagicHit(spell: string) {
+    if (isFinalReveal || heroHp <= 0 || hasAdminHelmet) return;
+
+    const damage = Math.max(12, Math.round(22 + chapter * 6 + currentDragonHp / 1_000_000));
+    setHeroHp((hp) => Math.max(0, hp - damage));
+    setMessage(`${enemy?.title ?? 'Босс'} применил ${spell}: -${formatPower(damage)} HP.`);
+  }
   const dragonClass = isDeathGodBoss
     ? 'dragon-death-god'
     : isFinalSpiritBoss
@@ -3364,7 +3372,11 @@ export function HomePage() {
       return;
     }
 
-    const baseMonstersPerHit = items.doubleStrike > 0 ? 2 + Math.max(0, shopLevels.doubleStrike - 1) : 1;
+    const baseMonstersPerHit = isMonsterAvalancheWorld
+      ? 100_000_000
+      : items.doubleStrike > 0
+        ? 2 + Math.max(0, shopLevels.doubleStrike - 1)
+        : 1;
     const monstersPerHit = Math.max(1, Math.floor(baseMonstersPerHit * artifactAttackSpeedMultiplier));
     const heroMonsterDamage = Math.max(1, Math.floor((18 + chapter * 5 + attackBonus) * artifactDamageMultiplier));
     const nextMonsterHp = nearestMonsterRef.current.hp - heroMonsterDamage;
@@ -5831,6 +5843,7 @@ export function HomePage() {
               arcaneSpellKind={selectedArcaneSpell}
               arcanePulse={arcanePulse}
               arcaneBurstPulse={arcaneBurstPulse}
+              onBossMagicHit={takeBossMagicHit}
             />
           </div>
           {isClickDuelActive && (
