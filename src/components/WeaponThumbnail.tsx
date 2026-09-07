@@ -6,19 +6,18 @@ type WeaponThumbnailProps = {
 };
 
 const weaponTiles = [
-  [24, 4], [25, 4], [26, 4], [23, 5], [24, 5],
-  [25, 5], [26, 5], [23, 6], [24, 6], [25, 6],
-  [26, 6], [23, 7], [24, 7], [25, 7], [26, 7],
-  [23, 8], [24, 8], [25, 8], [26, 8], [24, 9],
+  [0, 0], [1, 0], [2, 0], [1, 0], [3, 0],
+  [3, 3], [4, 2], [0, 2], [2, 3], [3, 3],
+  [3, 2], [0, 1], [2, 3], [4, 3], [3, 1],
+  [0, 0], [1, 1], [4, 0], [4, 1], [0, 3],
 ] as const;
 
 export function WeaponThumbnail({ name, styleIndex }: WeaponThumbnailProps) {
   const [column, row] = weaponTiles[Math.abs(styleIndex) % weaponTiles.length];
-  const tileOffset = 17;
-  const scale = 3;
+  const tileSize = 64;
   const style = {
-    '--weapon-image-x': `${-column * tileOffset * scale}px`,
-    '--weapon-image-y': `${-row * tileOffset * scale}px`,
+    '--weapon-image-x': `${-column * tileSize}px`,
+    '--weapon-image-y': `${-row * tileSize}px`,
   } as CSSProperties;
 
   return (

@@ -440,8 +440,8 @@ const heroRunSpeedPerSecond = (18 / 3.6) * 1_000;
 const worldCollisionEnabled = true;
 const forwardKeys = ['w', 'ц', 'keyw', 'arrowup'];
 const backwardKeys = ['s', 'ы', 'keys', 'arrowdown'];
-const leftKeys = ['a', 'ф', 'keya', 'arrowleft'];
-const rightKeys = ['d', 'в', 'keyd', 'arrowright'];
+const leftKeys = ['d', 'в', 'keyd', 'arrowleft'];
+const rightKeys = ['a', 'ф', 'keya', 'arrowright'];
 const sprintKeys = ['shift', 'shiftleft', 'shiftright'];
 const movementKeys = [...forwardKeys, ...backwardKeys, ...leftKeys, ...rightKeys, ...sprintKeys];
 const meleeRangeMeters = 5;
@@ -4822,26 +4822,16 @@ export function HomePage() {
     setAuthBusy(true);
     setAuthMessage('Открываю вход Google...');
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
-          skipBrowserRedirect: true,
+          redirectTo: window.location.href,
         },
       });
 
       if (error) {
         setAuthMessage(error.message);
-        setAuthBusy(false);
-        return;
       }
-
-      if (data.url) {
-        window.location.assign(data.url);
-        return;
-      }
-
-      setAuthMessage('Google не вернул ссылку входа. Проверь настройки Google OAuth в Supabase.');
     } catch {
       setAuthMessage('Не получилось открыть Google. Проверь интернет и настройки Supabase.');
     } finally {
@@ -4871,7 +4861,7 @@ export function HomePage() {
             <h2>Войти в игру</h2>
             <button className="google-button" onClick={signInWithGoogle} disabled={authBusy} type="button">
               <span>G</span>
-              Войти через аккаунт
+              Войти через Google
             </button>
             <div className="auth-divider">или почта</div>
             <form className="landing-form" onSubmit={submitLogin}>
