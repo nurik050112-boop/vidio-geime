@@ -888,8 +888,8 @@ button.secondary {
   left: max(18px, env(safe-area-inset-left));
   bottom: max(22px, env(safe-area-inset-bottom));
   z-index: 120;
-  width: 156px;
-  height: 156px;
+  width: 138px;
+  height: 138px;
   border: 4px solid rgba(255, 248, 232, 0.82);
   border-radius: 50%;
   background:
@@ -914,17 +914,17 @@ button.secondary {
 }
 
 .mobile-joystick::before {
-  width: 78px;
-  height: 78px;
+  width: 70px;
+  height: 70px;
   border: 2px solid rgba(255, 248, 232, 0.46);
-  box-shadow: 0 -42px 0 -34px #fff8e8, 42px 0 0 -34px #fff8e8, 0 42px 0 -34px #fff8e8, -42px 0 0 -34px #fff8e8;
+  box-shadow: 0 -37px 0 -30px #fff8e8, 37px 0 0 -30px #fff8e8, 0 37px 0 -30px #fff8e8, -37px 0 0 -30px #fff8e8;
 }
 
 .mobile-joystick span {
-  width: 64px;
-  height: 64px;
-  margin-left: -32px;
-  margin-top: -32px;
+  width: 58px;
+  height: 58px;
+  margin-left: -29px;
+  margin-top: -29px;
   border: 4px solid #101014;
   background: linear-gradient(180deg, #f7fbff, #9ad8ff);
   box-shadow: inset 0 -10px 0 rgba(24, 76, 122, 0.22), 0 10px 0 rgba(16, 16, 20, 0.72), 0 20px 30px rgba(20, 8, 4, 0.34);
@@ -935,10 +935,10 @@ button.secondary {
   right: max(20px, env(safe-area-inset-right));
   bottom: max(36px, env(safe-area-inset-bottom));
   z-index: 55;
-  width: 104px;
-  height: 104px;
+  width: 92px;
+  height: 92px;
   border-radius: 50%;
-  font-size: 18px;
+  font-size: 16px;
   touch-action: manipulation;
 }
 
@@ -947,8 +947,8 @@ button.secondary {
   right: max(138px, calc(env(safe-area-inset-right) + 138px));
   bottom: max(48px, calc(env(safe-area-inset-bottom) + 12px));
   z-index: 58;
-  width: 82px;
-  height: 82px;
+  width: 74px;
+  height: 74px;
   border: 3px solid rgba(255, 248, 232, 0.9);
   border-radius: 50%;
   color: #fffdf4;
@@ -1247,15 +1247,15 @@ button.secondary {
 
 .guide-button {
   position: absolute;
-  top: 108px;
-  right: 12px;
+  top: 88px;
+  right: 8px;
   z-index: 30;
-  min-height: 38px;
-  padding: 8px 12px;
+  min-height: 32px;
+  padding: 6px 10px;
   border: 2px solid rgba(255, 248, 232, 0.78);
   border-radius: 8px;
   color: #251105;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 900;
   background: #ffe66d;
   box-shadow: 0 10px 26px rgba(20, 8, 4, 0.32);
@@ -1627,14 +1627,14 @@ button.secondary {
 }
 
 .compact-game-hud {
-  left: max(12px, env(safe-area-inset-left));
-  right: max(12px, env(safe-area-inset-right));
-  top: max(12px, env(safe-area-inset-top));
+  left: max(8px, env(safe-area-inset-left));
+  right: max(8px, env(safe-area-inset-right));
+  top: max(8px, env(safe-area-inset-top));
   bottom: auto;
-  grid-template-columns: minmax(150px, 0.7fr) minmax(190px, 1fr) minmax(112px, 0.42fr) minmax(150px, 0.65fr) auto;
-  gap: 8px;
+  grid-template-columns: minmax(138px, 0.7fr) minmax(174px, 1fr) minmax(100px, 0.42fr) minmax(138px, 0.65fr) auto;
+  gap: 6px;
   align-items: stretch;
-  padding: 8px;
+  padding: 6px;
   border: 2px solid rgba(248, 251, 255, 0.5);
   background: rgba(12, 15, 24, 0.72);
   backdrop-filter: blur(10px);
@@ -1650,8 +1650,8 @@ button.secondary {
 .hud-target {
   display: grid;
   align-content: center;
-  gap: 4px;
-  padding: 7px 9px;
+  gap: 3px;
+  padding: 5px 7px;
   border: 1px solid rgba(248, 251, 255, 0.18);
   border-radius: 8px;
   background: rgba(248, 251, 255, 0.1);
@@ -1662,7 +1662,7 @@ button.secondary {
 .hud-target strong {
   overflow: hidden;
   color: #fff8e8;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1674,7 +1674,7 @@ button.secondary {
 .hud-target span {
   overflow: hidden;
   color: rgba(248, 251, 255, 0.82);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   line-height: 1.1;
   text-overflow: ellipsis;
@@ -1717,24 +1717,24 @@ button.secondary {
 
 .hud-money strong {
   color: #ffe66d;
-  font-size: 17px;
+  font-size: 15px;
 }
 
 .hud-actions-mini {
   display: flex;
   flex-wrap: nowrap;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
   justify-content: flex-end;
 }
 
 .hud-actions-mini button,
 .hud-icon-button {
-  min-height: 34px;
-  padding: 7px 9px;
+  min-height: 30px;
+  padding: 5px 7px;
   border-radius: 8px;
   color: #251105;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 1000;
   text-decoration: none;
   background: linear-gradient(180deg, #fff8e8, #ffd166);
@@ -5164,15 +5164,15 @@ button.secondary {
 
 .achievement-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .achievement {
   display: grid;
   gap: 8px;
   width: 100%;
-  padding: 9px 10px;
+  padding: 12px;
   border: 2px solid rgba(37, 17, 5, 0.16);
   border-radius: 8px;
   font-weight: 900;
@@ -5186,13 +5186,13 @@ button.secondary {
 
 .achievement-main {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2px 8px;
+  justify-items: center;
+  gap: 5px;
   align-items: center;
   width: 100%;
   padding: 0;
   color: inherit;
-  text-align: left;
+  text-align: center;
   background: transparent;
   box-shadow: none;
 }
@@ -5208,13 +5208,25 @@ button.secondary {
   opacity: 1;
 }
 
-.achievement-main span {
-  grid-row: span 2;
+.achievement-trophy {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
+  width: 112px;
+  height: 160px;
+  border-radius: 12px;
+}
+
+.achievement-trophy-unlocked {
+  background-image: url('/assets/achievements/trophy-atlas.png');
+  background-repeat: no-repeat;
+  background-position: var(--trophy-x) var(--trophy-y);
+  background-size: 700% 200%;
+  filter: drop-shadow(0 10px 10px rgba(56, 31, 5, 0.28));
+}
+
+.achievement-trophy-locked {
+  font-size: 42px;
+  background: rgba(76, 61, 56, 0.1);
 }
 
 .achievement-main strong,
@@ -5232,19 +5244,10 @@ button.secondary {
   filter: grayscale(0.35);
 }
 
-.achievement.locked span {
-  background: #d8c8b2;
-}
-
 .achievement.unlocked {
   color: #15351f;
   border-color: #2fbf71;
   background: #ddf8e6;
-}
-
-.achievement.unlocked span {
-  color: #fff;
-  background: #2fbf71;
 }
 
 .teleport-button {
@@ -5281,6 +5284,21 @@ button.secondary {
   padding: 12px;
   font: inherit;
   font-weight: 900;
+}
+
+@media (max-width: 720px) {
+  .achievements-screen {
+    padding: 20px 14px;
+  }
+
+  .achievement-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .achievement-trophy {
+    width: 84px;
+    height: 120px;
+  }
 }
 
 .achievement-message {

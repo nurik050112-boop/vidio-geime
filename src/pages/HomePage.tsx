@@ -2,6 +2,7 @@
 import type { CSSProperties, FormEvent, PointerEvent as ReactPointerEvent } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Link, useLocation } from 'wouter';
+import { AchievementTrophy } from '../components/AchievementTrophy';
 import { BattleScene3D } from '../components/BattleScene3D';
 import { WeaponThumbnail } from '../components/WeaponThumbnail';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
@@ -990,6 +991,20 @@ const achievements: { id: AchievementId; name: string }[] = [
   { id: 'deathVictory', name: 'Победивший смерть' },
 ];
 
+function loadUnlockedAchievements(): AchievementId[] {
+  try {
+    const parsed: unknown = JSON.parse(window.localStorage.getItem('dragon-game-achievements') ?? '[]');
+    if (!Array.isArray(parsed)) return [];
+
+    const achievementIds = new Set(achievements.map((achievement) => achievement.id));
+    return parsed.filter((id): id is AchievementId => (
+      typeof id === 'string' && achievementIds.has(id as AchievementId)
+    ));
+  } catch {
+    return [];
+  }
+}
+
 const endingArtifacts: Artifact[] = [
   { id: 'starRing', name: 'Кольцо звезды', ending: 'dragonPeace', bonusPercent: 10, goldBonusPercent: 10, attackSpeedPercent: 10, manaBonusPercent: 10, icon: 'star-ring', text: 'Концовка мира драконов' },
   { id: 'dragonPendant', name: 'Шлем-дракон', ending: 'dragonWar', bonusPercent: 20, goldBonusPercent: 20, attackSpeedPercent: 20, manaBonusPercent: 20, icon: 'dragon-pendant', text: 'Плохая концовка драконов' },
@@ -1563,7 +1578,7 @@ export function HomePage() {
   const [finalSpiritMonstersLeft, setFinalSpiritMonstersLeft] = useState(savedGameRef.current?.finalSpiritMonstersLeft ?? finalSpiritMonsterTotal);
   const [finalSpiritFightStarted, setFinalSpiritFightStarted] = useState(savedGameRef.current?.finalSpiritFightStarted ?? false);
   const [deathGodFightStarted, setDeathGodFightStarted] = useState(savedGameRef.current?.deathGodFightStarted ?? false);
-  const [unlockedAchievements, setUnlockedAchievements] = useState<AchievementId[]>([]);
+  const [unlockedAchievements, setUnlockedAchievements] = useState<AchievementId[]>(loadUnlockedAchievements);
   const [gold, setGold] = useState(savedGameRef.current?.gold ?? 0);
   const [goldMultiplier, setGoldMultiplier] = useState(savedGameRef.current?.goldMultiplier ?? 1);
   const [infiniteGold, setInfiniteGold] = useState(savedGameRef.current?.infiniteGold ?? false);
@@ -2151,7 +2166,17 @@ export function HomePage() {
 
   function submitAchievementCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (normalizeCode(achievementCode) !== '98981n') {
+    const code = normalizeCode(achievementCode);
+
+    if (code === '0009000ddd') {
+      setUnlockedAchievements(achievements.map((achievement) => achievement.id));
+      setAchievementCheatActive(true);
+      setAchievementCode('');
+      setAchievementMessage('Все достижения и телепорты открыты.');
+      return;
+    }
+
+    if (code !== '98981n') {
       setAchievementCode('');
       setAchievementMessage('Код не подошел.');
       return;
@@ -2296,7 +2321,7 @@ export function HomePage() {
   }
 
   function teleportToAchievement(id: AchievementId) {
-    if (!achievementCheatActive) return;
+    if (!achievementCheatActive && !unlockedAchievements.includes(id)) return;
 
     const markSavedThrough = (lastIndex: number) => {
       setSavedCities(dragonSons.slice(0, Math.max(0, lastIndex + 1)).map((city) => `${city.city}, ${city.country}`));
@@ -2489,19 +2514,28 @@ export function HomePage() {
       setEnemyHp(nuraliBossHp);
       setMessage(`Телепорт: Нурали вышел на бой за невозможную концовку. HP босса: ${formatPower(nuraliBossHp)}.`);
       navigate('/');
+      return;
+    }
+
+    if (id === 'deathHell') {
+      setVictory(true);
+      setSecretEnding('deathHell');
+      setChapter(dragonSons.length + 1);
+      markSavedThrough(dragonSons.length - 1);
+      setMessage('Телепорт: адская концовка. Душа героя попала в ад.');
+      navigate('/world');
+      return;
+    }
+
+    if (id === 'deathVictory') {
+      setChapter(dragonSons.length);
+      markSavedThrough(dragonSons.length - 1);
+      setDeathGodFightStarted(true);
+      setEnemyHp(deathGodHp);
+      setMessage(`Телепорт: Король ада вышел на бой. HP: ${formatPower(deathGodHp)}.`);
+      navigate('/');
     }
   }
-
-  useEffect(() => {
-    const savedAchievements = window.localStorage.getItem('dragon-game-achievements');
-    if (!savedAchievements) return;
-
-    try {
-      setUnlockedAchievements(JSON.parse(savedAchievements) as AchievementId[]);
-    } catch {
-      setUnlockedAchievements([]);
-    }
-  }, []);
 
   useEffect(() => {
     window.localStorage.setItem('dragon-game-achievements', JSON.stringify(unlockedAchievements));
@@ -4971,25 +5005,29 @@ export function HomePage() {
           </button>
           {achievementMessage && <p className="achievement-message">{achievementMessage}</p>}
           <div className="achievement-list">
-            {achievements.map((achievement) => (
-              <div className={unlockedAchievements.includes(achievement.id) ? 'achievement unlocked' : 'achievement locked'} key={achievement.id}>
+            {achievements.map((achievement, index) => {
+              const unlocked = unlockedAchievements.includes(achievement.id);
+
+              return (
+              <div className={unlocked ? 'achievement unlocked' : 'achievement locked'} key={achievement.id}>
                 <button
                   className="achievement-main"
-                  disabled={!achievementCheatActive && !unlockedAchievements.includes(achievement.id)}
+                  disabled={!achievementCheatActive && !unlocked}
                   onClick={() => completeAchievement(achievement.id)}
                   type="button"
                 >
-                  <span>{unlockedAchievements.includes(achievement.id) ? '✓' : '🔒'}</span>
+                  <AchievementTrophy index={index} unlocked={unlocked} />
                   <strong>{achievement.name}</strong>
-                  <small>{unlockedAchievements.includes(achievement.id) ? 'Открыта' : achievementCheatActive ? 'Нажми, чтобы открыть' : 'Под замком'}</small>
+                  <small>{unlocked ? 'Кубок получен' : achievementCheatActive ? 'Нажми, чтобы открыть' : 'Под замком'}</small>
                 </button>
-                {achievementCheatActive && (
+                {(achievementCheatActive || unlocked) && (
                   <button className="teleport-button" onClick={() => teleportToAchievement(achievement.id)} type="button">
                     Телепорт
                   </button>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </main>
