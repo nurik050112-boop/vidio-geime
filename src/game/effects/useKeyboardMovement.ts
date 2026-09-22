@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { movementKeys } from '../controls';
 import type { GameViewModel } from '../useGameController';
 
-type Context = Pick<GameViewModel, 'gameActiveRef' | 'pressedKeys' | 'verticalVelocity' | 'playHeroAnimation' | 'resetJoystick' | 'movementVelocity' | 'setHeroMoving' | 'setTutorialOpen'>;
+type Context = Pick<GameViewModel, 'gameActiveRef' | 'pressedKeys' | 'verticalVelocity' | 'playHeroAnimation' | 'resetJoystick' | 'movementVelocity' | 'setHeroMoving' | 'setTutorialOpen' | 'setShopOpen'>;
 
 export function useKeyboardMovement(context: Context): void {
-  const { gameActiveRef, pressedKeys, verticalVelocity, playHeroAnimation, resetJoystick, movementVelocity, setHeroMoving, setTutorialOpen } = context;
+  const { gameActiveRef, pressedKeys, verticalVelocity, playHeroAnimation, resetJoystick, movementVelocity, setHeroMoving, setTutorialOpen, setShopOpen } = context;
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       const target = event.target;
@@ -21,6 +21,13 @@ export function useKeyboardMovement(context: Context): void {
         if (!event.repeat) {
           event.preventDefault();
           setTutorialOpen(value => !value);
+        }
+        return;
+      }
+      if (key === 'z' || code === 'keyz') {
+        if (!event.repeat) {
+          event.preventDefault();
+          setShopOpen(value => !value);
         }
         return;
       }

@@ -13,7 +13,7 @@ import { WeaponsView3 } from './WeaponsView3';
 
 
 export function HudView() {
-  const { setTutorialOpen, setQuestPanelOpen, setInventoryPanelOpen, saveStatus, message, heroMana, currentHeroMaxMana, dailyRewardText, dailyRewardState, winStreakState, winStreakText, impossibleEnding, restart, bbiBadEnding, secretEnding, isFinalReveal, savedCities, weapons, worldBurn, quests, visibleQuests, activeQuest, relics, armors, chapter, cityMonsters } = useGameModel();
+  const { setTutorialOpen, setQuestPanelOpen, setInventoryPanelOpen, shopOpen, setShopOpen, saveStatus, message, heroMana, currentHeroMaxMana, dailyRewardText, dailyRewardState, winStreakState, winStreakText, impossibleEnding, restart, bbiBadEnding, secretEnding, isFinalReveal, savedCities, weapons, worldBurn, quests, visibleQuests, activeQuest, relics, armors, chapter, cityMonsters } = useGameModel();
   return (<section className="hud" aria-label="Состояние игры">
         <div className="world-nav">
           <Link className="page-switch play-link" href="/game">Играть</Link>
@@ -21,6 +21,7 @@ export function HudView() {
           <button className="page-switch play-link guide-world-button" onClick={() => setTutorialOpen(true)} type="button">Гайд</button>
           <button className="page-switch play-link guide-world-button" onClick={() => setQuestPanelOpen(true)} type="button">Квесты</button>
           <button className="page-switch play-link guide-world-button" onClick={() => setInventoryPanelOpen(true)} type="button">Сумка</button>
+          <button className="page-switch play-link guide-world-button" onClick={() => setShopOpen(value => !value)} type="button">Магазин <kbd>Z</kbd></button>
         </div>
         <p className="save-status" role="status">{saveStatus}</p>
         <div className="story">
@@ -270,7 +271,7 @@ export function HudView() {
         ) : isFinalReveal ? (
           <RevealView />
         ) : (
-          <PanelView3 />
+          <PanelView3 shopOpen={shopOpen} />
         )}
 
         <div className="world">

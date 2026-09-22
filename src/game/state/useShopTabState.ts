@@ -10,6 +10,8 @@ type Input = {
 type State = {
   shopTab: "id" | "upgrades" | "artifacts" | "code" | "duel" | "players";
   setShopTab: React.Dispatch<React.SetStateAction<"id" | "upgrades" | "artifacts" | "code" | "duel" | "players">>;
+  shopOpen: boolean;
+  setShopOpen: React.Dispatch<React.SetStateAction<boolean>>;
   equippedArtifactId: ArtifactId | null;
   setEquippedArtifactId: React.Dispatch<React.SetStateAction<ArtifactId | null>>;
   heroMana: number;
@@ -44,6 +46,7 @@ export function useShopTabState(input: Input): State {
   const { savedGameRef } = input;
 
   const [shopTab, setShopTab] = useState<'upgrades' | 'artifacts' | 'code' | 'duel' | 'players' | 'id'>('upgrades');
+  const [shopOpen, setShopOpen] = useState(false);
   const [equippedArtifactId, setEquippedArtifactId] = useState<ArtifactId | null>(savedGameRef.current?.equippedArtifactId ?? null);
   const [heroMana, setHeroMana] = useState(savedGameRef.current?.heroMana ?? heroMaxMana);
   const [showFullInventory, setShowFullInventory] = useState(false);
@@ -64,7 +67,7 @@ export function useShopTabState(input: Input): State {
   const [mapLocationIndex, setMapLocationIndex] = useState(savedGameRef.current?.mapLocationIndex ?? 0);
   const [joystickThumb, setJoystickThumb] = useState({ x: 0, y: 0 });
   return {
-    shopTab, setShopTab, equippedArtifactId, setEquippedArtifactId, heroMana,
+    shopTab, setShopTab, shopOpen, setShopOpen, equippedArtifactId, setEquippedArtifactId, heroMana,
     setHeroMana, showFullInventory, setShowFullInventory, questPanelOpen, setQuestPanelOpen,
     inventoryPanelOpen, setInventoryPanelOpen, heroAnimation, setHeroAnimation, heroPosition,
     setHeroPosition, heroHeight, setHeroHeight, heroMoving, setHeroMoving,

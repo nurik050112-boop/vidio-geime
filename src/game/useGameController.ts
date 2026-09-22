@@ -163,7 +163,7 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
     setEquippedWeapon, armors, setArmors, equippedArmor, setEquippedArmor
   } = useMonsterAvalancheEndingState({ savedGameRef });
   const {
-    shopTab, setShopTab, equippedArtifactId, setEquippedArtifactId, heroMana,
+    shopTab, setShopTab, shopOpen, setShopOpen, equippedArtifactId, setEquippedArtifactId, heroMana,
     setHeroMana, showFullInventory, setShowFullInventory, questPanelOpen, setQuestPanelOpen,
     inventoryPanelOpen, setInventoryPanelOpen, heroAnimation, setHeroAnimation, heroPosition,
     setHeroPosition, heroHeight, setHeroHeight, heroMoving, setHeroMoving,
@@ -444,7 +444,7 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
     return runClearCity({ enemy, setEnemyBurning, addWinStreak, currentMonsters, isDeathGodBoss, setDeathGodFightStarted, setVictory, setSecretEnding, unlockAchievement, setChapter, setWeapons, setEquippedWeapon, setEquippedArtifactId, addGold, setMessage, navigate, isBbiBoss, bbiBossStage, setBbiBossStage, setEnemyHp, setBbiFinalChoiceOpen, setBbiGateOpen, setBbiBadEnding, isNuraliKingBoss, setNuraliGateOpen, setNuraliWorldEntered, setNuraliChoiceOpen, setNuraliBossFightStarted, setImpossibleEnding, isAisSharkBoss, setAisSharkFightStarted, setAisFinalChoiceOpen, isAisGodBoss, setAisGateOpen, setAisWorldEntered, setAisGodFightStarted, isAdminWorldBosses, setAdminWorldBossesStarted, setAdminFinalChoiceOpen, isAdminBoss, setAdminWorldGateOpen, setAdminWorldEntered, setAdminBossFightStarted, isArailmKingBoss, setArailmGateOpen, setArailmWorldEntered, setArailmChoiceOpen, setArailmKingFightStarted, isMansurKingBoss, setMansurGateOpen, setMansurDungeonEntered, setMansurKingFightStarted, isAnuarKingBoss, setAnuarGateOpen, setAnuarWorldEntered, setAnuarKingFightStarted, isFuryKingBoss, setFuryGateOpen, setFuryDungeonEntered, setFuryChoiceOpen, setFuryKingFightStarted, isGoblinKingBoss, setGoblinKingReady, setGoblinKingFightStarted, isFamilyBoss, setEndingChoice, isFinalSpiritBoss, setFinalSpiritWorldOpen, setFinalSpiritMonstersLeft, setFinalSpiritFightStarted, deathGodHp, setHeroHp, currentHeroMaxHp, isFinalBoss, finalSpiritDragonHp, savedCities, reward, chapter, setMonsterAvalancheEntered, setMonsterAvalancheLeft, setSavedCities, dungeon, setDungeon, weapons, equippedWeapon, setArmors, armors, equippedArmor, setEquippedArmor, heroHp });
   }
 
-  useKeyboardMovement({ gameActiveRef, pressedKeys, verticalVelocity, playHeroAnimation, resetJoystick, movementVelocity, setHeroMoving, setTutorialOpen });
+  useKeyboardMovement({ gameActiveRef, pressedKeys, verticalVelocity, playHeroAnimation, resetJoystick, movementVelocity, setHeroMoving, setTutorialOpen, setShopOpen });
 
   useKeyboardAttack({ gameActiveRef, currentMonsters, fightMonster, strike, heroHp, heroPosition, enemyHp, equippedWeapon, equippedArtifactId, items, shopLevels });
 
@@ -625,7 +625,7 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
     unlockAchievement, savedCities, defeatedMonsters, isBbiBoss, enemyHp,
     dragonReaction, goldMultiplier, hasAdminHelmet, reward, healthLevel,
     currentMonsterHp, bbiLegendaryDamage, exitDungeon, goblinKingReady, goblinKingFightStarted,
-    setGoblinKingReady, shopTab, unlockedArtifacts, setShopTab, shopLevels,
+    setGoblinKingReady, shopTab, shopOpen, setShopOpen, unlockedArtifacts, setShopTab, shopLevels,
     buy, equippedArtifactId, equipArtifact, submitAdminCode, setAdminCode,
     adminCode, setDuelTargetId, duelTargetId, magicWeapons, inventoryPreviewLimit,
     sellWeapon, sellArmor, cityMonsters, gameActiveRef, lastSpokenSceneRef,
