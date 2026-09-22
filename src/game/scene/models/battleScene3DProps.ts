@@ -48,7 +48,7 @@ export const worldRadiusMeters = 5_000;
 
 export const worldDiameterMeters = worldRadiusMeters * 2;
 
-export const loadDetailedMapProps = false;
+export const loadDetailedMapProps = true;
 
 export function material(color: string, options: Partial<THREE.MeshStandardMaterialParameters> = {}) {
   return new THREE.MeshStandardMaterial({ color, roughness: 0.78, metalness: 0.02, ...options });
