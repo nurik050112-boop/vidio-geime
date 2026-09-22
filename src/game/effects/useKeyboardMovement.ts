@@ -2,13 +2,12 @@ import { useEffect } from 'react';
 import { movementKeys } from '../controls';
 import type { GameViewModel } from '../useGameController';
 
-type Context = Pick<GameViewModel, 'gameActiveRef' | 'pressedKeys' | 'verticalVelocity' | 'playHeroAnimation' | 'resetJoystick' | 'movementVelocity' | 'setHeroMoving'>;
+type Context = Pick<GameViewModel, 'gameActiveRef' | 'pressedKeys' | 'verticalVelocity' | 'playHeroAnimation' | 'resetJoystick' | 'movementVelocity' | 'setHeroMoving' | 'setTutorialOpen'>;
 
 export function useKeyboardMovement(context: Context): void {
-  const { gameActiveRef, pressedKeys, verticalVelocity, playHeroAnimation, resetJoystick, movementVelocity, setHeroMoving } = context;
+  const { gameActiveRef, pressedKeys, verticalVelocity, playHeroAnimation, resetJoystick, movementVelocity, setHeroMoving, setTutorialOpen } = context;
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (!gameActiveRef.current) return;
       const target = event.target;
       const isTyping =
         target instanceof HTMLInputElement ||
@@ -18,6 +17,14 @@ export function useKeyboardMovement(context: Context): void {
       if (isTyping) return;
       const key = event.key.toLowerCase();
       const code = event.code.toLowerCase();
+      if (key === 'j' || code === 'keyj') {
+        if (!event.repeat) {
+          event.preventDefault();
+          setTutorialOpen(value => !value);
+        }
+        return;
+      }
+      if (!gameActiveRef.current) return;
       if (movementKeys.includes(key) || movementKeys.includes(code)) {
         pressedKeys.current.add(key);
         pressedKeys.current.add(code);

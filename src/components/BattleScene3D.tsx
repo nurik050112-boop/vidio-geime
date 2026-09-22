@@ -2,6 +2,7 @@ import { type BattleScene3DProps, hashSceneKey, loadDetailedMapProps, monsterRun
 import { useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { getRenderQuality, removeSceneryLights } from '../game/scene/renderQuality';
+import { createSceneLighting } from '../game/scene/sceneLighting';
 import { addCaveCity } from '../game/scene/models/addCaveCity';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { fitMapPropModel, tuneDownloadedCharacter, fitHeroModel, fitMonsterModel } from '../game/scene/models/fitHeroModel';
@@ -74,21 +75,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
     renderer.domElement.className = 'battle-canvas';
     container.appendChild(renderer.domElement);
 
-    scene.add(new THREE.HemisphereLight('#d8f4ff', '#473322', 1.18));
-    const fill = new THREE.DirectionalLight('#9ed8ff', 1.05);
-    fill.position.set(6, 5, -4);
-    scene.add(fill);
-    const key = new THREE.DirectionalLight('#fff0c2', 2.55);
-    key.position.set(-5.5, 10, 6.5);
-    key.castShadow = true;
-    key.shadow.mapSize.set(quality.shadowSize, quality.shadowSize);
-    key.shadow.camera.near = 0.5;
-    key.shadow.camera.far = 60;
-    key.shadow.camera.left = -24;
-    key.shadow.camera.right = 24;
-    key.shadow.camera.top = 24;
-    key.shadow.camera.bottom = -24;
-    scene.add(key);
+    const sceneLighting = createSceneLighting(scene, renderer);
 
     addCaveCity(scene);
     removeSceneryLights(scene);
@@ -708,6 +695,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
       const delta = clock.getDelta();
       const time = clock.elapsedTime;
       const data = refs.current;
+      sceneLighting.update(camera.position, camera);
+      sceneLighting.setMood(data.isFinalReveal || data.sceneKey.includes('ending'));
       heroMixers.forEach((mixer) => mixer.update(delta));
       rebuildLocation();
       const startedStrike = lastHeroAnimation !== data.heroAnimation && data.heroAnimation === 'strike';
@@ -1811,6 +1800,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
       renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       if (renderer.domElement.parentElement === container) container.removeChild(renderer.domElement);
       heroMixers.forEach(mixer => mixer.stopAllAction());
+      sceneLighting.dispose();
       disposeScene(scene, true);
       renderer.dispose();
     };

@@ -60,9 +60,23 @@ export function useGamePersistence({ userId, storageKey, initialSave, save, appl
       } catch { if (!disposed) setStatus('Нет связи с облаком · сохранено на устройстве'); }
       finally { saving.current = false; }
     };
+    const refreshCloud = async () => {
+      if (!userId || !cloudReady.current || saving.current) return;
+      try {
+        const remote = await loadCloudSave(userId);
+        if (remote && (remote.savedAt ?? 0) > latest.current.savedAt) {
+          apply.current(remote);
+          remoteVersion.current = remote.savedAt ?? 0;
+          if (!disposed) setStatus('Обновлено из облака');
+        }
+      } catch {
+        // Saving locally still works when the cloud is temporarily unavailable.
+      }
+    };
     const onHide = () => { flushLocal(); if (document.hidden) void flushCloud(); };
     const localTimer = window.setInterval(flushLocal, 750);
     const cloudTimer = window.setInterval(() => { void flushCloud(); }, 3000);
+    const refreshTimer = window.setInterval(() => { void refreshCloud(); }, 10000);
     document.addEventListener('visibilitychange', onHide);
     window.addEventListener('pagehide', flushLocal);
     return () => {
@@ -71,6 +85,7 @@ export function useGamePersistence({ userId, storageKey, initialSave, save, appl
       void flushCloud();
       window.clearInterval(localTimer);
       window.clearInterval(cloudTimer);
+      window.clearInterval(refreshTimer);
       document.removeEventListener('visibilitychange', onHide);
       window.removeEventListener('pagehide', flushLocal);
     };
