@@ -1,0 +1,46 @@
+.accessible-dialog {
+  width: min(820px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  border: 1px solid #d3e0c936;
+  border-radius: 18px;
+  padding: 0;
+  background: #f5efdf;
+  color: #292c21;
+  box-shadow: 0 32px 100px #0008;
+  color-scheme: light;
+  overscroll-behavior: contain;
+}
+.accessible-dialog::backdrop { background: #07110ccb; backdrop-filter: blur(5px); }
+.dialog-content { padding: clamp(16px, 4vw, 28px); }
+.accessible-dialog .game-modal-panel { width: 100%; max-width: none; max-height: none; overflow: visible; padding: 0; border: 0; box-shadow: none; background: none; }
+.accessible-dialog h2 { margin: 0 0 12px; font-size: 28px; }
+.accessible-dialog p { line-height: 1.65; }
+.accessible-dialog .game-modal-head { position: sticky; top: 0; background: #f5efdf; padding-bottom: 12px; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.guide-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+.guide-steps section { border: 1px solid #b8b49e70; padding: 16px; border-radius: 12px; }
+.guide-steps h3 { font-size: 15px; margin: 0 0 10px; }
+.guide-steps p { font-size: 13px; margin: 8px 0; color: #575b48; }
+.guide-secret { padding: 12px 16px; background: #e6dcc4; border-radius: 10px; font-size: 13px; }
+.guide-dialog kbd { display: inline-block; padding: 2px 5px; border: 1px solid #b6b39e; border-radius: 4px; font-size: 11px; }
+.pause-dialog { width: min(420px, calc(100% - 32px)); text-align: center; }
+.pause-dialog button { width: 100%; }
+.unified-inventory-list { grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
+.modal-head-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.duel-screen, .duel-request-screen, .tutorial-overlay { overflow: auto; max-height: 100dvh; padding: 16px; }
+.duel-box, .duel-request-box { max-width: 100%; max-height: calc(100dvh - 32px); overflow: auto; }
+.cave-choice, .intro-story { width: min(800px, 100%); max-width: 100%; overflow-wrap: anywhere; }
+.achievements-page { padding: clamp(12px, 4vw, 32px); }
+.achievement-code-form { display: flex; flex-wrap: wrap; }
+.achievement-code-form input { flex: 1; min-width: 120px; }
+.achievement-grid { grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
+@media (max-width: 560px) {
+  .accessible-dialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); border-radius: 14px; }
+  .guide-steps { grid-template-columns: 1fr; }
+  .modal-head-actions { width: 100%; }
+  .modal-head-actions button { flex: 1; }
+  .achievements-screen, .cave-choice, .intro-story { padding: 20px; }
+  .cave-actions { display: flex; flex-direction: column; gap: 10px; }
+  .duel-chat-form { display: flex; flex-wrap: wrap; }
+  .duel-chat-form input { flex: 1; }
+}

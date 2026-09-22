@@ -1,0 +1,60 @@
+@font-face {
+  font-family: Inter;
+  src: url('/fonts/InterVariable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+:root {
+  color-scheme: dark;
+  --accent: #e3b76a;
+  --surface: #202d27;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  background: #131e19;
+}
+body { background: #131e19; }
+button, input, select, textarea { font: inherit; }
+button, button.secondary {
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 650;
+  background: var(--accent);
+  color: #251e12;
+  box-shadow: none;
+  text-shadow: none;
+  touch-action: manipulation;
+}
+button.secondary { background: #34443a; border-color: #5a695d; color: #f6f4eb; }
+button:hover, button:active { box-shadow: none; transform: none; }
+button:hover:not(:disabled) { filter: brightness(1.08); }
+button:disabled { opacity: .48; cursor: not-allowed; }
+:where(button, a, input, select, textarea):focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+input, textarea, select { min-width: 0; max-width: 100%; font-size: 16px; }
+[hidden] { display: none !important; }
+.route-loading { min-height: 100dvh; display: grid; place-items: center; color: #f4ead8; padding: 24px; }
+.page-switch, .hud-icon-button { touch-action: manipulation; }
+.save-status { color: #72644c; font-size: 13px; padding: 0 4px; }
+.world-page .hud { min-width: 0; }
+.world-page .hud, .achievements-screen { color-scheme: light; }
+.world-page .world-nav, .achievement-topbar { display: flex; flex-wrap: wrap; gap: 8px; }
+.world-page .page-switch, .achievement-topbar .page-switch { min-height: 44px; position: static; }
+.story h1, .achievements-screen h1 { overflow-wrap: anywhere; font-size: clamp(28px, 5vw, 44px); }
+.game.world-page { width: 100%; padding: clamp(10px, 3vw, 24px); }
+.shop-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.shop-tabs button { flex: 1 1 auto; }
+.weapon, .quest, .dungeon, .shop, .battle-panel, .reveal, .world, .hud, .weapons, .relics,
+.city, .bar span, .actions button:first-child, .monster-panel, .nuclear-button, .artifact-card {
+  animation: none;
+}
+.weapon:hover, .quest:hover, .shop-item:hover { transform: none; }
+.container { min-height: 100dvh; display: grid; place-items: center; padding: 24px; color: #f4ead8; text-align: center; }
+.container a { color: var(--accent); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

@@ -10,6 +10,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/prepare-sites-build.mjs",
     "preview": "vite preview",
+    "test": "node --test tests/game.test.mjs",
+    "test:browser": "node tests/browser.mjs",
     "db:login": "supabase login",
     "db:link": "supabase link",
     "db:new": "supabase migration new",

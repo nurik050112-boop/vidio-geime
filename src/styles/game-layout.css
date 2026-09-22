@@ -1,0 +1,71 @@
+.game.play-page, .game.play-page .stage, .game.play-page .sky { height: 100dvh; min-height: 100dvh; width: 100%; }
+.game.play-page .stage { overflow: hidden; }
+.battle-2d { touch-action: none; }
+.stage > .world-link, .stage > .achievements-link, .stage > .guide-button { display: none; }
+.game.play-page .compact-game-hud {
+  top: max(10px, env(safe-area-inset-top));
+  bottom: auto;
+  max-height: none;
+  overflow: visible;
+  border: 1px solid #ffffff2a;
+  background: #18231fef;
+  border-radius: 14px;
+  padding: 8px;
+  grid-template-columns: minmax(120px, 1fr) minmax(150px, 1.2fr) minmax(75px, .6fr) minmax(130px, 1fr) auto;
+  gap: 8px;
+}
+.game .compact-game-hud > div { display: grid; gap: 4px; background: #ffffff08; border: 0; }
+.game .compact-game-hud strong { font-size: 13px; font-weight: 600; line-height: 1.25; }
+.game .compact-game-hud span { font-size: 11px; font-weight: 500; text-shadow: none; }
+.game .compact-game-hud i { display: block; width: 100%; }
+.game .compact-game-hud .hud-actions-mini { display: grid !important; grid-template-columns: repeat(3, minmax(54px, 1fr)); gap: 5px; background: none; }
+.game .hud-actions-mini button, .game .hud-icon-button { min-height: 36px; padding: 7px 9px; border: 1px solid #71805d55; border-radius: 8px; font-size: 12px; font-weight: 550; color: #eee6d4; background: #354137; box-shadow: none; text-decoration: none; display: grid; place-items: center; }
+.game .hud-actions-mini button:hover, .game .hud-icon-button:hover { background: #49563e; }
+.admin-nick { color: inherit; text-shadow: none; background: none; }
+.battle-controls { position: absolute; right: max(18px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); z-index: 130; display: flex; align-items: end; gap: 8px; }
+.battle-controls button { min-width: 64px; min-height: 56px; display: grid; gap: 4px; place-items: center; }
+.battle-controls kbd { font-size: 10px; opacity: .65; }
+.battle-controls .pause-control { min-width: 44px; min-height: 44px; background: #18231feb; color: #f6edda; border-color: #b5bda855; }
+.battle-controls .jump-control { background: #34443a; color: #fff; border-color: #b5bda855; }
+.game.play-page .mobile-joystick { display: block; width: 116px; height: 116px; border: 2px solid #f4ead899; background: #18231f99; box-shadow: none; }
+.mobile-joystick span { width: 50px; height: 50px; margin-left: -25px; margin-top: -25px; background: #e6d7ba; box-shadow: 0 3px 8px #0006; border: 2px solid #827963; }
+.arcane-spell-panel { bottom: max(112px, calc(env(safe-area-inset-bottom) + 104px)); }
+.arcane-spell-grid { max-height: 108px; overflow-y: auto; grid-template-columns: repeat(4, 44px); padding: 6px; gap: 5px; background: #18231fe8; }
+.arcane-spell-grid button { width: 44px; height: 44px; min-height: 44px; }
+.arcane-skill-button { animation: none !important; background: #cfaf71; color: #292217; text-shadow: none; box-shadow: none; border-width: 1px; width: 60px; height: 60px; }
+.arcane-spell-info { width: 204px; }
+.battle-3d-loading { pointer-events: none; }
+.battle-3d-loading.render-error { pointer-events: auto; text-align: center; padding: 24px; background: #18231f; }
+.render-error small { max-width: 360px; line-height: 1.6; }
+@media (max-width: 1100px) {
+  .game.play-page .compact-game-hud { grid-template-columns: 1fr 1.2fr .6fr 1fr; }
+  .game .compact-game-hud .hud-actions-mini { grid-column: 1 / -1; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .game .hud-actions-mini button, .game .hud-icon-button { min-height: 44px; }
+}
+@media (max-width: 560px) {
+  .game.play-page .compact-game-hud { left: 8px; right: 8px; padding: 6px; gap: 5px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .game .compact-game-hud > div { padding: 5px 7px; min-height: 0; }
+  .game .compact-game-hud .hud-money, .game .compact-game-hud .hud-target { display: flex; gap: 5px; }
+  .game .compact-game-hud .hud-target { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .game .compact-game-hud .hud-actions-mini { padding: 0; gap: 4px; }
+  .game .hud-actions-mini button, .game .hud-icon-button { font-size: 10px; padding: 4px 1px; }
+  .battle-controls { right: max(10px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); gap: 6px; }
+  .battle-controls button { min-width: 58px; min-height: 56px; font-size: 12px; padding: 8px; }
+  .battle-controls kbd { display: none; }
+  .battle-controls .pause-control { min-width: 40px; }
+  .game.play-page .mobile-joystick { width: 96px; height: 96px; left: max(10px, env(safe-area-inset-left)); }
+  .arcane-spell-panel { right: 10px; bottom: 92px; gap: 5px; }
+  .arcane-spell-info { max-width: 204px; padding: 6px; }
+  .arcane-spell-info strong { font-size: 12px; }
+  .arcane-spell-info span { font-size: 10px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .game.play-page .compact-game-hud { grid-template-columns: 1fr 1.2fr .5fr 1fr; gap: 4px; padding: 5px; top: 5px; }
+  .game .compact-game-hud .hud-actions-mini { grid-column: 1 / -1; }
+  .game .compact-game-hud .hud-money, .game .compact-game-hud .hud-target { display: grid; }
+  .game .compact-game-hud > div { padding: 2px 6px; }
+  .game.play-page .mobile-joystick { width: 88px; height: 88px; bottom: 12px; }
+  .arcane-spell-panel { right: 240px; bottom: 12px; grid-template-columns: 1fr auto; align-items: end; }
+  .arcane-spell-grid { max-height: 56px; grid-template-columns: repeat(4, 44px); }
+  .arcane-spell-info { display: none; }
+}

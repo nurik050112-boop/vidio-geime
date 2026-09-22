@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+let code = fs.readFileSync('src/pages/HomePage.tsx', 'utf8');
+code = code.replace('export function HomePage() {', 'export function GameRuntime({ authUser, guestMode }: { authUser: User | null; guestMode: boolean }) {');
+code = code.replace("import { GameDialog }", "import { GameGuide } from '../components/GameGuide';\nimport { GameDialog }");
+code = code.replaceAll("navigate('/')", "navigate('/game')").replaceAll('href="/"', 'href="/game"');
+code = code.replace(/  const \[(authEmail|authPassword|authBusy|authMessage|authUser|guestMode),.*\n/g, '');
+const authEffect = code.indexOf('  useEffect(() => {\n    if (!isSupabaseConfigured || guestMode) return;');
+const authEffectEnd = code.indexOf('  }, [guestMode]);', authEffect) + '  }, [guestMode]);'.length;
+code = code.slice(0, authEffect) + code.slice(authEffectEnd);
+const loginStart = code.indexOf('  function enterAsGuest() {');
+const loginEnd = code.indexOf('  if (creatorCreditsOpen) {', loginStart);
+code = code.slice(0, loginStart) + code.slice(loginEnd);
+const guideStart = code.indexOf('      {tutorialOpen && (');
+const guideEnd = code.indexOf('      <section className="stage"', guideStart);
+code = code.slice(0, guideStart) + '      {tutorialOpen && <GameGuide onClose={closeTutorial} />}\n' + code.slice(guideEnd);
+code = code.replace("speakText(introVoiceText, 'intro-click');", "window.speechSynthesis?.cancel();");
+code = code.replace("if (!introSkipped) speakText(introVoiceText, 'intro');", "if (!introSkipped && !guestMode && authUser) speakText(introVoiceText, 'intro');");
+fs.writeFileSync('src/game/GameRuntime.tsx', code);
