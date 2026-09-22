@@ -424,11 +424,12 @@ export function BattleScene3D(props: BattleScene3DProps) {
     }
     scene.add(monsters);
 
-    const monsterModelPath = refs.current.monsterKind === 'spider'
+    const monsterKind = refs.current.monsterKind;
+    const monsterModelPath = monsterKind === 'spider'
       ? '/models/quaternius-monsters/bat.fbx'
-      : refs.current.monsterKind === 'avalanche'
+      : monsterKind === 'avalanche' || monsterKind === 'magma'
         ? '/models/quaternius-monsters/dragon.fbx'
-        : refs.current.monsterKind === 'pale' || refs.current.monsterKind === 'wire'
+        : monsterKind === 'pale' || monsterKind === 'wire' || monsterKind === 'shadow'
           ? '/models/quaternius-monsters/slime.fbx'
           : '/models/quaternius-monsters/skeleton.fbx';
     const monsterLoader = new FBXLoader();
@@ -484,11 +485,12 @@ export function BattleScene3D(props: BattleScene3DProps) {
           const mixer = new THREE.AnimationMixer(model);
           const actions = template.animations.map((clip) => mixer.clipAction(clip));
           const idleAction = actions.find((action) => /idle/i.test(action.getClip().name)) ?? actions[0];
-          const attackAction = actions.find((action) => /attack|punch|hit/i.test(action.getClip().name)) ?? actions[0];
+          const attackActions = actions.filter((action) => /attack|punch|hit|slash|claw|bite|die/i.test(action.getClip().name));
           idleAction.play();
           current.userData.loadedMonsterMixer = mixer;
-          current.userData.loadedMonsterAttack = attackAction;
+          current.userData.loadedMonsterAttacks = attackActions.length > 0 ? attackActions : [actions[0]];
           current.userData.loadedMonsterAttacking = false;
+          current.userData.loadedMonsterAttackIndex = 0;
         }
       });
     });
@@ -1284,12 +1286,15 @@ export function BattleScene3D(props: BattleScene3DProps) {
           loadedMonsterModel.rotation.z = loadedStep * 0.1 + monsterHit * attack * 0.22 + (index % 2 ? 1 : -1) * hitReact * 0.42;
           loadedMonsterModel.scale.setScalar(loadedMonsterBaseScale);
           const loadedMixer = current.userData.loadedMonsterMixer as THREE.AnimationMixer | undefined;
-          const attackAction = current.userData.loadedMonsterAttack as THREE.AnimationAction | undefined;
+          const attackActions = current.userData.loadedMonsterAttacks as THREE.AnimationAction[] | undefined;
           const isAttacking = Boolean(current.userData.loadedMonsterAttacking);
-          if (attackAction && monsterSwing > 0.45 && !isAttacking) {
+          if (attackActions && monsterSwing > 0.45 && !isAttacking) {
+            const attackIndex = (current.userData.loadedMonsterAttackIndex as number ?? 0) % attackActions.length;
+            const attackAction = attackActions[attackIndex];
             attackAction.reset().setLoop(THREE.LoopOnce, 1).clampWhenFinished = true;
             attackAction.play();
             current.userData.loadedMonsterAttacking = true;
+            current.userData.loadedMonsterAttackIndex = attackIndex + 1;
           }
           if (monsterSwing < 0.08) current.userData.loadedMonsterAttacking = false;
           loadedMixer?.update(delta);
