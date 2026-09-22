@@ -7,12 +7,13 @@ import { DuelRequestScreenView } from './DuelRequestScreenView';
 import { GameDialogView } from './GameDialogView';
 import { HudView } from './HudView';
 import { QuickHudView } from './QuickHudView';
+import { ShopView } from './ShopView';
 import { StageView } from './StageView';
 
 
 
 export function GameView() {
-  const { isWorldPage, manualPause, setManualPause, tutorialOpen, closeTutorial, enemy, isFinalReveal, duelStatus, incomingDuelRequest, incomingRequestPlayer, setQuestPanelOpen, questPanelOpen, completedQuestCount, quests, visibleQuests, activeQuest, inventoryPanelOpen } = useGameModel();
+  const { isWorldPage, manualPause, setManualPause, tutorialOpen, closeTutorial, shopOpen, setShopOpen, enemy, isFinalReveal, duelStatus, incomingDuelRequest, incomingRequestPlayer, setQuestPanelOpen, questPanelOpen, completedQuestCount, quests, visibleQuests, activeQuest, inventoryPanelOpen } = useGameModel();
   return (<main className={`game ${isWorldPage ? 'world-page' : 'play-page'}`}>
       {manualPause && !isWorldPage && (
         <GameDialog title="Игра на паузе" onClose={() => setManualPause(false)} className="pause-dialog">
@@ -22,6 +23,15 @@ export function GameView() {
         </GameDialog>
       )}
       {tutorialOpen && <GameGuide onClose={closeTutorial} />}
+      {shopOpen && !isWorldPage && (
+        <GameDialog title="Магазин" onClose={() => setShopOpen(false)} className="shop-dialog">
+          <div className="game-modal-head">
+            <div><p className="eyebrow">Лавка героя</p><h2>Магазин</h2></div>
+            <button onClick={() => setShopOpen(false)} type="button" aria-label="Закрыть магазин">Закрыть</button>
+          </div>
+          <ShopView />
+        </GameDialog>
+      )}
       {!isWorldPage && <StageView />}
 
       {(duelStatus === 'searching' || duelStatus === 'challenge' || duelStatus === 'fighting' || duelStatus === 'won') && (
