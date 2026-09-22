@@ -55,7 +55,9 @@ function addVillageTown(root: THREE.Object3D, accent: string, glow: string) {
 
 export function add3DLocation(scene: THREE.Scene, root: THREE.Object3D, sceneKey: string, chapter: number, locationIndex: number, captured = false) {
   const isEnding = sceneKey.startsWith('ending') || sceneKey.includes('final') || sceneKey.includes('death') || sceneKey.includes('admin');
-  const locationStyle = Math.abs(chapter * 3 + locationIndex * 5 + hashSceneKey(sceneKey)) % 14;
+  const locationStyle = chapter === 0 && locationIndex === 0
+    ? 3
+    : Math.abs(chapter * 3 + locationIndex * 5 + hashSceneKey(sceneKey)) % 14;
   const theme = cityThemes[Math.abs(chapter + locationIndex) % cityThemes.length];
   const palette = captured
     ? { ...theme, sky: '#120d0b', fog: '#160f0d', ground: '#27241f', accent: '#7f1d1d', glow: '#ff3b30' }

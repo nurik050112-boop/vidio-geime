@@ -118,5 +118,6 @@ export function hashSceneKey(value: string) {
 }
 
 export function getLocationStyle(chapter: number, locationIndex: number, sceneKey: string) {
+  if (chapter === 0 && locationIndex === 0) return 3;
   return Math.abs(chapter * 3 + locationIndex * 5 + hashSceneKey(sceneKey)) % 14;
 }
