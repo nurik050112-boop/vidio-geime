@@ -131,9 +131,11 @@ export function runSubmitAdminCode(context: Context, event: FormEvent<HTMLFormEl
     }
 
     if (code === 'ggvv98') {
-      setGold((currentGold) => currentGold + 100_000);
+      const exclusiveStaff = createArcaneScepter();
+      setWeapons((currentWeapons) => [...currentWeapons, exclusiveStaff]);
+      setEquippedWeapon(exclusiveStaff);
       setAdminCode('');
-      setMessage('Код GGVV98 принят. Получено 100 000 золота.');
+      setMessage('Код GGVV98 принят. Получен и экипирован эксклюзивный Секретный посох огня.');
       return;
     }
 
