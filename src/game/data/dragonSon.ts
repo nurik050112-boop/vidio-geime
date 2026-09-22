@@ -32,7 +32,7 @@ export type Dungeon = {
   declined: boolean;
 };
 
-export type Rarity = 'Обычный' | 'Необычный' | 'Редкий' | 'Эпик' | 'Легендарка' | 'Секретное';
+export type Rarity = 'Обычный' | 'Необычный' | 'Редкий' | 'Эпик' | 'Легендарка' | 'Секретное' | 'Эксклюзив';
 
 export type Weapon = {
   id: string;

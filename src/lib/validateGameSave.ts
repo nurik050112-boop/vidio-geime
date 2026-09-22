@@ -2,7 +2,7 @@ import type { GameSaveState } from '../game/data/gameSaveState';
 
 const object = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 const number = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0;
-const rarities = ['Обычный', 'Необычный', 'Редкий', 'Эпик', 'Легендарка', 'Секретное'];
+const rarities = ['Обычный', 'Необычный', 'Редкий', 'Эпик', 'Легендарка', 'Секретное', 'Эксклюзив'];
 const equipment = (value: unknown, stat: string) => object(value) && typeof value.id === 'string'
   && typeof value.name === 'string' && rarities.includes(String(value.rarity)) && number(value[stat]) && number(value.price);
 const upgrades = (value: unknown) => object(value) && ['sword', 'pet', 'clothes', 'helmet', 'armor', 'mana', 'health', 'doubleStrike']

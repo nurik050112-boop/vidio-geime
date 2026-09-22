@@ -51,7 +51,7 @@ export function createBbiLegendarySword(): Weapon {
   return {
     id: `bbi-legendary-sword-${Date.now()}-${Math.random()}`,
     name: 'BBI легендарный меч 3-го города',
-    rarity: 'Легендарка',
+    rarity: 'Эксклюзив',
     damage: Number.MAX_SAFE_INTEGER,
     displayDamage: 'легендарный урон',
     price: 0,
@@ -63,7 +63,7 @@ export function createAisultanSword(bestDamage: number): Weapon {
   return {
     id: `aisultan-sea-sword-${Date.now()}-${Math.random()}`,
     name: 'Воденой меч Айсултана',
-    rarity: 'Секретное',
+    rarity: 'Эксклюзив',
     damage: boostedDamage,
     displayDamage: `${formatPower(bestDamage)} +100000%`,
     price: 0,
@@ -75,7 +75,7 @@ export function createArcaneScepter(): Weapon {
   return {
     id: `arcane-scepter-${Date.now()}-${Math.random()}`,
     name: 'Секретный посох огня',
-    rarity: 'Секретное',
+    rarity: 'Эксклюзив',
     damage,
     displayDamage: '999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999 + все магические атаки x100',
     allMagicSpells: true,

@@ -113,7 +113,7 @@ export function createSecretWeapon(level = 1): Weapon {
   return {
     id: `secret-${Date.now()}-${Math.random()}`,
     name: 'иди нах',
-    rarity: 'Секретное',
+    rarity: 'Эксклюзив',
     damage,
     price: rarityPrice['Секретное'],
   };
@@ -123,7 +123,7 @@ export function createAdminNuke(): Weapon {
   return {
     id: `admin-nuke-${Date.now()}-${Math.random()}`,
     name: 'Админская ядерка',
-    rarity: 'Секретное',
+    rarity: 'Эксклюзив',
     damage: 1_000_000,
     displayDamage: adminNukeDamageText,
     hiddenDamageText: adminNukeHiddenDamageText,
@@ -135,7 +135,7 @@ export function createBillionSword(): Weapon {
   return {
     id: `billion-sword-${Date.now()}-${Math.random()}`,
     name: 'Меч 999999999',
-    rarity: 'Секретное',
+    rarity: 'Эксклюзив',
     damage: 999_999_999,
     price: 0,
   };

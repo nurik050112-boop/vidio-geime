@@ -7049,6 +7049,7 @@ button.selected {
 .weapon.epic { background: linear-gradient(180deg, #c77dff, #6f2dbd); }
 .weapon.legendary { background: linear-gradient(180deg, #ffe66d, #ff6b2b); color: #251105; }
 .weapon.secret { background: linear-gradient(180deg, #ffffff, #111111 45%, #ff004c); color: #fffdf4; }
+.weapon.exclusive { background: linear-gradient(135deg, #fff5a8, #ffb300 42%, #d83bff 72%, #4020a8); color: #fff; box-shadow: 0 0 22px #ffb30088, inset 0 1px #ffffffb8; }
 
 .weapon.equipped {
   outline: 3px solid #251105;

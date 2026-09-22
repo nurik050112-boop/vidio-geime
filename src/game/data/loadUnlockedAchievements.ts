@@ -139,4 +139,5 @@ export const rarityDefense: Record<Rarity, number> = {
   'Эпик': 90,
   'Легендарка': 500,
   'Секретное': 50_000,
+  'Эксклюзив': Number.MAX_SAFE_INTEGER,
 };

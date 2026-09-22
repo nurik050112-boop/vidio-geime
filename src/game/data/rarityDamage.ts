@@ -8,6 +8,7 @@ export const rarityDamage: Record<Rarity, number> = {
   'Эпик': 120,
   'Легендарка': 900,
   'Секретное': 1_000_000,
+  'Эксклюзив': Number.MAX_SAFE_INTEGER,
 };
 
 export const rarityPrice: Record<Rarity, number> = {
@@ -17,6 +18,7 @@ export const rarityPrice: Record<Rarity, number> = {
   'Эпик': 3_000,
   'Легендарка': 200_000,
   'Секретное': 999_999_999,
+  'Эксклюзив': Number.MAX_SAFE_INTEGER,
 };
 
 export const weaponSellPrice: Record<Rarity, number> = {
@@ -26,6 +28,7 @@ export const weaponSellPrice: Record<Rarity, number> = {
   'Эпик': 10_000,
   'Легендарка': 100_000,
   'Секретное': 1_000_000,
+  'Эксклюзив': Number.MAX_SAFE_INTEGER,
 };
 
 export const rarityClass: Record<Rarity, string> = {
@@ -35,6 +38,7 @@ export const rarityClass: Record<Rarity, string> = {
   'Эпик': 'epic',
   'Легендарка': 'legendary',
   'Секретное': 'secret',
+  'Эксклюзив': 'exclusive',
 };
 
 export function formatPower(value: number) {
