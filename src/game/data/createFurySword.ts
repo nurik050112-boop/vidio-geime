@@ -74,7 +74,7 @@ export function createArcaneScepter(): Weapon {
   const damage = Number.MAX_SAFE_INTEGER;
   return {
     id: `arcane-scepter-${Date.now()}-${Math.random()}`,
-    name: 'GGVV98: универсальный посох магии',
+    name: 'Секретный посох огня',
     rarity: 'Секретное',
     damage,
     displayDamage: '999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999 + все магические атаки x100',
