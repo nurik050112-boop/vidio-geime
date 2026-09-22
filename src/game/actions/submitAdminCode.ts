@@ -129,6 +129,13 @@ export function runSubmitAdminCode(context: Context, event: FormEvent<HTMLFormEl
       return;
     }
 
+    if (code === 'ggvv98') {
+      setGold((currentGold) => currentGold + 100_000);
+      setAdminCode('');
+      setMessage('Код GGVV98 принят. Получено 100 000 золота.');
+      return;
+    }
+
     if (code !== 'wwnurikww' && code !== 'ццтгкшлцц') {
       setAdminCode('');
       setMessage('Код не подошел.');
