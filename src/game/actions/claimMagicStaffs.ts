@@ -10,7 +10,7 @@ export function runClaimMagicStaffs(context: Context): void {
     const ownedNames = new Set(weapons.filter(isArcaneWeapon).map((weapon) => weapon.name));
     const newStaffs = staffNames
       .filter((name) => !ownedNames.has(name))
-      .map((name, index) => createMagicStaff(name, Math.max(3, chapter + 3 + index), 1 + index * 0.18));
+      .map((name, index) => createMagicStaff(name, Math.max(3, chapter + 3 + index), 1 + index * 0.18, index));
     if (newStaffs.length === 0) {
       setMessage('Все магические посохи уже есть в инвентаре.');
       return;

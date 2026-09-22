@@ -9,6 +9,7 @@ type Context = Pick<GameViewModel, 'adminCode' | 'setFuryGateOpen' | 'setFuryDun
 
 export function runSubmitAdminCode(context: Context, event: FormEvent<HTMLFormElement>): void {
   const { adminCode, setFuryGateOpen, setFuryDungeonEntered, setFuryMonstersLeft, setFuryChoiceOpen, setFuryKingFightStarted, setAdminCode, setMessage, navigate, setAnuarGateOpen, setAnuarWorldEntered, setAnuarBombsLeft, setAnuarKingFightStarted, setMansurGateOpen, setMansurDungeonEntered, setMansurMonstersLeft, setMansurKingFightStarted, setNuraliGateOpen, setNuraliWorldEntered, setNuraliMonstersLeft, setNuraliChoiceOpen, setNuraliBossFightStarted, openArailmWorld, setAisGateOpen, setAisWorldEntered, setAisMonstersLeft, setAisSharkFightStarted, setAisFinalChoiceOpen, setAisGodFightStarted, chapter, setWeapons, setEquippedWeapon, setAdminWorldGateOpen, setAdminWorldEntered, setAdminWorldMonstersLeft, setAdminWorldBossesStarted, setAdminFinalChoiceOpen, setAdminBossFightStarted, setBbiGateOpen, setBbiWorldEntered, setBbiMonstersLeft, setBbiBossStage, setBbiFinalChoiceOpen, setBbiCityReward, setArmors, setEquippedArmor, setHeroHp, setGold, setGoldMultiplier, setInfiniteGold } = context;
+  void chapter;
     event.preventDefault();
     const code = normalizeCode(adminCode);
 
@@ -77,7 +78,7 @@ export function runSubmitAdminCode(context: Context, event: FormEvent<HTMLFormEl
     }
 
     if (code === 'magic') {
-      const arcaneWeapon = createArcaneScepter(Math.max(3, chapter + 3));
+      const arcaneWeapon = createArcaneScepter();
       setWeapons((currentWeapons) => [...currentWeapons, arcaneWeapon]);
       setEquippedWeapon(arcaneWeapon);
       setAdminCode('');

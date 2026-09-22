@@ -46,6 +46,7 @@ type State = {
   visibleRelics: string[];
   currentPlayerPower: number;
   hasArcaneWeapon: boolean;
+  arcaneAllSpells: boolean;
   selectedSpell: (typeof arcaneSpells)[number];
   selectedSpellRadiusMeters: 70;
   selectedSpellSpeedKmh: 100;
@@ -105,20 +106,22 @@ export function useQuestsState(input: Input): State {
   const visibleRelics = showFullInventory ? relics : relics.slice(-inventoryPreviewLimit);
   const currentPlayerPower = Math.max(1_000, attackBonus + defenseBonus + currentHeroMaxHp);
   const hasArcaneWeapon = isArcaneWeapon(equippedWeapon);
-  const selectedSpell = arcaneSpells[selectedArcaneSpell % arcaneSpells.length];
+  const arcaneAllSpells = equippedWeapon?.allMagicSpells === true;
+  const selectedSpellIndex = arcaneAllSpells ? selectedArcaneSpell : equippedWeapon?.magicSpellIndex ?? 0;
+  const selectedSpell = arcaneSpells[selectedSpellIndex % arcaneSpells.length];
   const selectedSpellRadiusMeters = arcaneSpellRadiusMeters;
   const selectedSpellSpeedKmh = arcaneSpellSpeedKmh;
   const arcaneSkillCooldownMs = arcaneSpellCooldownMs;
   const arcaneSkillManaCost = selectedSpell.mana;
   const arcaneSkillRemainingMs = Math.max(0, arcaneSkillReadyAt - arcaneCooldownNow);
   const arcaneSkillReady = hasArcaneWeapon && arcaneSkillRemainingMs === 0 && heroMana >= arcaneSkillManaCost;
-  const arcaneSkillDamage = Math.max(1, Math.floor((attackBonus + equippedWeaponDamage + 2_500) * artifactDamageMultiplier * selectedSpell.power));
+  const arcaneSkillDamage = Math.max(1, Math.floor((attackBonus + equippedWeaponDamage + 2_500) * artifactDamageMultiplier * selectedSpell.power * (arcaneAllSpells ? 100 : 1)));
   const allAchievementsUnlocked = achievements.every((achievement) => unlockedAchievements.includes(achievement.id));
   return {
     quests, activeQuest, visibleQuests, completedQuestCount, playerLevelState,
     playerLevel, playerLevelProgress, expectedLevelStatMultiplier, inventoryPreviewLimit, visibleWeapons,
     magicWeapons, visibleMagicWeapons, visibleArmors, visibleRelics, currentPlayerPower,
-    hasArcaneWeapon, selectedSpell, selectedSpellRadiusMeters, selectedSpellSpeedKmh, arcaneSkillCooldownMs,
+    hasArcaneWeapon, arcaneAllSpells, selectedSpell, selectedSpellRadiusMeters, selectedSpellSpeedKmh, arcaneSkillCooldownMs,
     arcaneSkillManaCost, arcaneSkillRemainingMs, arcaneSkillReady, arcaneSkillDamage, allAchievementsUnlocked
   };
 }

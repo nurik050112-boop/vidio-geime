@@ -70,19 +70,20 @@ export function createAisultanSword(bestDamage: number): Weapon {
   };
 }
 
-export function createArcaneScepter(level = 1): Weapon {
-  const damage = Math.min(Number.MAX_SAFE_INTEGER, (250_000 + level * 150_000) * worldWeaponMultiplier(Math.max(1, level)));
+export function createArcaneScepter(): Weapon {
+  const damage = Number.MAX_SAFE_INTEGER;
   return {
     id: `arcane-scepter-${Date.now()}-${Math.random()}`,
-    name: 'Сасопковый посох магии',
+    name: 'GGVV98: универсальный посох магии',
     rarity: 'Секретное',
     damage,
-    displayDamage: `${formatPower(damage)} + магия`,
+    displayDamage: '999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999 + все магические атаки x100',
+    allMagicSpells: true,
     price: 0,
   };
 }
 
-export function createMagicStaff(name: string, level = 1, bonus = 1): Weapon {
+export function createMagicStaff(name: string, level = 1, bonus = 1, magicSpellIndex = 0): Weapon {
   const damage = Math.min(Number.MAX_SAFE_INTEGER, (180_000 + level * 120_000) * worldWeaponMultiplier(Math.max(1, level)) * bonus);
   return {
     id: `arcane-scepter-${name}-${Date.now()}-${Math.random()}`,
@@ -90,6 +91,7 @@ export function createMagicStaff(name: string, level = 1, bonus = 1): Weapon {
     rarity: 'Секретное',
     damage,
     displayDamage: `${formatPower(damage)} + радиус 70м`,
+    magicSpellIndex,
     price: 0,
   };
 }

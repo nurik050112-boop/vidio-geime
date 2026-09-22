@@ -1,16 +1,16 @@
 import { formatPower } from '../data/rarityDamage';
 import type { GameViewModel } from '../useGameController';
 
-type Context = Pick<GameViewModel, 'gameActiveRef' | 'hasArcaneWeapon' | 'isFinalReveal' | 'enemy' | 'arcaneSkillReady' | 'playHeroAnimation' | 'setBattlePulse' | 'setArcanePulse' | 'selectedSpell' | 'setArcaneBurstPulse' | 'setHeroMana' | 'arcaneSkillManaCost' | 'setArcaneSkillReadyAt' | 'arcaneSkillCooldownMs' | 'setArcaneCooldownNow' | 'currentMonsters' | 'selectedSpellRadiusMeters' | 'selectedSpellSpeedKmh' | 'arcaneSkillDamage' | 'currentMonsterHp' | 'setCurrentMonsterCount' | 'setNearestMonster' | 'makeNearestMonsterSpawn' | 'nearestMonsterRef' | 'addGold' | 'chapter' | 'addWinStreak' | 'setEnemyHp' | 'currentDragonHp' | 'setMessage' | 'enemyHp' | 'clearCity'>;
+type Context = Pick<GameViewModel, 'gameActiveRef' | 'hasArcaneWeapon' | 'arcaneAllSpells' | 'isFinalReveal' | 'enemy' | 'arcaneSkillReady' | 'playHeroAnimation' | 'setBattlePulse' | 'setArcanePulse' | 'selectedSpell' | 'setArcaneBurstPulse' | 'setHeroMana' | 'arcaneSkillManaCost' | 'setArcaneSkillReadyAt' | 'arcaneSkillCooldownMs' | 'setArcaneCooldownNow' | 'currentMonsters' | 'selectedSpellRadiusMeters' | 'selectedSpellSpeedKmh' | 'arcaneSkillDamage' | 'currentMonsterHp' | 'setCurrentMonsterCount' | 'setNearestMonster' | 'makeNearestMonsterSpawn' | 'nearestMonsterRef' | 'addGold' | 'chapter' | 'addWinStreak' | 'setEnemyHp' | 'currentDragonHp' | 'setMessage' | 'enemyHp' | 'clearCity'>;
 
 export function runCastArcaneSkill(context: Context): void {
-  const { gameActiveRef, hasArcaneWeapon, isFinalReveal, enemy, arcaneSkillReady, playHeroAnimation, setBattlePulse, setArcanePulse, selectedSpell, setArcaneBurstPulse, setHeroMana, arcaneSkillManaCost, setArcaneSkillReadyAt, arcaneSkillCooldownMs, setArcaneCooldownNow, currentMonsters, selectedSpellRadiusMeters, selectedSpellSpeedKmh, arcaneSkillDamage, currentMonsterHp, setCurrentMonsterCount, setNearestMonster, makeNearestMonsterSpawn, nearestMonsterRef, addGold, chapter, addWinStreak, setEnemyHp, currentDragonHp, setMessage, enemyHp, clearCity } = context;
+  const { gameActiveRef, hasArcaneWeapon, arcaneAllSpells, isFinalReveal, enemy, arcaneSkillReady, playHeroAnimation, setBattlePulse, setArcanePulse, selectedSpell, setArcaneBurstPulse, setHeroMana, arcaneSkillManaCost, setArcaneSkillReadyAt, arcaneSkillCooldownMs, setArcaneCooldownNow, currentMonsters, selectedSpellRadiusMeters, selectedSpellSpeedKmh, arcaneSkillDamage, currentMonsterHp, setCurrentMonsterCount, setNearestMonster, makeNearestMonsterSpawn, nearestMonsterRef, addGold, chapter, addWinStreak, setEnemyHp, currentDragonHp, setMessage, enemyHp, clearCity } = context;
     if (!gameActiveRef.current) return;
     if (!hasArcaneWeapon || isFinalReveal || !enemy || !arcaneSkillReady) return;
     playHeroAnimation('cast', 760);
     setBattlePulse((pulse) => pulse + 1);
     setArcanePulse((pulse) => pulse + 1);
-    if (selectedSpell.targets >= 8 || selectedSpell.power >= 12) setArcaneBurstPulse((pulse) => pulse + 1);
+    if (arcaneAllSpells || selectedSpell.targets >= 8 || selectedSpell.power >= 12) setArcaneBurstPulse((pulse) => pulse + 1);
     setHeroMana((mana) => Math.max(0, mana - arcaneSkillManaCost));
     setArcaneSkillReadyAt(Date.now() + arcaneSkillCooldownMs);
     setArcaneCooldownNow(Date.now());

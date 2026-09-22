@@ -260,7 +260,7 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
     quests, activeQuest, visibleQuests, completedQuestCount, playerLevelState,
     playerLevel, playerLevelProgress, expectedLevelStatMultiplier, inventoryPreviewLimit, visibleWeapons,
     magicWeapons, visibleMagicWeapons, visibleArmors, visibleRelics, currentPlayerPower,
-    hasArcaneWeapon, selectedSpell, selectedSpellRadiusMeters, selectedSpellSpeedKmh, arcaneSkillCooldownMs,
+    hasArcaneWeapon, arcaneAllSpells, selectedSpell, selectedSpellRadiusMeters, selectedSpellSpeedKmh, arcaneSkillCooldownMs,
     arcaneSkillManaCost, arcaneSkillRemainingMs, arcaneSkillReady, arcaneSkillDamage, allAchievementsUnlocked
   } = useQuestsState({ generatedQuests, savedCities, isFinalReveal, endingChoice, isEndingChoice, secretEnding, goblinKingReady, defeatedMonsters, showFullInventory, weapons, armors, relics, attackBonus, defenseBonus, currentHeroMaxHp, equippedWeapon, selectedArcaneSpell, arcaneSkillReadyAt, arcaneCooldownNow, heroMana, equippedWeaponDamage, artifactDamageMultiplier, unlockedAchievements });
 
@@ -469,7 +469,7 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
   useManaLimit({ setHeroMana, currentHeroMaxMana });
 
   function castArcaneSkill(): void {
-    return runCastArcaneSkill({ gameActiveRef, hasArcaneWeapon, isFinalReveal, enemy, arcaneSkillReady, playHeroAnimation, setBattlePulse, setArcanePulse, selectedSpell, setArcaneBurstPulse, setHeroMana, arcaneSkillManaCost, setArcaneSkillReadyAt, arcaneSkillCooldownMs, setArcaneCooldownNow, currentMonsters, selectedSpellRadiusMeters, selectedSpellSpeedKmh, arcaneSkillDamage, currentMonsterHp, setCurrentMonsterCount, setNearestMonster, makeNearestMonsterSpawn, nearestMonsterRef, addGold, chapter, addWinStreak, setEnemyHp, currentDragonHp, setMessage, enemyHp, clearCity });
+    return runCastArcaneSkill({ gameActiveRef, hasArcaneWeapon, arcaneAllSpells, isFinalReveal, enemy, arcaneSkillReady, playHeroAnimation, setBattlePulse, setArcanePulse, selectedSpell, setArcaneBurstPulse, setHeroMana, arcaneSkillManaCost, setArcaneSkillReadyAt, arcaneSkillCooldownMs, setArcaneCooldownNow, currentMonsters, selectedSpellRadiusMeters, selectedSpellSpeedKmh, arcaneSkillDamage, currentMonsterHp, setCurrentMonsterCount, setNearestMonster, makeNearestMonsterSpawn, nearestMonsterRef, addGold, chapter, addWinStreak, setEnemyHp, currentDragonHp, setMessage, enemyHp, clearCity });
   }
 
   function strike(): void {
@@ -605,7 +605,7 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
     isAisSharkBoss, isAisGodBoss, isAdminWorldBosses, isAdminBoss, isDeathGodBoss,
     isFinalSpiritBoss, isFinalBoss, dragonClass, enemyBurning, startJoystick,
     moveJoystick, stopJoystick, resetJoystick, joystickThumb, setSelectedArcaneSpell,
-    selectedSpell, selectedSpellRadiusMeters, selectedSpellSpeedKmh, arcaneSkillReady, castArcaneSkill,
+    selectedSpell, arcaneAllSpells, selectedSpellRadiusMeters, selectedSpellSpeedKmh, arcaneSkillReady, castArcaneSkill,
     heroMana, arcaneSkillManaCost, arcaneSkillRemainingMs, duelStatus, playerName,
     setDuelStatus, duelOpponent, playerId, acceptDuel, declineDuel,
     openDuelTrade, duelHeroHp, currentHeroMaxHp, defenseBonus, attackBonus,

@@ -42,6 +42,8 @@ export type Weapon = {
   price: number;
   displayDamage?: string;
   hiddenDamageText?: string;
+  magicSpellIndex?: number;
+  allMagicSpells?: boolean;
 };
 
 export type Armor = {
