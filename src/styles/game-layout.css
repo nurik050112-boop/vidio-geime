@@ -1,6 +1,32 @@
 .game.play-page, .game.play-page .stage, .game.play-page .sky { height: 100dvh; min-height: 100dvh; width: 100%; }
 .game.play-page .stage { overflow: hidden; }
 .battle-2d { touch-action: none; }
+.game.world-page .hud {
+  border: 1px solid #d9bd7a3d;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #26372fee, #17231ded);
+  box-shadow: 0 24px 70px #0008, inset 0 1px #ffffff18;
+  backdrop-filter: blur(14px);
+}
+.game.world-page .world-nav {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #ffffff14;
+}
+.game.world-page .world-nav .page-switch {
+  min-height: 40px;
+  border: 1px solid #d9bd7a38;
+  border-radius: 9px;
+  background: #ffffff0b;
+  color: #eee6d4;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.game.world-page .world-nav .page-switch:hover {
+  border-color: #d9bd7a9c;
+  background: #d9bd7a1a;
+  transform: translateY(-1px);
+}
+.game.world-page .story h1 { color: #f3d99d; text-wrap: balance; }
+.game.world-page .save-status { color: #b9c9ae; }
 .stage > .world-link, .stage > .achievements-link, .stage > .guide-button { display: none; }
 .game.play-page .compact-game-hud {
   top: max(10px, env(safe-area-inset-top));

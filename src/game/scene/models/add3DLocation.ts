@@ -1,6 +1,57 @@
 import * as THREE from 'three';
 import { addCapturedCity } from './addCapturedCity';
-import { addPillar,cityThemes,cone,hashSceneKey,mesh,worldDiameterMeters } from './battleScene3DProps';
+import { addPillar,cityThemes,cone,hashSceneKey,makeTorch,mesh,worldDiameterMeters } from './battleScene3DProps';
+
+function addVillageTown(root: THREE.Object3D, accent: string, glow: string) {
+  const road = mesh(new THREE.PlaneGeometry(12, 92), '#8a6a4a', [0, 0.008, 0], { roughness: 1 });
+  road.rotation.x = -Math.PI / 2;
+  const crossroad = mesh(new THREE.PlaneGeometry(92, 9), '#8a6a4a', [0, 0.012, -2], { roughness: 1 });
+  crossroad.rotation.x = -Math.PI / 2;
+  root.add(road, crossroad);
+
+  const housePositions: Array<[number, number]> = [
+    [-27, -25], [27, -25], [-27, 20], [27, 20], [-40, -4], [40, -4],
+  ];
+  housePositions.forEach(([x, z], index) => {
+    const bodyColor = index % 2 ? '#8c6b50' : '#a27b59';
+    const body = mesh(new THREE.BoxGeometry(7, 3.2, 5.4), bodyColor, [x, 1.65, z]);
+    const roof = mesh(new THREE.ConeGeometry(4.7, 2.4, 4), index % 2 ? '#49362e' : '#5a3d2f', [x, 4.45, z]);
+    roof.rotation.y = Math.PI / 4;
+    const chimney = mesh(new THREE.BoxGeometry(0.65, 1.5, 0.65), '#59443b', [x + 1.45, 5.15, z - 0.55]);
+    const window = mesh(new THREE.BoxGeometry(1.1, 0.95, 0.08), glow, [x, 2.05, z + 2.73], { emissive: glow, emissiveIntensity: 0.65, roughness: 0.35 });
+    const porch = mesh(new THREE.BoxGeometry(2.1, 0.22, 1.45), '#6b4934', [x, 0.36, z + 3.1]);
+    const door = mesh(new THREE.BoxGeometry(0.85, 1.65, 0.08), '#3d2a25', [x + 0.1, 1.15, z + 2.74]);
+    root.add(body, roof, chimney, window, porch, door);
+  });
+
+  for (let index = 0; index < 18; index += 1) {
+    const x = -44 + (index % 9) * 11;
+    const z = index < 9 ? -38 : 32;
+    const post = mesh(new THREE.CylinderGeometry(0.09, 0.12, 1.15, 6), '#4b3326', [x, 0.58, z]);
+    const rail = mesh(new THREE.BoxGeometry(1.8, 0.1, 0.1), '#5e402d', [x + 0.9, 0.72, z]);
+    rail.rotation.y = 0.12;
+    root.add(post, rail);
+  }
+
+  const well = new THREE.Group();
+  const wellBase = mesh(new THREE.CylinderGeometry(1.25, 1.45, 0.8, 12), '#71665a', [0, 0.4, -2]);
+  const wellWater = mesh(new THREE.CylinderGeometry(0.82, 0.82, 0.04, 16), '#315e69', [0, 0.83, -2], { metalness: 0.1, roughness: 0.2 });
+  const wellRoof = mesh(new THREE.BoxGeometry(2.8, 0.16, 0.16), '#563b2b', [0, 2.7, -2]);
+  wellRoof.rotation.z = 0.35;
+  well.add(wellBase, wellWater, wellRoof);
+  root.add(well);
+
+  [-8, 8].forEach((x) => root.add(makeTorch(x, 5)));
+  const treePositions: Array<[number, number]> = [[-45, -25], [45, -25], [-45, 22], [45, 22]];
+  treePositions.forEach(([x, z]) => {
+    const trunk = mesh(new THREE.CylinderGeometry(0.24, 0.38, 2.8, 8), '#4a3022', [x, 1.4, z]);
+    const crown = cone('#3f6b42', 2.1, 4.2, [x, 4.3, z]);
+    root.add(trunk, crown);
+  });
+
+  const sign = mesh(new THREE.BoxGeometry(3.5, 1.1, 0.12), accent, [0, 2.05, 8], { roughness: 0.62 });
+  root.add(sign);
+}
 
 export function add3DLocation(scene: THREE.Scene, root: THREE.Object3D, sceneKey: string, chapter: number, locationIndex: number, captured = false) {
   const isEnding = sceneKey.startsWith('ending') || sceneKey.includes('final') || sceneKey.includes('death') || sceneKey.includes('admin');
@@ -62,15 +113,7 @@ export function add3DLocation(scene: THREE.Scene, root: THREE.Object3D, sceneKey
       root.add(lava);
     }
   } else if (locationStyle === 3) {
-    for (let i = 0; i < 24; i += 1) {
-      const x = -42 + (i % 8) * 12;
-      const z = -30 + Math.floor(i / 8) * 24;
-      const hut = mesh(new THREE.BoxGeometry(2.4, 1.7, 2.2), i % 2 ? '#4c3a2c' : '#654a33', [x, 0.8, z]);
-      const roof = mesh(new THREE.ConeGeometry(1.9, 1.05, 4), '#30352a', [x, 2.15, z]);
-      roof.rotation.y = Math.PI / 4;
-      const stump = mesh(new THREE.CylinderGeometry(0.18, 0.24, 0.6, 8), '#3a2415', [x + 3.4, 0.26, z + 1.8]);
-      root.add(hut, roof, stump);
-    }
+    addVillageTown(root, palette.accent, palette.glow);
   } else if (locationStyle === 4) {
     for (let i = 0; i < 18; i += 1) {
       const x = -44 + (i % 6) * 17;
