@@ -16,6 +16,7 @@ import { makeMonster } from '../game/scene/models/makeMonster';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { updateEquippedHeroWeapon, updateHeroArtifactStyle } from '../game/scene/models/updateEquippedHeroWeapon';
+import { getCityMapPresetIndex } from '../game/data/mapRotation';
 
 export function BattleScene3D(props: BattleScene3DProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -174,6 +175,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
         [`${dungeonBase}/room-wide.glb`, `${dungeonBase}/gate-door.glb`, `${dungeonBase}/corridor-corner.glb`, `${dungeonBase}/stairs.glb`],
       ];
       const randomPresetIndex = Math.abs(data.chapter * 7 + data.locationIndex * 13 + hashSceneKey(data.sceneKey)) % mapPresets.length;
+      const cityPresetIndex = getCityMapPresetIndex(data.chapter, data.locationIndex);
       const presetIndex = data.monsterKind === 'avalanche'
         ? 8
         : data.sceneKey.includes('sea')
@@ -183,8 +185,10 @@ export function BattleScene3D(props: BattleScene3DProps) {
             : data.sceneKey.includes('spirit') || data.sceneKey.includes('death')
               ? 37
               : data.sceneKey.includes('dungeon')
-                ? 24 + (data.chapter % 6)
-                : randomPresetIndex;
+                ? 30 + ((data.chapter + data.locationIndex) % 10)
+                : data.sceneKey.startsWith('city-')
+                  ? cityPresetIndex
+                  : randomPresetIndex;
       const positions: Array<[number, number, number]> = [
         [-42, 0, -42],
         [42, 0, -42],
@@ -196,6 +200,10 @@ export function BattleScene3D(props: BattleScene3DProps) {
         [18, 0, 48],
         [-58, 0, 44],
         [58, 0, 44],
+        [-68, 0, 8],
+        [68, 0, -8],
+        [-8, 0, -68],
+        [8, 0, 68],
       ];
       const selectedPack = mapPresets[presetIndex];
       positions.forEach((position, index) => {
@@ -408,7 +416,10 @@ export function BattleScene3D(props: BattleScene3DProps) {
 
     const monsterSlashMaterial = new THREE.MeshBasicMaterial({ color: '#ff4d2e', transparent: true, opacity: 0, depthWrite: false });
     const monsters = new THREE.Group();
-    const visualMonsterCount = refs.current.monsterKind === 'avalanche' ? 10 : 6;
+    const compactScene = quality.shadowSize === 512;
+    const visualMonsterCount = refs.current.monsterKind === 'avalanche'
+      ? compactScene ? 12 : 16
+      : compactScene ? 8 : 12;
     for (let i = 0; i < visualMonsterCount; i += 1) {
       const monster = makeMonster(refs.current.monsterKind, i);
       const attackTrail = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.03, 8, 28, Math.PI * 1.12), monsterSlashMaterial.clone());

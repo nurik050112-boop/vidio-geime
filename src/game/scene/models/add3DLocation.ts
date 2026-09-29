@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import { getMapVariant } from '../../data/mapRotation';
 import { addCapturedCity } from './addCapturedCity';
-import { addPillar,cityThemes,cone,hashSceneKey,makeTorch,mesh,worldDiameterMeters } from './battleScene3DProps';
+import { addPillar,cityThemes,cone,makeTorch,mesh,worldDiameterMeters } from './battleScene3DProps';
 
 function addVillageTown(root: THREE.Object3D, accent: string, glow: string) {
   const road = mesh(new THREE.PlaneGeometry(12, 92), '#8a6a4a', [0, 0.008, 0], { roughness: 1 });
@@ -55,9 +56,7 @@ function addVillageTown(root: THREE.Object3D, accent: string, glow: string) {
 
 export function add3DLocation(scene: THREE.Scene, root: THREE.Object3D, sceneKey: string, chapter: number, locationIndex: number, captured = false) {
   const isEnding = sceneKey.startsWith('ending') || sceneKey.includes('final') || sceneKey.includes('death') || sceneKey.includes('admin');
-  const locationStyle = chapter === 0 && locationIndex === 0
-    ? 3
-    : Math.abs(chapter * 3 + locationIndex * 5 + hashSceneKey(sceneKey)) % 14;
+  const locationStyle = getMapVariant(chapter, locationIndex, sceneKey);
   const theme = cityThemes[Math.abs(chapter + locationIndex) % cityThemes.length];
   const palette = captured
     ? { ...theme, sky: '#120d0b', fog: '#160f0d', ground: '#27241f', accent: '#7f1d1d', glow: '#ff3b30' }

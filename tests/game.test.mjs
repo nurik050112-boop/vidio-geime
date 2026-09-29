@@ -11,6 +11,7 @@ async function loadModule(file) {
 const { cameraRelativeDirection, leftKeys, rightKeys, forwardKeys } = await loadModule('../src/game/controls.ts');
 const { validateGameSave } = await loadModule('../src/lib/validateGameSave.ts');
 const { browserStorage } = await loadModule('../src/lib/browserStorage.ts');
+const { getMapVariant, getCityMapPresetIndex } = await loadModule('../src/game/data/mapRotation.ts');
 
 test('WASD and arrows have consistent directions', () => {
   assert(leftKeys.includes('keya') && leftKeys.includes('arrowleft'));
@@ -24,6 +25,15 @@ test('WASD and arrows have consistent directions', () => {
   }
   assert(cameraRelativeDirection(1, 0, Math.PI).x > 0.999);
   assert(cameraRelativeDirection(0, 1, Math.PI).z < -0.999);
+});
+
+test('clearing each city rotates to a different map and asset set', () => {
+  const variants = Array.from({ length: 14 }, (_, chapter) => getMapVariant(chapter, 0, `city-${chapter}`));
+  const presets = Array.from({ length: 20 }, (_, chapter) => getCityMapPresetIndex(chapter, 0));
+  assert.equal(variants[0], 3);
+  assert.equal(new Set(variants).size, 14);
+  assert.equal(new Set(presets).size, 20);
+  assert.notEqual(getMapVariant(0, 0, 'city-0'), getMapVariant(0, 1, 'city-0'));
 });
 
 test('valid partial legacy saves remain readable', () => {

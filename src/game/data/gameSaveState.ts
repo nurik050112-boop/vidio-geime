@@ -1,5 +1,6 @@
 import { browserStorage } from '../../lib/browserStorage';
 import { validateGameSave } from '../../lib/validateGameSave';
+import { getMapVariant } from './mapRotation';
 import { type CollisionBox } from './adminBoss';
 import { type Armor,type ArtifactId,type BbiBossStage,type Dungeon,type EndingChoice,type SecretEnding,type ShopItem,type Weapon } from './dragonSon';
 
@@ -118,6 +119,5 @@ export function hashSceneKey(value: string) {
 }
 
 export function getLocationStyle(chapter: number, locationIndex: number, sceneKey: string) {
-  if (chapter === 0 && locationIndex === 0) return 3;
-  return Math.abs(chapter * 3 + locationIndex * 5 + hashSceneKey(sceneKey)) % 14;
+  return getMapVariant(chapter, locationIndex, sceneKey);
 }
