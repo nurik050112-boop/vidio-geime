@@ -109,7 +109,19 @@ export function BattleScene3D(props: BattleScene3DProps) {
             object.receiveShadow = true;
           }
         });
-        fitMapPropModel(model);
+        const loweredPath = path.toLowerCase();
+        const targetSize = loweredPath.includes('/tree_')
+          ? 7
+          : loweredPath.includes('/bridge_') || loweredPath.includes('/road')
+            ? 8
+            : /room|corridor|gate|stairs|wall/.test(loweredPath)
+              ? 6
+              : /rock_|rock-/.test(loweredPath)
+                ? 3.4
+                : /plant_|grass|campfire/.test(loweredPath)
+                  ? 1.8
+                  : 3.5;
+        fitMapPropModel(model, targetSize);
         mapPropTemplates.set(path, model);
         placeModel(model);
       });
@@ -186,11 +198,12 @@ export function BattleScene3D(props: BattleScene3DProps) {
         [58, 0, 44],
       ];
       const selectedPack = mapPresets[presetIndex];
-      positions.slice(0, 3).forEach((position, index) => {
+      positions.forEach((position, index) => {
         const path = selectedPack[index % selectedPack.length];
         const family = Math.floor(presetIndex / 10);
         const size = family === 0 ? 0.62 + (index % 3) * 0.12 : family === 1 ? 0.82 : 0.95;
-        loadMapProp(path, locationKey, position, size, Math.sin(index + data.chapter) * 0.9);
+        const variation = index < selectedPack.length ? 1 : 0.78;
+        loadMapProp(path, locationKey, position, size * variation, Math.sin(index + data.chapter) * 0.9);
       });
     };
     let activeLocationKey = '';
@@ -425,15 +438,14 @@ export function BattleScene3D(props: BattleScene3DProps) {
     scene.add(monsters);
 
     const monsterKind = refs.current.monsterKind;
-    const monsterModelPath = monsterKind === 'spider'
-      ? '/models/quaternius-monsters/bat.fbx'
-      : monsterKind === 'avalanche' || monsterKind === 'magma'
-        ? '/models/quaternius-monsters/dragon.fbx'
-        : monsterKind === 'pale' || monsterKind === 'wire' || monsterKind === 'shadow'
-          ? '/models/quaternius-monsters/slime.fbx'
-          : '/models/quaternius-monsters/skeleton.fbx';
+    const usesGroundedMonster = monsterKind === 'spider' || monsterKind === 'avalanche' || monsterKind === 'magma';
+    const monsterModelPath = usesGroundedMonster
+      ? ''
+      : monsterKind === 'pale' || monsterKind === 'wire' || monsterKind === 'shadow'
+        ? '/models/quaternius-monsters/slime.fbx'
+        : '/models/quaternius-monsters/skeleton.fbx';
     const monsterLoader = new FBXLoader();
-    monsterLoader.load(monsterModelPath, (template) => {
+    if (monsterModelPath) monsterLoader.load(monsterModelPath, (template) => {
       if (disposed) { disposeScene(template, true); return; }
       template.traverse((object) => {
         if (object instanceof THREE.Mesh) {
@@ -485,11 +497,17 @@ export function BattleScene3D(props: BattleScene3DProps) {
           const mixer = new THREE.AnimationMixer(model);
           const actions = template.animations.map((clip) => mixer.clipAction(clip));
           const idleAction = actions.find((action) => /idle/i.test(action.getClip().name)) ?? actions[0];
-          const attackActions = actions.filter((action) => /attack|punch|hit|slash|claw|bite|die/i.test(action.getClip().name));
+          const moveAction = actions.find((action) => /run|walk/i.test(action.getClip().name)) ?? idleAction;
+          const deathAction = actions.find((action) => /death|die/i.test(action.getClip().name));
+          const attackActions = actions.filter((action) => /attack|punch|hit|slash|claw|bite/i.test(action.getClip().name));
           idleAction.play();
           current.userData.loadedMonsterMixer = mixer;
+          current.userData.loadedMonsterIdle = idleAction;
+          current.userData.loadedMonsterMove = moveAction;
+          current.userData.loadedMonsterDeath = deathAction;
+          current.userData.loadedMonsterActiveAction = idleAction;
+          current.userData.loadedMonsterMode = 'idle';
           current.userData.loadedMonsterAttacks = attackActions.length > 0 ? attackActions : [actions[0]];
-          current.userData.loadedMonsterAttacking = false;
           current.userData.loadedMonsterAttackIndex = 0;
         }
       });
@@ -691,6 +709,26 @@ export function BattleScene3D(props: BattleScene3DProps) {
     const animate = () => {
       if (refs.current.paused || document.hidden) {
         clock.getDelta();
+        if (!document.hidden) {
+          if (!cameraReady) {
+            const data = refs.current;
+            const yaw = data.cameraYaw;
+            const heroX = -3.4 + data.heroPosition.x / 1000;
+            const heroZ = 1.2 + data.heroPosition.z / 1000;
+            camera.position.set(
+              heroX - Math.sin(yaw) * 11.4 + Math.cos(yaw) * 0.95,
+              5.2,
+              heroZ - Math.cos(yaw) * 11.4 - Math.sin(yaw) * 0.95
+            );
+            camera.lookAt(
+              heroX + Math.sin(yaw) * 6.2,
+              1.75,
+              heroZ + Math.cos(yaw) * 6.2
+            );
+            cameraReady = true;
+          }
+          renderer.render(scene, camera);
+        }
         frame = window.requestAnimationFrame(animate);
         return;
       }
@@ -1181,16 +1219,44 @@ export function BattleScene3D(props: BattleScene3DProps) {
       monsters.children.forEach((monster, index) => {
         const current = monster as THREE.Group;
         const alive = index < visibleCount;
-        current.visible = current.scale.x > 0.03 || alive;
-        if (!current.visible) return;
         const baseScale = 0.86 + (index % 4) * 0.09;
-        const targetScale = alive ? baseScale : 0;
-        const nextScale = THREE.MathUtils.lerp(current.scale.x, targetScale, Math.min(1, delta * 7));
-        current.scale.setScalar(nextScale);
         if (!alive) {
-          current.position.y = Math.max(-0.4, current.position.y - delta * 1.6);
+          if (current.userData.deathFinished) { current.visible = false; return; }
+          if (typeof current.userData.deathStartedAt !== 'number') {
+            current.userData.deathStartedAt = time;
+            const previousAction = current.userData.loadedMonsterActiveAction as THREE.AnimationAction | undefined;
+            const deathAction = current.userData.loadedMonsterDeath as THREE.AnimationAction | undefined;
+            previousAction?.fadeOut(0.1);
+            if (deathAction) {
+              deathAction.reset().setLoop(THREE.LoopOnce, 1);
+              deathAction.clampWhenFinished = true;
+              deathAction.fadeIn(0.1).play();
+              current.userData.loadedMonsterActiveAction = deathAction;
+              current.userData.loadedMonsterMode = 'death';
+            }
+          }
+          const deathElapsed = time - (current.userData.deathStartedAt as number);
+          const deathFall = THREE.MathUtils.smoothstep(deathElapsed, 0, 0.48);
+          const deathFade = THREE.MathUtils.smoothstep(deathElapsed, 1.05, 1.6);
+          const deathAction = current.userData.loadedMonsterDeath as THREE.AnimationAction | undefined;
+          current.visible = deathFade < 0.995;
+          if (!current.visible) {
+            current.scale.setScalar(0);
+            current.userData.deathFinished = true;
+            return;
+          }
+          current.position.y = 0;
+          current.rotation.x = -deathFall * 0.12;
+          current.rotation.z = (index % 2 ? 1 : -1) * deathFall * (deathAction ? 0.24 : 1.32);
+          current.scale.setScalar(baseScale * (1 - deathFade));
+          (current.userData.loadedMonsterMixer as THREE.AnimationMixer | undefined)?.update(delta);
           return;
         }
+        delete current.userData.deathStartedAt;
+        delete current.userData.deathFinished;
+        current.visible = true;
+        const nextScale = THREE.MathUtils.lerp(current.scale.x, baseScale, Math.min(1, delta * 7));
+        current.scale.setScalar(nextScale);
 
         if (index === 0 && data.nearestMonster.alive) {
           const monsterWorldX = -3.4 + data.nearestMonster.x / 1000;
@@ -1268,10 +1334,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const monsterRecover = THREE.MathUtils.smoothstep(attackCycle, 0.62, 0.98);
         const monsterSwing = attack * Math.max(monsterHit, monsterWindup * (1 - monsterRecover));
         const hitReact = Math.max(0, (current.userData.hitReact as number) || 0);
-        current.userData.hitReact = Math.max(0, hitReact - delta * 1.9);
-        current.position.y += Math.sin(hitReact * Math.PI) * 0.42;
-        current.rotation.x -= hitReact * 0.34;
-        current.rotation.z += (index % 2 ? 1 : -1) * hitReact * 0.28;
+        current.userData.hitReact = Math.max(0, hitReact - delta * 1.15);
+        const knockdown = THREE.MathUtils.smoothstep(hitReact, 0, 0.75);
         const loadedMonsterModel = current.userData.loadedMonsterModel as THREE.Object3D | undefined;
         const loadedMonsterBaseScale =
           typeof current.userData.loadedMonsterBaseScale === 'number' ? current.userData.loadedMonsterBaseScale : 1;
@@ -1287,16 +1351,25 @@ export function BattleScene3D(props: BattleScene3DProps) {
           loadedMonsterModel.scale.setScalar(loadedMonsterBaseScale);
           const loadedMixer = current.userData.loadedMonsterMixer as THREE.AnimationMixer | undefined;
           const attackActions = current.userData.loadedMonsterAttacks as THREE.AnimationAction[] | undefined;
-          const isAttacking = Boolean(current.userData.loadedMonsterAttacking);
-          if (attackActions && monsterSwing > 0.45 && !isAttacking) {
-            const attackIndex = (current.userData.loadedMonsterAttackIndex as number ?? 0) % attackActions.length;
-            const attackAction = attackActions[attackIndex];
-            attackAction.reset().setLoop(THREE.LoopOnce, 1).clampWhenFinished = true;
-            attackAction.play();
-            current.userData.loadedMonsterAttacking = true;
-            current.userData.loadedMonsterAttackIndex = attackIndex + 1;
+          const nextMode = monsterSwing > 0.45 ? 'attack' : chaseWalkPower > 0.7 ? 'move' : 'idle';
+          if (nextMode !== current.userData.loadedMonsterMode) {
+            const previousAction = current.userData.loadedMonsterActiveAction as THREE.AnimationAction | undefined;
+            const idleAction = current.userData.loadedMonsterIdle as THREE.AnimationAction;
+            const moveAction = current.userData.loadedMonsterMove as THREE.AnimationAction;
+            let nextAction = nextMode === 'move' ? moveAction : idleAction;
+            if (nextMode === 'attack' && attackActions) {
+              const attackIndex = (current.userData.loadedMonsterAttackIndex as number ?? 0) % attackActions.length;
+              nextAction = attackActions[attackIndex];
+              current.userData.loadedMonsterAttackIndex = attackIndex + 1;
+            }
+            previousAction?.fadeOut(0.12);
+            nextAction.reset();
+            nextAction.setLoop(nextMode === 'attack' ? THREE.LoopOnce : THREE.LoopRepeat, nextMode === 'attack' ? 1 : Infinity);
+            nextAction.clampWhenFinished = nextMode === 'attack';
+            nextAction.fadeIn(0.12).play();
+            current.userData.loadedMonsterActiveAction = nextAction;
+            current.userData.loadedMonsterMode = nextMode;
           }
-          if (monsterSwing < 0.08) current.userData.loadedMonsterAttacking = false;
           loadedMixer?.update(delta);
           const downloadedClub = current.userData.downloadedClub as THREE.Group | undefined;
           if (downloadedClub) {
@@ -1437,6 +1510,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
           current.rotation.x -= stalkLean * (distance > attackRange ? 0.65 : 0.25);
           current.rotation.z += Math.sin(walk * 0.45 + index) * (wantsToKillHero ? 0.028 : 0.012);
         }
+        current.position.y += knockdown * 0.05;
+        current.rotation.x -= knockdown * 0.12;
+        current.rotation.z += (index % 2 ? 1 : -1) * knockdown * 1.1;
       });
 
       const bossSceneKey = data.sceneKey.toLowerCase();
@@ -1449,19 +1525,19 @@ export function BattleScene3D(props: BattleScene3DProps) {
         const radius = avalancheDragon.userData.radius as number;
         const flightAngle = time * (0.18 + (index % 3) * 0.035) + phase;
         const attackPulse = Math.max(0, Math.sin(time * 2.4 + phase));
-        const targetX = heroWorldX + Math.cos(flightAngle) * radius * (1 - attackPulse * 0.34);
-        const targetZ = heroWorldZ + Math.sin(flightAngle) * radius - 8 * attackPulse;
+        const targetX = heroWorldX + Math.cos(flightAngle) * radius;
+        const targetZ = heroWorldZ + Math.sin(flightAngle) * radius;
         avalancheDragon.position.set(
           targetX,
-          4.5 + (index % 4) * 1.25 + Math.sin(time * 2 + phase) * 0.7 - attackPulse * 2.1,
+          0.46 + Math.abs(Math.sin(time * 3.1 + phase)) * 0.045,
           targetZ,
         );
         // Avalanche dragons are built with their heads on local +X.
         avalancheDragon.rotation.y = Math.atan2(targetZ - heroWorldZ, heroWorldX - targetX);
-        avalancheDragon.rotation.x = -0.08 - attackPulse * 0.32;
-        avalancheDragon.rotation.z = Math.sin(time * 3.4 + phase) * 0.12;
+        avalancheDragon.rotation.x = -attackPulse * 0.12;
+        avalancheDragon.rotation.z = Math.sin(time * 3.4 + phase) * 0.035;
         const baseScale = 0.32 + (index % 4) * 0.035;
-        avalancheDragon.scale.setScalar(baseScale * (1 + attackPulse * 0.14));
+        avalancheDragon.scale.setScalar(baseScale * (1 + attackPulse * 0.025));
       });
       const specialBossKey =
         data.isFinalReveal || data.monstersLeft > 0

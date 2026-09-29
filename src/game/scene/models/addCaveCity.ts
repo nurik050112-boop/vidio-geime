@@ -57,17 +57,18 @@ export function addCaveCity(scene: THREE.Scene) {
   backWall.scale.set(1.25, 1, 0.55);
   scene.add(backWall);
 
-  for (let i = 0; i < 72; i += 1) {
-    const angle = (i / 72) * Math.PI * 2;
-    const radius = 36 + (i % 5) * 5.2;
-    const height = 2.8 + (i % 7) * 1.8;
-    const rock = mesh(new THREE.ConeGeometry(1.2 + (i % 3) * 0.35, height, 7), i % 2 ? '#383229' : '#25231e', [
-      Math.cos(angle) * radius,
-      height / 2 - 0.1,
-      Math.sin(angle) * radius - 4,
-    ]);
-    rock.rotation.y = angle;
-    rock.scale.x = 0.75 + (i % 4) * 0.2;
+  for (let i = 0; i < 36; i += 1) {
+    const angle = (i / 36) * Math.PI * 2;
+    const radius = 40 + (i % 4) * 3.6;
+    const height = 6 + (i % 6) * 1.35;
+    const width = 2.6 + (i % 4) * 0.55;
+    const rock = mesh(
+      new THREE.DodecahedronGeometry(1, 0),
+      i % 3 === 0 ? '#514d43' : i % 2 ? '#3f3c34' : '#48453c',
+      [Math.cos(angle) * radius, height / 2 - 0.1, Math.sin(angle) * radius - 4]
+    );
+    rock.scale.set(width, height / 2, width * 0.78);
+    rock.rotation.set(Math.sin(i) * 0.12, angle, Math.cos(i) * 0.1);
     scene.add(rock);
   }
 
