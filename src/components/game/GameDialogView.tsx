@@ -9,7 +9,7 @@ import { formatHugeText,formatPower,getWeaponDisplayName,getWeaponStyleIndex,rar
 
 export function GameDialogView() {
   const {
-    setInventoryPanelOpen, weapons, armors, relics, claimMagicStaffs,
+    setInventoryPanelOpen, weapons, armors, relics,
     setShowFullInventory, showFullInventory, visibleMagicWeapons, equippedWeapon, setEquippedWeapon,
     visibleWeapons, visibleArmors, equippedArmor, setEquippedArmor, visibleRelics
   } = useGameModel();
@@ -21,7 +21,6 @@ export function GameDialogView() {
                 <strong>{weapons.length + armors.length + relics.length} вещей</strong>
               </div>
               <div className="modal-head-actions">
-                <button onClick={claimMagicStaffs} type="button">Магия</button>
                 <button onClick={() => setShowFullInventory((show) => !show)} type="button">{showFullInventory ? 'Коротко' : 'Все'}</button>
                 <button onClick={() => setInventoryPanelOpen(false)} type="button">Закрыть</button>
               </div>

@@ -1,8 +1,13 @@
 import * as THREE from 'three';
+import { getGraphicsMode } from './graphicsPreference';
 
 export function getRenderQuality() {
-  const compact = window.matchMedia('(pointer: coarse), (max-width: 800px)').matches;
-  return { pixelRatio: Math.min(window.devicePixelRatio, compact ? 1 : 1.5), shadowSize: compact ? 512 : 1024 };
+  const optimized = getGraphicsMode() === 'optimization';
+  return {
+    antialias: !optimized,
+    pixelRatio: Math.min(window.devicePixelRatio, optimized ? 1 : 1.75),
+    shadowSize: optimized ? 512 : 2048,
+  };
 }
 
 // Dozens of point lights inflate every material's shader, even far off screen.

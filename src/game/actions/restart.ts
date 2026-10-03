@@ -1,22 +1,21 @@
 import { browserStorage } from '../../lib/browserStorage';
-import { adminWorldMonsterTotal,aisultanMonsterTotal,anuarBombEnemiesTotal,arailmEnemiesTotal,baseDragonHp,bbiMonsterTotal,finalSpiritMonsterTotal,furyDungeonEnemiesTotal,heroMaxHp,mansurDungeonEnemiesTotal,monsterAvalancheStartChapter,monsterAvalancheTotal,monstersPerCity,nuraliMonsterTotal } from '../data/adminBoss';
+import { saveWinStreakState } from '../data/getLocalDateKey';
+import { adminWorldMonsterTotal,aisultanMonsterTotal,anuarBombEnemiesTotal,arailmEnemiesTotal,baseDragonHp,bbiMonsterTotal,finalSpiritMonsterTotal,furyDungeonEnemiesTotal,heroMaxHp,mansurDungeonEnemiesTotal,monsterAvalancheTotal,monstersPerCity,nuraliMonsterTotal } from '../data/adminBoss';
 import { dragonSons } from '../data/arcaneSpells';
-import { gameSaveStorageKey } from '../data/gameSaveState';
-import { scaledDragonPower } from '../data/isDeathSword';
+import { heroMaxMana } from '../data/gameSaveState';
 import type { GameViewModel } from '../useGameController';
 
-type Context = Pick<GameViewModel, 'unlockedAchievements' | 'setChapter' | 'setHealthLevel' | 'setHeroHp' | 'setEnemyHp' | 'setMessage' | 'setSavedCities' | 'setVictory' | 'setEndingChoice' | 'setSecretEnding' | 'setGoblinKingReady' | 'setGoblinKingFightStarted' | 'setFuryGateOpen' | 'setFuryDungeonEntered' | 'setFuryMonstersLeft' | 'setFuryChoiceOpen' | 'setFuryKingFightStarted' | 'setAnuarGateOpen' | 'setAnuarWorldEntered' | 'setAnuarBombsLeft' | 'setAnuarKingFightStarted' | 'setMansurGateOpen' | 'setMansurDungeonEntered' | 'setMansurMonstersLeft' | 'setMansurKingFightStarted' | 'setArailmGateOpen' | 'setArailmWorldEntered' | 'setArailmMonstersLeft' | 'setArailmChoiceOpen' | 'setArailmKingFightStarted' | 'setAisGateOpen' | 'setAisWorldEntered' | 'setAisMonstersLeft' | 'setAisSharkFightStarted' | 'setAisFinalChoiceOpen' | 'setAisGodFightStarted' | 'setAdminWorldGateOpen' | 'setAdminWorldEntered' | 'setAdminWorldMonstersLeft' | 'setAdminWorldBossesStarted' | 'setAdminFinalChoiceOpen' | 'setAdminBossFightStarted' | 'setBbiGateOpen' | 'setBbiWorldEntered' | 'setBbiMonstersLeft' | 'setBbiBossStage' | 'setBbiFinalChoiceOpen' | 'setBbiCityReward' | 'setBbiBadEnding' | 'setNuraliGateOpen' | 'setNuraliWorldEntered' | 'setNuraliMonstersLeft' | 'setNuraliChoiceOpen' | 'setNuraliBossFightStarted' | 'setMonsterAvalancheEntered' | 'setMonsterAvalancheLeft' | 'setMonsterAvalancheEnding' | 'setFinalSpiritWorldOpen' | 'setFinalSpiritMonstersLeft' | 'setFinalSpiritFightStarted' | 'setGold' | 'setGoldMultiplier' | 'setInfiniteGold' | 'setDungeon' | 'setRelics' | 'setWeapons' | 'setEquippedWeapon' | 'setArmors' | 'setEquippedArmor' | 'setShopTab' | 'setHeroAnimation' | 'setHeroPosition' | 'setHeroHeight' | 'verticalVelocity' | 'setCityMonsters' | 'setMonsterAttackCount' | 'setBattlePulse' | 'setFireWavePulse' | 'setWaterWavePulse' | 'setEnemyBurning' | 'setDuelStatus' | 'setDuelOpponent' | 'setDuelWins' | 'setDuelHeroHp' | 'setDuelOpponentHp' | 'setDuelTradeOpen' | 'setDuelChatMessages' | 'setDuelChatText' | 'paidQuestIds' | 'setItems' | 'setShopLevels'>;
+type Context = Pick<GameViewModel, 'setChapter' | 'setHealthLevel' | 'setHeroHp' | 'setEnemyHp' | 'setMessage' | 'setSavedCities' | 'setVictory' | 'setEndingChoice' | 'setSecretEnding' | 'setGoblinKingReady' | 'setGoblinKingFightStarted' | 'setFuryGateOpen' | 'setFuryDungeonEntered' | 'setFuryMonstersLeft' | 'setFuryChoiceOpen' | 'setFuryKingFightStarted' | 'setAnuarGateOpen' | 'setAnuarWorldEntered' | 'setAnuarBombsLeft' | 'setAnuarKingFightStarted' | 'setMansurGateOpen' | 'setMansurDungeonEntered' | 'setMansurMonstersLeft' | 'setMansurKingFightStarted' | 'setArailmGateOpen' | 'setArailmWorldEntered' | 'setArailmMonstersLeft' | 'setArailmChoiceOpen' | 'setArailmKingFightStarted' | 'setAisGateOpen' | 'setAisWorldEntered' | 'setAisMonstersLeft' | 'setAisSharkFightStarted' | 'setAisFinalChoiceOpen' | 'setAisGodFightStarted' | 'setAdminWorldGateOpen' | 'setAdminWorldEntered' | 'setAdminWorldMonstersLeft' | 'setAdminWorldBossesStarted' | 'setAdminFinalChoiceOpen' | 'setAdminBossFightStarted' | 'setBbiGateOpen' | 'setBbiWorldEntered' | 'setBbiMonstersLeft' | 'setBbiBossStage' | 'setBbiFinalChoiceOpen' | 'setBbiCityReward' | 'setBbiBadEnding' | 'setImpossibleEnding' | 'setNuraliGateOpen' | 'setNuraliWorldEntered' | 'setNuraliMonstersLeft' | 'setNuraliChoiceOpen' | 'setNuraliBossFightStarted' | 'setMonsterAvalancheEntered' | 'setMonsterAvalancheLeft' | 'setMonsterAvalancheEnding' | 'setFinalSpiritWorldOpen' | 'setFinalSpiritMonstersLeft' | 'setFinalSpiritFightStarted' | 'setDeathGodFightStarted' | 'setGold' | 'setGoldMultiplier' | 'setInfiniteGold' | 'setDungeon' | 'setRelics' | 'setWeapons' | 'setEquippedWeapon' | 'setArmors' | 'setEquippedArmor' | 'setEquippedArtifactId' | 'setHeroMana' | 'setShopTab' | 'setHeroAnimation' | 'setHeroPosition' | 'setHeroHeight' | 'setHeroDirection' | 'setMapLocationIndex' | 'verticalVelocity' | 'setCityMonsters' | 'setMonsterAttackCount' | 'setBattlePulse' | 'setFireWavePulse' | 'setWaterWavePulse' | 'setEnemyBurning' | 'setDuelStatus' | 'setDuelOpponent' | 'setDuelWins' | 'setDuelHeroHp' | 'setDuelOpponentHp' | 'setDuelTradeOpen' | 'setDuelChatMessages' | 'setDuelChatText' | 'paidQuestIds' | 'setItems' | 'setShopLevels' | 'setIntroSkipped' | 'setWinStreakState' | 'setWinStreakText'>;
 
-export function runRestart(context: Context): void {
-  const { unlockedAchievements, setChapter, setHealthLevel, setHeroHp, setEnemyHp, setMessage, setSavedCities, setVictory, setEndingChoice, setSecretEnding, setGoblinKingReady, setGoblinKingFightStarted, setFuryGateOpen, setFuryDungeonEntered, setFuryMonstersLeft, setFuryChoiceOpen, setFuryKingFightStarted, setAnuarGateOpen, setAnuarWorldEntered, setAnuarBombsLeft, setAnuarKingFightStarted, setMansurGateOpen, setMansurDungeonEntered, setMansurMonstersLeft, setMansurKingFightStarted, setArailmGateOpen, setArailmWorldEntered, setArailmMonstersLeft, setArailmChoiceOpen, setArailmKingFightStarted, setAisGateOpen, setAisWorldEntered, setAisMonstersLeft, setAisSharkFightStarted, setAisFinalChoiceOpen, setAisGodFightStarted, setAdminWorldGateOpen, setAdminWorldEntered, setAdminWorldMonstersLeft, setAdminWorldBossesStarted, setAdminFinalChoiceOpen, setAdminBossFightStarted, setBbiGateOpen, setBbiWorldEntered, setBbiMonstersLeft, setBbiBossStage, setBbiFinalChoiceOpen, setBbiCityReward, setBbiBadEnding, setNuraliGateOpen, setNuraliWorldEntered, setNuraliMonstersLeft, setNuraliChoiceOpen, setNuraliBossFightStarted, setMonsterAvalancheEntered, setMonsterAvalancheLeft, setMonsterAvalancheEnding, setFinalSpiritWorldOpen, setFinalSpiritMonstersLeft, setFinalSpiritFightStarted, setGold, setGoldMultiplier, setInfiniteGold, setDungeon, setRelics, setWeapons, setEquippedWeapon, setArmors, setEquippedArmor, setShopTab, setHeroAnimation, setHeroPosition, setHeroHeight, verticalVelocity, setCityMonsters, setMonsterAttackCount, setBattlePulse, setFireWavePulse, setWaterWavePulse, setEnemyBurning, setDuelStatus, setDuelOpponent, setDuelWins, setDuelHeroHp, setDuelOpponentHp, setDuelTradeOpen, setDuelChatMessages, setDuelChatText, paidQuestIds, setItems, setShopLevels } = context;
-    browserStorage.removeItem(gameSaveStorageKey);
-    const avalancheCompleted = unlockedAchievements.includes('monsterAvalanche');
-    setChapter(avalancheCompleted ? monsterAvalancheStartChapter : 0);
+export function runRestart(context: Context, storageKey: string): void {
+  const { setChapter, setHealthLevel, setHeroHp, setEnemyHp, setMessage, setSavedCities, setVictory, setEndingChoice, setSecretEnding, setGoblinKingReady, setGoblinKingFightStarted, setFuryGateOpen, setFuryDungeonEntered, setFuryMonstersLeft, setFuryChoiceOpen, setFuryKingFightStarted, setAnuarGateOpen, setAnuarWorldEntered, setAnuarBombsLeft, setAnuarKingFightStarted, setMansurGateOpen, setMansurDungeonEntered, setMansurMonstersLeft, setMansurKingFightStarted, setArailmGateOpen, setArailmWorldEntered, setArailmMonstersLeft, setArailmChoiceOpen, setArailmKingFightStarted, setAisGateOpen, setAisWorldEntered, setAisMonstersLeft, setAisSharkFightStarted, setAisFinalChoiceOpen, setAisGodFightStarted, setAdminWorldGateOpen, setAdminWorldEntered, setAdminWorldMonstersLeft, setAdminWorldBossesStarted, setAdminFinalChoiceOpen, setAdminBossFightStarted, setBbiGateOpen, setBbiWorldEntered, setBbiMonstersLeft, setBbiBossStage, setBbiFinalChoiceOpen, setBbiCityReward, setBbiBadEnding, setImpossibleEnding, setNuraliGateOpen, setNuraliWorldEntered, setNuraliMonstersLeft, setNuraliChoiceOpen, setNuraliBossFightStarted, setMonsterAvalancheEntered, setMonsterAvalancheLeft, setMonsterAvalancheEnding, setFinalSpiritWorldOpen, setFinalSpiritMonstersLeft, setFinalSpiritFightStarted, setDeathGodFightStarted, setGold, setGoldMultiplier, setInfiniteGold, setDungeon, setRelics, setWeapons, setEquippedWeapon, setArmors, setEquippedArmor, setEquippedArtifactId, setHeroMana, setShopTab, setHeroAnimation, setHeroPosition, setHeroHeight, setHeroDirection, setMapLocationIndex, verticalVelocity, setCityMonsters, setMonsterAttackCount, setBattlePulse, setFireWavePulse, setWaterWavePulse, setEnemyBurning, setDuelStatus, setDuelOpponent, setDuelWins, setDuelHeroHp, setDuelOpponentHp, setDuelTradeOpen, setDuelChatMessages, setDuelChatText, paidQuestIds, setItems, setShopLevels, setIntroSkipped, setWinStreakState, setWinStreakText } = context;
+    browserStorage.removeItem(storageKey);
+    setChapter(0);
     setHealthLevel(0);
     setHeroHp(heroMaxHp);
-    setEnemyHp(avalancheCompleted ? scaledDragonPower(baseDragonHp, monsterAvalancheStartChapter) : baseDragonHp);
-    setMessage(avalancheCompleted ? 'После концовки лавины новый поход начинается сразу с 8-го города.' : 'Мир снова в огне. Начинается новый поход за спасение городов.');
-    setSavedCities(avalancheCompleted ? dragonSons.slice(0, monsterAvalancheStartChapter).map((city) => `${city.city}, ${city.country}`) : []);
+    setEnemyHp(baseDragonHp);
+    setMessage('Мир снова в огне. Начинается новый поход за спасение городов.');
+    setSavedCities([]);
     setVictory(false);
     setEndingChoice(null);
     setSecretEnding(null);
@@ -59,6 +58,7 @@ export function runRestart(context: Context): void {
     setBbiFinalChoiceOpen(false);
     setBbiCityReward(false);
     setBbiBadEnding(false);
+    setImpossibleEnding(false);
     setNuraliGateOpen(false);
     setNuraliWorldEntered(false);
     setNuraliMonstersLeft(nuraliMonsterTotal);
@@ -70,6 +70,7 @@ export function runRestart(context: Context): void {
     setFinalSpiritWorldOpen(false);
     setFinalSpiritMonstersLeft(finalSpiritMonsterTotal);
     setFinalSpiritFightStarted(false);
+    setDeathGodFightStarted(false);
     setGold(0);
     setGoldMultiplier(1);
     setInfiniteGold(false);
@@ -77,14 +78,18 @@ export function runRestart(context: Context): void {
     setRelics([]);
     setWeapons([]);
     setEquippedWeapon(null);
+    setEquippedArtifactId(null);
     setArmors([]);
     setEquippedArmor(null);
     setShopTab('upgrades');
+    setHeroMana(heroMaxMana);
     setHeroAnimation('idle');
     setHeroPosition({ x: -18_000, z: 0 });
     setHeroHeight(0);
+    setHeroDirection({ x: 0, z: -1 });
+    setMapLocationIndex(0);
     verticalVelocity.current = 0;
-    setCityMonsters(dragonSons.map((_, index) => avalancheCompleted && index < monsterAvalancheStartChapter ? 0 : monstersPerCity));
+    setCityMonsters(dragonSons.map(() => monstersPerCity));
     setMonsterAttackCount(0);
     setBattlePulse(0);
     setFireWavePulse(0);
@@ -99,6 +104,11 @@ export function runRestart(context: Context): void {
     setDuelChatMessages([]);
     setDuelChatText('');
     paidQuestIds.current.clear();
+    const resetWinStreak = { current: 0, best: 0, totalWins: 0 };
+    setWinStreakState(resetWinStreak);
+    saveWinStreakState(resetWinStreak);
+    setWinStreakText('Винстрик сброшен.');
+    setIntroSkipped(false);
     setItems({ sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
     setShopLevels({ sword: 0, pet: 0, clothes: 0, helmet: 0, armor: 0, mana: 0, health: 0, doubleStrike: 0 });
   

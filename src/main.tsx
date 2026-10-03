@@ -6,6 +6,7 @@ import './styles/theme.css';
 import './styles/landing.css';
 import './styles/game-layout.css';
 import './styles/dialogs.css';
+import './styles/global-map.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

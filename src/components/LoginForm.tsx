@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { useLocation } from 'wouter';
 import { authenticate, authenticateWithGoogle } from '../lib/auth';
+import { getGraphicsMode, setGraphicsMode, type GraphicsMode } from '../game/scene/graphicsPreference';
 import { useSession } from './SessionProvider';
 
 export function LoginForm() {
   const [, navigate] = useLocation();
   const { enterGuest, user, guest } = useSession();
+  const [graphicsMode, setGraphicsModeState] = useState<GraphicsMode>(getGraphicsMode);
   const [signup, setSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,9 +36,37 @@ export function LoginForm() {
     finally { setBusy(false); }
   }
 
+  function chooseGraphicsMode(mode: GraphicsMode) {
+    setGraphicsModeState(mode);
+    setGraphicsMode(mode);
+  }
+
   return (
     <section className="landing-auth" aria-labelledby="login-title">
       <p className="landing-kicker">Твоё приключение</p>
+      <div className="graphics-choice" aria-label="Выбор режима графики">
+        <p>Как ты играешь?</p>
+        <div className="graphics-options">
+          <button
+            aria-pressed={graphicsMode === 'quality'}
+            className={graphicsMode === 'quality' ? 'selected' : ''}
+            onClick={() => chooseGraphicsMode('quality')}
+            type="button"
+          >
+            <strong>Качество</strong>
+            <small>Для компьютера · чётче картинка и тени</small>
+          </button>
+          <button
+            aria-pressed={graphicsMode === 'optimization'}
+            className={graphicsMode === 'optimization' ? 'selected' : ''}
+            onClick={() => chooseGraphicsMode('optimization')}
+            type="button"
+          >
+            <strong>Оптимизация</strong>
+            <small>Для телефона · легче и быстрее</small>
+          </button>
+        </div>
+      </div>
       <h2 id="login-title">{signup ? 'Создать аккаунт' : 'Войти в игру'}</h2>
       {(user || guest) && <button className="continue-button" type="button" onClick={() => navigate('/game')}>Продолжить игру →</button>}
       <button className="google-button" onClick={googleLogin} disabled={busy} type="button"><span>G</span> Войти через Google</button>

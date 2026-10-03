@@ -7,7 +7,7 @@ import { formatHugeText,formatPower,getWeaponStyleIndex,rarityClass } from '../.
 
 export function WeaponsView() {
   const {
-    magicWeapons, claimMagicStaffs, showFullInventory, visibleMagicWeapons, equippedWeapon,
+    magicWeapons, showFullInventory, visibleMagicWeapons, equippedWeapon,
     setEquippedWeapon
   } = useGameModel();
   return (<div className="weapons magic-weapons">
@@ -16,9 +16,6 @@ export function WeaponsView() {
               <p className="label">Магическое оружие</p>
               <strong>{magicWeapons.length > 0 ? `Посохи: ${magicWeapons.length}` : 'Посохи и способности'}</strong>
             </div>
-            <button onClick={claimMagicStaffs} type="button">
-              Получить посохи
-            </button>
           </div>
           <div className={showFullInventory ? 'inventory-list full' : 'inventory-list'}>
             {visibleMagicWeapons.map((weapon) => (
@@ -36,7 +33,7 @@ export function WeaponsView() {
             {visibleMagicWeapons.length === 0 && (
               <div className="magic-empty">
                 <strong>Магические посохи ещё не взяты</strong>
-                <span>Нажми “Получить посохи”, потом выбери способность внизу боя.</span>
+                <span>Посохи и способности появятся здесь, когда будут доступны.</span>
               </div>
             )}
           </div>

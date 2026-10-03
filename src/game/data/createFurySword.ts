@@ -84,7 +84,7 @@ export function createArcaneScepter(): Weapon {
 }
 
 export function createMagicStaff(name: string, level = 1, bonus = 1, magicSpellIndex = 0): Weapon {
-  const damage = Math.min(Number.MAX_SAFE_INTEGER, (180_000 + level * 120_000) * worldWeaponMultiplier(Math.max(1, level)) * bonus);
+  const damage = Math.min(Number.MAX_SAFE_INTEGER, (180 + level * 120) * worldWeaponMultiplier(Math.max(1, level)) * bonus);
   return {
     id: `arcane-scepter-${name}-${Date.now()}-${Math.random()}`,
     name,

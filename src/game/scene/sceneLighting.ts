@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
-export function createSceneLighting(scene: THREE.Scene, renderer: THREE.WebGLRenderer) {
+export function createSceneLighting(scene: THREE.Scene, renderer: THREE.WebGLRenderer, shadowSize: number) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -10,7 +10,7 @@ export function createSceneLighting(scene: THREE.Scene, renderer: THREE.WebGLRen
   const ambient = new THREE.HemisphereLight('#c3d2dd', '#70604b', 1.6);
   const sun = new THREE.DirectionalLight('#ffe2b3', 3);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.mapSize.set(shadowSize, shadowSize);
   Object.assign(sun.shadow.camera, { near: 1, far: 160, left: -38, right: 38, top: 38, bottom: -38 });
   sun.shadow.normalBias = 0.045;
   sun.shadow.bias = -0.00015;

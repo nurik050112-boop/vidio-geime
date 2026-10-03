@@ -1,0 +1,120 @@
+.global-map-dialog { width: min(1120px, calc(100% - 32px)); max-height: calc(100dvh - 32px); background: #f5efdf; }
+.global-map-dialog .dialog-content { padding: clamp(14px, 2.5vw, 28px); }
+.global-map-header, .global-map-filters, .global-map-layout { display: flex; gap: 14px; }
+.global-map-header { align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.global-map-header h2, .global-map-header p { margin: 0; }
+.global-map-header h2 { margin: 3px 0 5px; font-size: clamp(24px, 4vw, 34px); }
+.global-map-header > div > p:last-child { color: #62614f; font-size: 13px; }
+.global-map-close, .global-map-filters button { border: 1px solid #b7af96; border-radius: 9px; color: #393d2f; background: #fffaf0; cursor: pointer; }
+.global-map-close { flex: 0 0 auto; padding: 9px 12px; }
+.global-map-close kbd, .global-map-hint kbd, .shop-global-map-button kbd { padding: 2px 5px; border: 1px solid #bdb69f; border-radius: 4px; font: inherit; font-size: 11px; }
+.global-map-filters { flex-wrap: wrap; margin-bottom: 12px; }
+.global-map-filters button { padding: 7px 11px; font-size: 12px; }
+.global-map-filters button.selected { border-color: #58734a; color: #fffaf0; background: #58734a; }
+.global-map-layout { align-items: stretch; }
+.global-map-art {
+  position: relative; flex: 1 1 68%; min-width: 0; min-height: 490px; overflow: hidden;
+  border: 2px solid #786348; border-radius: 12px;
+  background: radial-gradient(ellipse at 23% 39%, #627c50 0 15%, transparent 15.5%),
+    radial-gradient(ellipse at 44% 68%, #758553 0 20%, transparent 20.5%),
+    radial-gradient(ellipse at 75% 38%, #687c4d 0 19%, transparent 19.5%),
+    radial-gradient(ellipse at 85% 78%, #8b8a5b 0 12%, transparent 12.5%),
+    radial-gradient(ellipse at 62% 20%, #8e8b63 0 12%, transparent 12.5%),
+    linear-gradient(145deg, #c2a975 0%, #d8c18c 40%, #b29d70 100%);
+  box-shadow: inset 0 0 90px #49371d55;
+}
+.global-map-art::before, .global-map-art::after { position: absolute; z-index: 0; border: 1px solid #f5e8bd70; border-radius: 48%; content: ""; pointer-events: none; }
+.global-map-art::before { inset: 11% 14% 17% 9%; transform: rotate(-12deg); }
+.global-map-art::after { inset: 20% 22% 25% 17%; transform: rotate(15deg); }
+.global-map-region, .global-map-sea-label, .global-map-compass {
+  position: absolute; z-index: 1; color: #414835b3; font-size: 11px; font-weight: 700;
+  letter-spacing: .09em; pointer-events: none; text-transform: uppercase;
+}
+.region-north { top: 9%; left: 48%; }
+.region-forest { top: 56%; left: 17%; }
+.region-south { right: 8%; bottom: 11%; }
+.global-map-sea-label { top: 17%; left: 5%; color: #355b5e99; transform: rotate(-25deg); }
+.global-map-compass { top: 18px; right: 18px; font-size: 16px; }
+.global-map-route { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.global-map-route polyline { fill: none; stroke: #73563b; stroke-dasharray: 1.1 1.2; stroke-linecap: round; stroke-width: .7; opacity: .78; }
+.global-map-marker {
+  position: absolute; z-index: 3; display: grid; justify-items: center; gap: 3px; padding: 0;
+  border: 0; color: #302d25; background: transparent; cursor: pointer; transform: translate(-50%, -50%);
+}
+.global-map-marker > span {
+  display: grid; width: 30px; height: 30px; place-items: center; border: 2px solid #f7edcf;
+  border-radius: 50%; color: white; background: #9a513a; box-shadow: 0 2px 8px #251d1470; font-size: 12px; font-weight: 800;
+}
+.global-map-marker.visited > span { background: #536f47; }
+.global-map-marker.active > span { background: #bc792b; }
+.global-map-marker.focused > span { outline: 3px solid #382f1e; }
+.global-map-marker small { max-width: 112px; padding: 2px 5px; border-radius: 4px; background: #f6eddae8; box-shadow: 0 1px 4px #33261444; font-size: 10px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
+.global-map-details { flex: 0 0 255px; align-self: stretch; padding: 17px; border: 1px solid #c8bea7; border-radius: 12px; background: #fffaf0; }
+.global-map-details .eyebrow, .global-map-details h3, .global-map-details p { margin: 0; }
+.global-map-details h3 { margin-top: 3px; font-size: 22px; }
+.global-map-country { color: #676351; font-size: 13px; }
+.global-map-coordinate, .global-map-enemy { display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #e1dac9; font-size: 12px; }
+.global-map-encounter { margin-top: 14px; font-size: 12px; }
+.global-map-encounter p { margin-top: 4px; color: #625e4e; line-height: 1.45; }
+.global-map-enemy { display: grid; justify-content: stretch; gap: 4px; }
+.global-map-enemy span, .global-map-current { color: #77705e; font-size: 11px; }
+.global-map-current { margin-top: 14px !important; }
+.global-map-hint { margin: 12px 0 0; color: #6a6655; font-size: 11px; }
+.shop-global-map-button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; margin: 10px 0; padding: 10px 12px; border: 1px solid #71805d; border-radius: 8px; color: #f5efdf; background: #354137; cursor: pointer; }
+.boss-dimension { display: grid; gap: 18px; color: #ece9df; }
+.global-map-dialog:has(.boss-dimension) { border: 1px solid #4f514a; background: #20211f; }
+.global-map-dialog:has(.boss-dimension) .dialog-content { background: #20211f; }
+.boss-dimension-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.boss-dimension-header h2, .boss-dimension-header p { margin: 0; }
+.boss-dimension-header h2 { margin: 4px 0; font-size: clamp(25px, 4vw, 36px); }
+.boss-dimension-header > div > p:last-child, .boss-dimension-join > p, .boss-dimension-team > p { color: #b8b8af; font-size: 13px; line-height: 1.5; }
+.boss-dimension-close { flex: 0 0 auto; padding: 8px 12px; border: 1px solid #55584e; border-radius: 8px; color: #eee; background: #30312e; cursor: pointer; }
+.boss-dimension-close kbd, .boss-dimension-hint kbd { padding: 2px 5px; border: 1px solid #55584e; border-radius: 4px; font: inherit; font-size: 11px; }
+.boss-dimension-notice, .boss-dimension-error { padding: 14px; border: 1px solid #805b36; border-radius: 9px; color: #ffe0ad; background: #463626; }
+.boss-dimension-error { border-color: #813f3a; color: #ffd4ce; background: #492b28; }
+.boss-dimension-join { display: grid; max-width: 520px; gap: 10px; padding: 18px; border: 1px solid #41443d; border-radius: 12px; background: #292a27; }
+.boss-dimension-join label { font-size: 13px; font-weight: 700; }
+.boss-dimension-join input { min-height: 42px; padding: 8px 12px; border: 1px solid #55584e; border-radius: 8px; color: #fff; background: #1f201e; font: inherit; text-transform: uppercase; }
+.boss-dimension-join button, .boss-attack { min-height: 44px; padding: 10px 16px; border: 1px solid #957244; border-radius: 9px; color: #fff2d8; background: #79572f; font: inherit; font-weight: 800; cursor: pointer; }
+.boss-dimension-join button:disabled, .boss-attack:disabled { cursor: wait; opacity: .6; }
+.boss-dimension-arena { display: grid; justify-items: center; gap: 9px; padding: clamp(18px, 4vw, 32px); border: 1px solid #4c4032; border-radius: 16px; background: radial-gradient(ellipse at center top, #603f2d 0, #292825 54%, #242522 100%); text-align: center; }
+.boss-model-frame { position: relative; width: min(520px, 100%); height: clamp(180px, 30vw, 280px); }
+.boss-model-canvas { width: 100%; height: 100%; }
+.boss-model-canvas canvas { display: block; width: 100%; height: 100%; }
+.boss-model-error { position: absolute; right: 0; bottom: 0; left: 0; color: #f6c788; font-size: 11px; }
+.boss-dimension-arena h3, .boss-dimension-arena p { margin: 0; }
+.boss-dimension-arena h3 { font-size: clamp(21px, 4vw, 30px); }
+.boss-dimension-arena > p:not(.eyebrow):not(.boss-respawn):not(.boss-last-hit) { max-width: 560px; color: #c3c0b7; font-size: 13px; line-height: 1.5; }
+.boss-health-label { display: flex; width: min(640px, 100%); justify-content: space-between; gap: 12px; margin-top: 10px; font-size: 13px; }
+.boss-health-track { width: min(640px, 100%); height: 20px; overflow: hidden; border: 1px solid #85504b; border-radius: 20px; background: #171716; }
+.boss-health-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #a72e2a, #ed633c); transition: width .3s ease; }
+.boss-attack { min-width: 200px; margin-top: 7px; }
+.boss-respawn { color: #f6c788; font-weight: 700; }
+.boss-last-hit { color: #d2c8ae; font-size: 12px; }
+.boss-dimension-team { padding: 16px; border: 1px solid #41443d; border-radius: 12px; background: #292a27; }
+.boss-dimension-team > div { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+.boss-dimension-team > div span { color: #d0bd92; }
+.boss-dimension-team ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 7px; max-height: 160px; margin: 12px 0; padding: 0; overflow: auto; list-style: none; }
+.boss-dimension-team li { display: flex; justify-content: space-between; gap: 8px; padding: 8px; border: 1px solid #41443d; border-radius: 7px; background: #222320; font-size: 12px; }
+.boss-dimension-team li code { color: #d5bf92; }
+.boss-dimension-hint { margin: 0; color: #9f9f96; font-size: 11px; }
+@media (max-width: 720px) {
+  .global-map-layout { flex-direction: column; }
+  .global-map-art { flex: none; min-height: 420px; }
+  .global-map-details { flex: none; }
+  .global-map-header { gap: 8px; }
+  .global-map-close { font-size: 0; }
+  .global-map-close kbd { font-size: 11px; }
+  .boss-dimension-header { gap: 8px; }
+  .boss-dimension-close { font-size: 0; }
+  .boss-dimension-close kbd { font-size: 11px; }
+  .boss-dimension-team > div { flex-direction: column; }
+}
+@media (max-width: 420px) {
+  .global-map-dialog { width: calc(100% - 12px); max-height: calc(100dvh - 12px); }
+  .global-map-dialog .dialog-content { padding: 12px; }
+  .global-map-art { min-height: 360px; }
+  .global-map-marker small { max-width: 78px; font-size: 8px; }
+  .global-map-marker > span { width: 26px; height: 26px; }
+  .global-map-region, .global-map-sea-label { font-size: 8px; }
+}

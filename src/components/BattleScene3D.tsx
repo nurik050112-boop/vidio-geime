@@ -54,7 +54,8 @@ export function BattleScene3D(props: BattleScene3DProps) {
     camera.position.set(0, 4.3, 10);
 
     let renderer: THREE.WebGLRenderer;
-    try { renderer = new THREE.WebGLRenderer({ antialias: true }); }
+    const quality = getRenderQuality();
+    try { renderer = new THREE.WebGLRenderer({ antialias: quality.antialias }); }
     catch {
       window.clearTimeout(modelReadyFallback);
       setRenderError(true);
@@ -66,7 +67,6 @@ export function BattleScene3D(props: BattleScene3DProps) {
       setRenderError(true);
     };
     renderer.domElement.addEventListener('webglcontextlost', onContextLost);
-    const quality = getRenderQuality();
     renderer.setPixelRatio(quality.pixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -76,7 +76,7 @@ export function BattleScene3D(props: BattleScene3DProps) {
     renderer.domElement.className = 'battle-canvas';
     container.appendChild(renderer.domElement);
 
-    const sceneLighting = createSceneLighting(scene, renderer);
+    const sceneLighting = createSceneLighting(scene, renderer, quality.shadowSize);
 
     addCaveCity(scene);
     removeSceneryLights(scene);
@@ -952,6 +952,9 @@ export function BattleScene3D(props: BattleScene3DProps) {
           downloadedHeroModel.rotation.z = -windup * (isTwoHandedWeapon ? 0.28 : 0.18) + impact * (isTwoHandedWeapon ? 0.42 : 0.3) - recover * 0.08;
         }
         slashTrail.visible = slash > 0.05 || impact > 0.05;
+        const slashMaterial = slashTrail.material as THREE.MeshBasicMaterial;
+        const elementalIndex = ((data.arcaneSpellKind % elementalColors.length) + elementalColors.length) % elementalColors.length;
+        slashMaterial.color.set(data.hasArcaneWeapon ? elementalColors[elementalIndex] : '#dff8ff');
         (slashTrail.material as THREE.MeshBasicMaterial).opacity = Math.max(slash, impact) * 0.72;
         slashTrail.position.set(
           hero.position.x + Math.sin(renderFacing) * (0.88 + lunge * 0.35 * heavy),

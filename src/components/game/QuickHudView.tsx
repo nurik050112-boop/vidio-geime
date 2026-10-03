@@ -10,7 +10,7 @@ export function QuickHudView() {
     playerName, playerLevel, playerLevelState, playerLevelProgress, heroHealthText,
     heroHealthPercent, heroMana, currentHeroMaxMana, infiniteGold, gold,
     enemy, currentMonsters, currentEnemyHealthText, setQuestPanelOpen, setInventoryPanelOpen,
-    claimMagicStaffs, setTutorialOpen, strike, heroHp, isFinalSpiritBoss
+    setTutorialOpen, strike, heroHp, isFinalSpiritBoss
   } = useGameModel();
   return (<div className="quick-hud compact-game-hud" aria-label="Быстрое состояние игры">
           <div className="hud-player-card">
@@ -38,10 +38,7 @@ export function QuickHudView() {
             <Link className="hud-icon-button" href="/world" aria-label="Мир">Мир</Link>
             <button onClick={() => setQuestPanelOpen(true)} type="button">Квесты</button>
             <button onClick={() => setInventoryPanelOpen(true)} type="button">Сумка</button>
-            <button onClick={() => {
-              claimMagicStaffs();
-              setInventoryPanelOpen(true);
-            }} type="button">Магия</button>
+            <button onClick={() => setInventoryPanelOpen(true)} type="button">Магия</button>
             <Link className="hud-icon-button" href="/achievements">Награды</Link>
             <button onClick={() => setTutorialOpen(true)} type="button">Гайд</button>
             {currentMonsters === 0 && (

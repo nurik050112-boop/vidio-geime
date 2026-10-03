@@ -11,7 +11,6 @@ import { runApplyGameSave } from './actions/applyGameSave';
 import { runAttackFromStageClick } from './actions/attackFromStageClick';
 import { runBuy } from './actions/buy';
 import { runCastArcaneSkill } from './actions/castArcaneSkill';
-import { runClaimMagicStaffs } from './actions/claimMagicStaffs';
 import { runClearCity } from './actions/clearCity';
 import { runClearIncomingDuelRequest } from './actions/clearIncomingDuelRequest';
 import { runCloseDuelList } from './actions/closeDuelList';
@@ -314,10 +313,6 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
     return runSellWeapon({ setWeapons, equippedWeapon, setEquippedWeapon, addGold, setMessage, goldMultiplier }, weapon);
   }
 
-  function claimMagicStaffs(): void {
-    return runClaimMagicStaffs({ weapons, chapter, setMessage, setWeapons, setEquippedWeapon });
-  }
-
   function sellArmor(armor: Armor): void {
     return runSellArmor({ setArmors, equippedArmor, setEquippedArmor, addGold, setMessage, goldMultiplier }, armor);
   }
@@ -444,7 +439,7 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
     return runClearCity({ enemy, setEnemyBurning, addWinStreak, currentMonsters, isDeathGodBoss, setDeathGodFightStarted, setVictory, setSecretEnding, unlockAchievement, setChapter, setWeapons, setEquippedWeapon, setEquippedArtifactId, addGold, setMessage, navigate, isBbiBoss, bbiBossStage, setBbiBossStage, setEnemyHp, setBbiFinalChoiceOpen, setBbiGateOpen, setBbiBadEnding, isNuraliKingBoss, setNuraliGateOpen, setNuraliWorldEntered, setNuraliChoiceOpen, setNuraliBossFightStarted, setImpossibleEnding, isAisSharkBoss, setAisSharkFightStarted, setAisFinalChoiceOpen, isAisGodBoss, setAisGateOpen, setAisWorldEntered, setAisGodFightStarted, isAdminWorldBosses, setAdminWorldBossesStarted, setAdminFinalChoiceOpen, isAdminBoss, setAdminWorldGateOpen, setAdminWorldEntered, setAdminBossFightStarted, isArailmKingBoss, setArailmGateOpen, setArailmWorldEntered, setArailmChoiceOpen, setArailmKingFightStarted, isMansurKingBoss, setMansurGateOpen, setMansurDungeonEntered, setMansurKingFightStarted, isAnuarKingBoss, setAnuarGateOpen, setAnuarWorldEntered, setAnuarKingFightStarted, isFuryKingBoss, setFuryGateOpen, setFuryDungeonEntered, setFuryChoiceOpen, setFuryKingFightStarted, isGoblinKingBoss, setGoblinKingReady, setGoblinKingFightStarted, isFamilyBoss, setEndingChoice, isFinalSpiritBoss, setFinalSpiritWorldOpen, setFinalSpiritMonstersLeft, setFinalSpiritFightStarted, deathGodHp, setHeroHp, currentHeroMaxHp, isFinalBoss, finalSpiritDragonHp, savedCities, reward, chapter, setMonsterAvalancheEntered, setMonsterAvalancheLeft, setSavedCities, dungeon, setDungeon, weapons, equippedWeapon, setArmors, armors, equippedArmor, setEquippedArmor, heroHp });
   }
 
-  useKeyboardMovement({ gameActiveRef, pressedKeys, verticalVelocity, playHeroAnimation, resetJoystick, movementVelocity, setHeroMoving, setTutorialOpen, setShopOpen });
+  useKeyboardMovement({ gameActiveRef, pressedKeys, verticalVelocity, playHeroAnimation, resetJoystick, movementVelocity, setHeroMoving, setTutorialOpen, setShopOpen, restart });
 
   useKeyboardAttack({ gameActiveRef, currentMonsters, fightMonster, strike, heroHp, heroPosition, enemyHp, equippedWeapon, equippedArtifactId, items, shopLevels });
 
@@ -561,7 +556,7 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
   useDuelRequests({ setIncomingDuelRequest, playerId });
 
   function restart(): void {
-    return runRestart({ unlockedAchievements, setChapter, setHealthLevel, setHeroHp, setEnemyHp, setMessage, setSavedCities, setVictory, setEndingChoice, setSecretEnding, setGoblinKingReady, setGoblinKingFightStarted, setFuryGateOpen, setFuryDungeonEntered, setFuryMonstersLeft, setFuryChoiceOpen, setFuryKingFightStarted, setAnuarGateOpen, setAnuarWorldEntered, setAnuarBombsLeft, setAnuarKingFightStarted, setMansurGateOpen, setMansurDungeonEntered, setMansurMonstersLeft, setMansurKingFightStarted, setArailmGateOpen, setArailmWorldEntered, setArailmMonstersLeft, setArailmChoiceOpen, setArailmKingFightStarted, setAisGateOpen, setAisWorldEntered, setAisMonstersLeft, setAisSharkFightStarted, setAisFinalChoiceOpen, setAisGodFightStarted, setAdminWorldGateOpen, setAdminWorldEntered, setAdminWorldMonstersLeft, setAdminWorldBossesStarted, setAdminFinalChoiceOpen, setAdminBossFightStarted, setBbiGateOpen, setBbiWorldEntered, setBbiMonstersLeft, setBbiBossStage, setBbiFinalChoiceOpen, setBbiCityReward, setBbiBadEnding, setNuraliGateOpen, setNuraliWorldEntered, setNuraliMonstersLeft, setNuraliChoiceOpen, setNuraliBossFightStarted, setMonsterAvalancheEntered, setMonsterAvalancheLeft, setMonsterAvalancheEnding, setFinalSpiritWorldOpen, setFinalSpiritMonstersLeft, setFinalSpiritFightStarted, setGold, setGoldMultiplier, setInfiniteGold, setDungeon, setRelics, setWeapons, setEquippedWeapon, setArmors, setEquippedArmor, setShopTab, setHeroAnimation, setHeroPosition, setHeroHeight, verticalVelocity, setCityMonsters, setMonsterAttackCount, setBattlePulse, setFireWavePulse, setWaterWavePulse, setEnemyBurning, setDuelStatus, setDuelOpponent, setDuelWins, setDuelHeroHp, setDuelOpponentHp, setDuelTradeOpen, setDuelChatMessages, setDuelChatText, paidQuestIds, setItems, setShopLevels });
+    return runRestart({ setChapter, setHealthLevel, setHeroHp, setEnemyHp, setMessage, setSavedCities, setVictory, setEndingChoice, setSecretEnding, setGoblinKingReady, setGoblinKingFightStarted, setFuryGateOpen, setFuryDungeonEntered, setFuryMonstersLeft, setFuryChoiceOpen, setFuryKingFightStarted, setAnuarGateOpen, setAnuarWorldEntered, setAnuarBombsLeft, setAnuarKingFightStarted, setMansurGateOpen, setMansurDungeonEntered, setMansurMonstersLeft, setMansurKingFightStarted, setArailmGateOpen, setArailmWorldEntered, setArailmMonstersLeft, setArailmChoiceOpen, setArailmKingFightStarted, setAisGateOpen, setAisWorldEntered, setAisMonstersLeft, setAisSharkFightStarted, setAisFinalChoiceOpen, setAisGodFightStarted, setAdminWorldGateOpen, setAdminWorldEntered, setAdminWorldMonstersLeft, setAdminWorldBossesStarted, setAdminFinalChoiceOpen, setAdminBossFightStarted, setBbiGateOpen, setBbiWorldEntered, setBbiMonstersLeft, setBbiBossStage, setBbiFinalChoiceOpen, setBbiCityReward, setBbiBadEnding, setImpossibleEnding, setNuraliGateOpen, setNuraliWorldEntered, setNuraliMonstersLeft, setNuraliChoiceOpen, setNuraliBossFightStarted, setMonsterAvalancheEntered, setMonsterAvalancheLeft, setMonsterAvalancheEnding, setFinalSpiritWorldOpen, setFinalSpiritMonstersLeft, setFinalSpiritFightStarted, setDeathGodFightStarted, setGold, setGoldMultiplier, setInfiniteGold, setDungeon, setRelics, setWeapons, setEquippedWeapon, setArmors, setEquippedArmor, setEquippedArtifactId, setHeroMana, setShopTab, setHeroAnimation, setHeroPosition, setHeroHeight, setHeroDirection, setMapLocationIndex, verticalVelocity, setCityMonsters, setMonsterAttackCount, setBattlePulse, setFireWavePulse, setWaterWavePulse, setEnemyBurning, setDuelStatus, setDuelOpponent, setDuelWins, setDuelHeroHp, setDuelOpponentHp, setDuelTradeOpen, setDuelChatMessages, setDuelChatText, paidQuestIds, setItems, setShopLevels, setIntroSkipped, setWinStreakState, setWinStreakText }, saveStorageKey);
   }
 
   const {
@@ -616,7 +611,7 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
     incomingDuelRequest, incomingRequestPlayer, acceptIncomingDuelRequest, rejectIncomingDuelRequest, playerLevel,
     playerLevelState, playerLevelProgress, heroHealthText, heroHealthPercent, currentHeroMaxMana,
     infiniteGold, gold, currentEnemyHealthText, setQuestPanelOpen, setInventoryPanelOpen,
-    claimMagicStaffs, questPanelOpen, completedQuestCount, quests, visibleQuests,
+    questPanelOpen, completedQuestCount, quests, visibleQuests,
     activeQuest, inventoryPanelOpen, relics, setShowFullInventory, showFullInventory,
     visibleMagicWeapons, equippedWeapon, visibleWeapons, visibleArmors, setEquippedArmor,
     visibleRelics, saveStatus, message, dailyRewardText, dailyRewardState,
