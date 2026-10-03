@@ -345,7 +345,7 @@ export function useGameController({ authUser, guestMode }: { authUser: User | nu
 
   useQuestRewards({ saveReady, quests, paidQuestIds, chapter, addGold, setWeapons, setEquippedWeapon, setArmors, setEquippedArmor, setMessage, storyProgress, savedCities, isFinalReveal, endingChoice, secretEnding });
 
-  useHeroRespawn({ heroHp, isFinalReveal, isMonsterAvalancheWorld, isFinalSpiritWorld, isFinalSpiritBoss, resetWinStreak, restart, setMessage });
+  useHeroRespawn({ heroHp, isFinalReveal, resetWinStreak, restart, setMessage });
 
   useSpiritRespawn({ heroHp, isFinalSpiritWorld, isFinalSpiritBoss, setHeroHp, currentHeroMaxHp, setMessage });
 

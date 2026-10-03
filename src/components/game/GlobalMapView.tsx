@@ -4,6 +4,7 @@ import { useGameModel } from '../../game/GameContext';
 import { attackWorldBoss, joinWorldBoss, leaveWorldBoss, type WorldBossSnapshot } from '../../lib/worldBoss';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 import { GameDialog } from '../GameDialog';
+import { WorldBossCommunityView } from './WorldBossCommunityView';
 import { WorldBossModel } from './WorldBossModel';
 
 type Props = { onClose: () => void };
@@ -102,22 +103,32 @@ export function GlobalMapView({ onClose }: Props) {
           <p className="boss-dimension-notice">Для общего измерения нужно настроить Supabase в окружении приложения.</p>
         ) : guestMode || !authUser ? (
           <p className="boss-dimension-notice">Войди в аккаунт, чтобы подключиться к серверу и сражаться вместе с другими игроками.</p>
-        ) : !joined ? (
-          <div className="boss-dimension-join">
-            <p>Сначала один игрок входит без кода. Остальные вводят его ID, чтобы присоединиться к общей битве.</p>
-            <label htmlFor="world-boss-player-id">ID игрока в измерении (необязательно)</label>
-            <input
-              autoComplete="off"
-              id="world-boss-player-id"
-              maxLength={6}
-              onChange={(event) => setJoinWithPlayerId(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-              placeholder="Например, A1B2C3"
-              value={joinWithPlayerId}
-            />
-            <button disabled={busy} onClick={() => void enterWorld()} type="button">{busy ? 'Подключаем…' : 'Войти в измерение'}</button>
-          </div>
         ) : (
           <>
+            <WorldBossCommunityView
+              onJoined={(next) => {
+                setSnapshot(next);
+                setJoined(true);
+              }}
+              playerId={playerId}
+              playerName={playerName}
+            />
+            {!joined ? (
+              <div className="boss-dimension-join">
+                <p>Войди по ID друга или создай свою комнату. Игроки с телефона и компьютера встречаются на одном сервере.</p>
+                <label htmlFor="world-boss-player-id">ID игрока в измерении (необязательно)</label>
+                <input
+                  autoComplete="off"
+                  id="world-boss-player-id"
+                  maxLength={6}
+                  onChange={(event) => setJoinWithPlayerId(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                  placeholder="Например, A1B2C3"
+                  value={joinWithPlayerId}
+                />
+                <button disabled={busy} onClick={() => void enterWorld()} type="button">{busy ? 'Подключаем…' : 'Войти в измерение'}</button>
+              </div>
+            ) : (
+              <>
             <div className="boss-dimension-arena">
               <WorldBossModel />
               <p className="eyebrow">Единственный противник</p>
@@ -148,6 +159,8 @@ export function GlobalMapView({ onClose }: Props) {
               </ul>
               <p>Поделись своим ID, чтобы друзья ввели его при входе. Здоровье босса общее для всех.</p>
             </div>
+              </>
+            )}
           </>
         )}
 

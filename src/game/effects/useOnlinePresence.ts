@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { browserStorage } from '../../lib/browserStorage';
 import { isSupabaseConfigured,supabase } from '../../lib/supabase';
+import { heartbeatWorldBossPresence,leaveWorldBossPresence } from '../../lib/worldBoss';
 import { type OnlinePresence } from '../data/dragonSon';
 import { readRealtimePresenceEntries,toDuelPlayer } from '../data/getLocalDateKey';
 import { presenceStorageKey,readLeaderboardPresences,readOnlinePresences,saveLeaderboardPresences } from '../data/isWorldBlockedAt';
@@ -35,6 +36,14 @@ export function useOnlinePresence(context: Context): void {
     rememberPlayers([]);
 
     if (isSupabaseConfigured && !guestMode) {
+      const sessionId = crypto.randomUUID();
+      const heartbeat = () => {
+        void heartbeatWorldBossPresence(sessionId, playerId, playerName).catch((error: unknown) => {
+          console.error('Не удалось обновить список игроков для приглашений мирового босса.', error);
+        });
+      };
+      heartbeat();
+      const heartbeatTimer = window.setInterval(heartbeat, 5_000);
       const channel = supabase.channel('dragon-game-online-presence', {
         config: {
           presence: {
@@ -60,8 +69,12 @@ export function useOnlinePresence(context: Context): void {
         });
 
       return () => {
+        window.clearInterval(heartbeatTimer);
         channel.untrack();
         supabase.removeChannel(channel);
+        void leaveWorldBossPresence(sessionId).catch((error: unknown) => {
+          console.error('Не удалось убрать игрока из списка приглашений мирового босса.', error);
+        });
       };
     }
 

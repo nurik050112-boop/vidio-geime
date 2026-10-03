@@ -77,6 +77,16 @@
 .boss-dimension-join input { min-height: 42px; padding: 8px 12px; border: 1px solid #55584e; border-radius: 8px; color: #fff; background: #1f201e; font: inherit; text-transform: uppercase; }
 .boss-dimension-join button, .boss-attack { min-height: 44px; padding: 10px 16px; border: 1px solid #957244; border-radius: 9px; color: #fff2d8; background: #79572f; font: inherit; font-weight: 800; cursor: pointer; }
 .boss-dimension-join button:disabled, .boss-attack:disabled { cursor: wait; opacity: .6; }
+.boss-dimension-community { display: grid; gap: 9px; padding: 16px; border: 1px solid #41443d; border-radius: 12px; background: #292a27; }
+.boss-dimension-community h3, .boss-dimension-community p { margin: 0; }
+.boss-dimension-community h3 { font-size: 16px; }
+.boss-dimension-community > p { color: #b8b8af; font-size: 12px; }
+.boss-online-player { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px; border: 1px solid #41443d; border-radius: 8px; background: #222320; }
+.boss-online-player > span, .boss-online-player > div { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.boss-online-player code { color: #d5bf92; font-size: 11px; }
+.boss-online-player button { padding: 7px 10px; border: 1px solid #957244; border-radius: 7px; color: #fff2d8; background: #79572f; font: inherit; font-size: 12px; cursor: pointer; }
+.boss-online-player button:disabled { cursor: default; opacity: .65; }
+.boss-online-player .boss-invite-decline { border-color: #6c524d; color: #e3d2cd; background: #493531; }
 .boss-dimension-arena { display: grid; justify-items: center; gap: 9px; padding: clamp(18px, 4vw, 32px); border: 1px solid #4c4032; border-radius: 16px; background: radial-gradient(ellipse at center top, #603f2d 0, #292825 54%, #242522 100%); text-align: center; }
 .boss-model-frame { position: relative; width: min(520px, 100%); height: clamp(180px, 30vw, 280px); }
 .boss-model-canvas { width: 100%; height: 100%; }
@@ -109,6 +119,8 @@
   .boss-dimension-close { font-size: 0; }
   .boss-dimension-close kbd { font-size: 11px; }
   .boss-dimension-team > div { flex-direction: column; }
+  .boss-online-player { align-items: flex-start; flex-wrap: wrap; }
+  .boss-online-player > div { flex-wrap: wrap; }
 }
 @media (max-width: 420px) {
   .global-map-dialog { width: calc(100% - 12px); max-height: calc(100dvh - 12px); }

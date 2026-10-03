@@ -6,6 +6,19 @@ export type WorldBossPlayer = {
   joinedAt: string;
 };
 
+export type WorldBossOnlinePlayer = {
+  playerId: string;
+  name: string;
+  lastSeen: string;
+};
+
+export type WorldBossInvite = {
+  id: string;
+  playerId: string;
+  name: string;
+  createdAt: string;
+};
+
 export type WorldBossSnapshot = {
   hp: number;
   maxHp: number;
@@ -36,6 +49,76 @@ function parseSnapshot(value: unknown): WorldBossSnapshot {
     players,
     ...(damage === undefined ? {} : { damage }),
   };
+}
+
+function parseList<T>(value: unknown, parseItem: (item: unknown) => T): T[] {
+  if (!Array.isArray(value)) throw new Error('Сервер прислал неправильный список.');
+  return value.map(parseItem);
+}
+
+function parseOnlinePlayer(value: unknown): WorldBossOnlinePlayer {
+  if (!value || typeof value !== 'object') throw new Error('Сервер прислал неправильные данные игрока онлайн.');
+  const player = value as Record<string, unknown>;
+  if (typeof player.playerId !== 'string' || typeof player.name !== 'string' || typeof player.lastSeen !== 'string') {
+    throw new Error('Сервер прислал неправильные данные игрока онлайн.');
+  }
+  return { playerId: player.playerId, name: player.name, lastSeen: player.lastSeen };
+}
+
+function parseInvite(value: unknown): WorldBossInvite {
+  if (!value || typeof value !== 'object') throw new Error('Сервер прислал неправильное приглашение.');
+  const invite = value as Record<string, unknown>;
+  if (typeof invite.id !== 'string' || typeof invite.playerId !== 'string' || typeof invite.name !== 'string' || typeof invite.createdAt !== 'string') {
+    throw new Error('Сервер прислал неправильное приглашение.');
+  }
+  return { id: invite.id, playerId: invite.playerId, name: invite.name, createdAt: invite.createdAt };
+}
+
+export async function heartbeatWorldBossPresence(sessionId: string, playerId: string, nickname: string) {
+  const { error } = await supabase.rpc('heartbeat_world_boss_presence', {
+    p_session_id: sessionId,
+    p_player_id: playerId,
+    p_nickname: nickname,
+  });
+  if (error) throw error;
+}
+
+export async function leaveWorldBossPresence(sessionId: string) {
+  const { error } = await supabase.rpc('leave_world_boss_presence', { p_session_id: sessionId });
+  if (error) throw error;
+}
+
+export async function listWorldBossOnlinePlayers() {
+  const { data, error } = await supabase.rpc('list_world_boss_online_players');
+  if (error) throw error;
+  return parseList(data, parseOnlinePlayer);
+}
+
+export async function sendWorldBossInvite(playerId: string) {
+  const { error } = await supabase.rpc('send_world_boss_invite', { p_target_player_id: playerId });
+  if (error) throw error;
+}
+
+export async function listWorldBossInvites() {
+  const { data, error } = await supabase.rpc('list_world_boss_invites');
+  if (error) throw error;
+  return parseList(data, parseInvite);
+}
+
+export async function respondWorldBossInvite(
+  inviteId: string,
+  accept: boolean,
+  playerId: string,
+  nickname: string,
+) {
+  const { data, error } = await supabase.rpc('respond_world_boss_invite', {
+    p_invite_id: inviteId,
+    p_accept: accept,
+    p_player_id: playerId,
+    p_nickname: nickname,
+  });
+  if (error) throw error;
+  return accept ? parseSnapshot(data) : null;
 }
 
 export async function joinWorldBoss(playerId: string, nickname: string, joinWithPlayerId: string) {

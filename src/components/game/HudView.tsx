@@ -12,7 +12,7 @@ import { WeaponsView3 } from './WeaponsView3';
 
 
 
-export function HudView() {
+export function HudView({ onOpenGlobalMap }: { onOpenGlobalMap: () => void }) {
   const { setTutorialOpen, setQuestPanelOpen, setInventoryPanelOpen, shopOpen, setShopOpen, saveStatus, message, heroMana, currentHeroMaxMana, dailyRewardText, dailyRewardState, winStreakState, winStreakText, impossibleEnding, restart, bbiBadEnding, secretEnding, isFinalReveal, savedCities, weapons, worldBurn, quests, visibleQuests, activeQuest, relics, armors, chapter, cityMonsters } = useGameModel();
   return (<section className="hud" aria-label="Состояние игры">
         <div className="world-nav">
@@ -271,7 +271,7 @@ export function HudView() {
         ) : isFinalReveal ? (
           <RevealView />
         ) : (
-          <PanelView3 shopOpen={shopOpen} />
+          <PanelView3 shopOpen={shopOpen} onOpenGlobalMap={onOpenGlobalMap} />
         )}
 
         <div className="world">

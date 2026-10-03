@@ -6,7 +6,9 @@ import { formatPower } from '../../game/data/rarityDamage';
 
 
 
-export function ShopView() {
+type Props = { onOpenGlobalMap: () => void };
+
+export function ShopView({ onOpenGlobalMap }: Props) {
   const {
     shopTab, infiniteGold, gold, unlockedArtifacts, onlinePlayers,
     playerId, setShopTab, shopLevels, buy, unlockedAchievements,
@@ -36,6 +38,9 @@ export function ShopView() {
                 <button className={shopTab === 'players' ? 'selected' : ''} onClick={() => setShopTab('players')} type="button">Игроки</button>
                 <button className={shopTab === 'id' ? 'selected' : ''} onClick={() => setShopTab('id')} type="button">ID</button>
               </div>
+              <button className="shop-global-map-button" onClick={onOpenGlobalMap} type="button">
+                Глобальная карта <kbd>N + B</kbd>
+              </button>
               {shopTab === 'upgrades' ? (
                 <div className="shop-grid">
                   {shopItems.map((item) => {

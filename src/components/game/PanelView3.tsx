@@ -6,7 +6,7 @@ import { ShopView } from './ShopView';
 
 
 
-export function PanelView3({ shopOpen }: { shopOpen: boolean }) {
+export function PanelView3({ shopOpen, onOpenGlobalMap }: { shopOpen: boolean; onOpenGlobalMap: () => void }) {
   const {
     currentMonsters, isFinalSpiritBoss, isBbiBoss, isFinalSpiritWorld, isBbiWorld,
     currentDragonHp, currentMonsterTotal, enemy, strike, heroHp,
@@ -76,6 +76,6 @@ export function PanelView3({ shopOpen }: { shopOpen: boolean }) {
               </div>
             )}
 
-            {shopOpen && <ShopView />}
+            {shopOpen && <ShopView onOpenGlobalMap={onOpenGlobalMap} />}
           </>);
 }

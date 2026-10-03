@@ -7,17 +7,20 @@ import { DuelOverlayView } from './DuelOverlayView';
 import { DuelRequestScreenView } from './DuelRequestScreenView';
 import { GameDialogView } from './GameDialogView';
 import { GlobalMapView } from './GlobalMapView';
+import { listWorldBossInvites } from '../../lib/worldBoss';
 import { HudView } from './HudView';
 import { QuickHudView } from './QuickHudView';
 import { ShopView } from './ShopView';
 import { StageView } from './StageView';
+import { isSupabaseConfigured } from '../../lib/supabase';
 
 
 
 export function GameView() {
-  const { isWorldPage, manualPause, setManualPause, tutorialOpen, closeTutorial, shopOpen, setShopOpen, enemy, isFinalReveal, duelStatus, incomingDuelRequest, incomingRequestPlayer, setQuestPanelOpen, questPanelOpen, completedQuestCount, quests, visibleQuests, activeQuest, inventoryPanelOpen } = useGameModel();
+  const { authUser, guestMode, isWorldPage, manualPause, setManualPause, tutorialOpen, closeTutorial, shopOpen, setShopOpen, enemy, isFinalReveal, duelStatus, incomingDuelRequest, incomingRequestPlayer, setQuestPanelOpen, questPanelOpen, completedQuestCount, quests, visibleQuests, activeQuest, inventoryPanelOpen } = useGameModel();
   const [globalMapOpen, setGlobalMapOpen] = useState(false);
   const shortcutKeys = useRef(new Set<string>());
+  const invitePollErrorShown = useRef(false);
 
   useEffect(() => {
     function isTyping(target: EventTarget | null) {
@@ -50,6 +53,29 @@ export function GameView() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!authUser || guestMode || !isSupabaseConfigured) return;
+    let stopped = false;
+    async function checkInvites() {
+      try {
+        const invites = await listWorldBossInvites();
+        if (!stopped && invites.length > 0) setGlobalMapOpen(true);
+        invitePollErrorShown.current = false;
+      } catch (error) {
+        if (!stopped && !invitePollErrorShown.current) {
+          console.error('Не удалось проверить приглашения в измерение.', error);
+          invitePollErrorShown.current = true;
+        }
+      }
+    }
+    void checkInvites();
+    const timer = window.setInterval(() => { void checkInvites(); }, 5_000);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+    };
+  }, [authUser, guestMode]);
+
   return (<main className={`game ${isWorldPage ? 'world-page' : 'play-page'}`}>
       {globalMapOpen && <GlobalMapView onClose={() => setGlobalMapOpen(false)} />}
       {manualPause && !isWorldPage && (
@@ -66,7 +92,10 @@ export function GameView() {
             <div><p className="eyebrow">Лавка героя</p><h2>Магазин</h2></div>
             <button onClick={() => setShopOpen(false)} type="button" aria-label="Закрыть магазин">Закрыть</button>
           </div>
-          <ShopView />
+          <ShopView onOpenGlobalMap={() => {
+            setShopOpen(false);
+            setGlobalMapOpen(true);
+          }} />
         </GameDialog>
       )}
       {!isWorldPage && <StageView />}
@@ -115,7 +144,10 @@ export function GameView() {
       )}
 
       {isWorldPage && (
-      <HudView />
+      <HudView onOpenGlobalMap={() => {
+        setShopOpen(false);
+        setGlobalMapOpen(true);
+      }} />
       )}
     </main>);
 }
