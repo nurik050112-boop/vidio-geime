@@ -86,6 +86,14 @@
 .boss-online-invite-toggle > strong { min-width: 26px; padding: 3px 7px; border-radius: 12px; background: #79572f; font-size: 12px; text-align: center; }
 .boss-online-player-list { display: grid; gap: 9px; }
 .boss-online-player-list > p { color: #b8b8af; font-size: 12px; }
+.boss-incoming-invite { display: grid; gap: 9px; padding: 12px; border: 1px solid #957244; border-radius: 9px; background: #342d23; }
+.boss-incoming-invite > p { color: #f0e5d0; font-size: 14px; line-height: 1.5; }
+.boss-incoming-invite > span { color: #b8b8af; font-size: 11px; }
+.boss-incoming-invite > span code { color: #d5bf92; }
+.boss-incoming-invite-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.boss-incoming-invite-actions button { min-height: 38px; padding: 8px 11px; border: 1px solid #6c524d; border-radius: 7px; color: #e3d2cd; background: #493531; font: inherit; font-size: 12px; cursor: pointer; }
+.boss-incoming-invite-actions .boss-invite-accept { border-color: #957244; color: #fff2d8; background: #79572f; font-weight: 700; }
+.boss-incoming-invite-actions button:disabled { cursor: wait; opacity: .65; }
 .boss-online-player { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px; border: 1px solid #41443d; border-radius: 8px; background: #222320; }
 .boss-online-player > span, .boss-online-player > div { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .boss-online-player code { color: #d5bf92; font-size: 11px; }

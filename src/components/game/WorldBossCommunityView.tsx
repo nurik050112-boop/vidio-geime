@@ -82,15 +82,18 @@ export function WorldBossCommunityView({ playerId, playerName, onJoined }: Props
     <>
       {incomingInvites.length > 0 && (
         <div className="boss-dimension-community">
-          <h3>Приглашения в измерение</h3>
+          <h3>Приглашение на мирового босса</h3>
           {incomingInvites.map((invite) => (
-            <div className="boss-online-player" key={invite.id}>
-              <span><strong>{invite.name}</strong><code>ID {invite.playerId}</code></span>
-              <div>
-                <button disabled={activeInviteId !== ''} onClick={() => void respondToInvite(invite, true)} type="button">
-                  {activeInviteId === invite.id ? 'Подключаем…' : 'Принять'}
+            <div className="boss-incoming-invite" key={invite.id}>
+              <p><strong>{invite.name}</strong> зовёт тебя сразиться с мировым боссом.</p>
+              <span>ID игрока: <code>{invite.playerId}</code></span>
+              <div className="boss-incoming-invite-actions">
+                <button className="boss-invite-accept" disabled={activeInviteId !== ''} onClick={() => void respondToInvite(invite, true)} type="button">
+                  {activeInviteId === invite.id ? 'Подключаем к боссу…' : 'Присоединиться к боссу'}
                 </button>
-                <button className="boss-invite-decline" disabled={activeInviteId !== ''} onClick={() => void respondToInvite(invite, false)} type="button">Отклонить</button>
+                <button className="boss-invite-decline" disabled={activeInviteId !== ''} onClick={() => void respondToInvite(invite, false)} type="button">
+                  Отказаться
+                </button>
               </div>
             </div>
           ))}
@@ -104,25 +107,30 @@ export function WorldBossCommunityView({ playerId, playerName, onJoined }: Props
           onClick={() => setOnlineListOpen((open) => !open)}
           type="button"
         >
-          <span>{onlineListOpen ? 'Скрыть игроков онлайн' : 'Пригласить игроков онлайн'}</span>
+          <span>{onlineListOpen ? 'Скрыть список игроков онлайн' : 'Показать список игроков для приглашения'}</span>
           <strong>{onlinePlayers.length}</strong>
         </button>
         {onlineListOpen && (
           <div id="world-boss-online-players" className="boss-online-player-list">
             {onlinePlayers.length === 0 ? (
               <p>Сейчас нет других игроков онлайн. Список обновляется автоматически.</p>
-            ) : onlinePlayers.map((player) => (
-              <div className="boss-online-player" key={`${player.playerId}-${player.name}`}>
-                <span><strong>{player.name}</strong><code>ID {player.playerId}</code></span>
-                <button
-                  disabled={busyPlayerId !== '' || sentInvites.includes(player.playerId)}
-                  onClick={() => void invitePlayer(player)}
-                  type="button"
-                >
-                  {busyPlayerId === player.playerId ? 'Отправляем…' : sentInvites.includes(player.playerId) ? 'Приглашено' : 'Пригласить'}
-                </button>
-              </div>
-            ))}
+            ) : (
+              <>
+                <p>Выбери онлайн-игрока, которого хочешь позвать на бой.</p>
+                {onlinePlayers.map((player) => (
+                  <div className="boss-online-player" key={`${player.playerId}-${player.name}`}>
+                    <span><strong>{player.name}</strong><code>ID {player.playerId}</code></span>
+                    <button
+                      disabled={busyPlayerId !== '' || sentInvites.includes(player.playerId)}
+                      onClick={() => void invitePlayer(player)}
+                      type="button"
+                    >
+                      {busyPlayerId === player.playerId ? 'Отправляем…' : sentInvites.includes(player.playerId) ? 'Приглашено' : 'Пригласить'}
+                    </button>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         )}
       </div>
